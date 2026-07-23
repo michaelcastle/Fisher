@@ -22,7 +22,7 @@
             <meta name="viewport" content="width=device-width,
                 initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
             <style>
-                #map_21c2ddea183fb2d441145c2e9e078577 {
+                #map_cd503f118d0bcef49a9e612ef7aba812 {
                     position: relative;
                     width: 100.0%;
                     height: 100.0%;
@@ -537,7 +537,7 @@
          the coastline, bathymetry and heatmap stay fully visible.
          invalidateSize() is called after load to make Leaflet recompute
          tile layout for the new container size. */
-      #map_21c2ddea183fb2d441145c2e9e078577 {
+      #map_cd503f118d0bcef49a9e612ef7aba812 {
         position: fixed !important;
         top: 0 !important;
         left: 320px !important;
@@ -656,9 +656,15 @@
         margin: 0; font-size: 12px; line-height: 1; flex-shrink: 0; opacity: 0.8;
       }
       .bsq-info-icon:hover { opacity: 1; }
+      /* Sits directly next to the info icon (2026-07-25, Lambert -- previously
+         forced full-width/onto its own line via width:100%/flex-basis:100%,
+         which wasted a whole extra row per layer). The parent
+         `.bsq-layer-content-col` is still `flex-wrap: wrap`, so this only
+         drops to its own line when the row genuinely doesn't have room
+         (e.g. a long label + weight pill in the narrow 320px sidebar). */
       .bsq-mini-legend {
-        display: flex; align-items: center; gap: 6px; width: 100%; flex-basis: 100%;
-        margin: 3px 0 2px 0; font-family: 'JetBrains Mono', monospace;
+        display: flex; align-items: center; gap: 4px; flex-shrink: 0;
+        margin: 0; font-family: 'JetBrains Mono', monospace;
         font-size: 10px; color: #8e9198; cursor: default;
       }
       .bsq-legend-bar {
@@ -768,8 +774,8 @@
          below) is applied only to `.bsq-layer-content-col`, never to
          this column or the row itself (2026-07-23, Lambert). */
       #bsq-layers-slot .leaflet-control-layers-overlays .bsq-layer-control-col {
-        display: flex; align-items: center; gap: 3px; flex: 0 0 30px;
-        width: 30px; min-height: 18px; flex-shrink: 0;
+        display: flex; align-items: center; justify-content: flex-start; gap: 3px;
+        flex: 0 0 36px; width: 36px; min-height: 18px; flex-shrink: 0;
       }
       #bsq-layers-slot .leaflet-control-layers-overlays .bsq-layer-control-col::before {
         font-family: 'Material Symbols Outlined'; content: "drag_indicator";
@@ -779,9 +785,11 @@
         width: 16px; height: 16px; margin: 0; flex-shrink: 0; cursor: pointer;
       }
       /* Free-flowing content column -- label text, weight pill, info icon
-         and (wrapping to its own line via flex-basis:100%) the mini
-         legend all live here, NOT snapped to fixed sub-columns, so short
-         labels stay compact and only the control column above is rigid. */
+         and mini legend (immediately after the info icon, 2026-07-25) all
+         live here, NOT snapped to fixed sub-columns, so short labels stay
+         compact and only the control column above is rigid; `flex-wrap`
+         lets the legend drop to its own line only when a row is too
+         narrow to fit everything on one line. */
       #bsq-layers-slot .leaflet-control-layers-overlays .bsq-layer-content-col {
         display: flex; align-items: center; flex-wrap: wrap; gap: 6px;
         flex: 1 1 auto; min-width: 0; padding: 2px 0; line-height: 1.3;
@@ -867,9 +875,31 @@
       }
       .leaflet-bar a:hover { background: rgba(34,42,61,0.95) !important; }
 
+      /* Compact bottom-left map control (2026-07-25, Lambert) -- basemap
+         switcher + quick reference-chart toggles, moved off the sidebar
+         and onto the map itself (matching Leaflet's own zoom-control
+         corner-widget convention/visual treatment above), positioned in
+         Leaflet's "bottomleft" corner so it never overlaps the zoom
+         control (topleft) or attribution (bottomright). Built as a plain
+         Leaflet Control (see bsqBuildMapControls() JS below), reusing the
+         `.leaflet-bar`/`a` dark styling above rather than duplicating it,
+         just relaxing the anchors' fixed 26x26 sizing so a short text
+         label can sit next to each icon. */
+      .bsq-map-controls { display: flex; flex-direction: column; }
+      .bsq-map-controls a.bsq-basemap-btn,
+      .bsq-map-controls a.bsq-refchart-btn {
+        display: flex !important; align-items: center; gap: 6px;
+        width: auto !important; height: auto !important; line-height: 1.3 !important;
+        padding: 6px 10px; font-size: 11.5px; font-family: 'JetBrains Mono', monospace;
+        white-space: nowrap; text-decoration: none;
+      }
+      .bsq-map-controls a .material-symbols-outlined { font-size: 15px; }
+      .bsq-map-controls a.active { background: #63f7ff !important; color: #003739 !important; font-weight: 700; }
+      .bsq-map-controls-divider { border-top: 1px solid rgba(142,145,152,0.25); }
+
       @media (max-width: 820px) {
         .bsq-sidebar { width: 100%; height: 42vh; bottom: auto; border-right: none; border-bottom: 1px solid rgba(142,145,152,0.15); }
-        #map_21c2ddea183fb2d441145c2e9e078577 { left: 0 !important; top: 42vh !important; }
+        #map_cd503f118d0bcef49a9e612ef7aba812 { left: 0 !important; top: 42vh !important; }
       }
     </style>
 
@@ -897,7 +927,7 @@
           </a>
         </div>
         <label for="bsq-date">Update data for date</label>
-        <input type="date" id="bsq-date" value="2026-07-20">
+        <input type="date" id="bsq-date" value="2026-07-21">
         <button id="bsq-update-btn" onclick="bsqUpdateData()">Update Data</button>
         <div id="bsq-status"></div>
       </div>
@@ -1453,11 +1483,11 @@
       var bsqStaticKeyToLabel = {"depth_suitability": "Factor: Depth-suitability score", "lidar": "Sunshine Coast LiDAR bathymetry (high-res, 2011 survey)", "moreton_bay_approaches": "Moreton Bay Approaches bathymetry (high-res, 2023 survey)", "mudjimba_island": "Mudjimba Island bathymetry (high-res, 2024 survey)", "relief_map": "Bathymetry relief map"};
 
       function bsqSetOpacity(v) {
-        try { image_overlay_7c1cda5e7e0f57437f9b3e116fc28bf2.setOpacity(parseFloat(v)); } catch (e) {}
+        try { image_overlay_3fef0e1e3a29ce8c2118d68f0a960c49.setOpacity(parseFloat(v)); } catch (e) {}
       }
       
       function bsqSetLegacyOpacity(v) {
-        try { image_overlay_98705d596d85509ca42fa030f3a1ef1b.setOpacity(parseFloat(v)); } catch (e) {}
+        try { image_overlay_367e28d922838dbfe3a419389cf9076f.setOpacity(parseFloat(v)); } catch (e) {}
       }
         
 
@@ -1473,40 +1503,40 @@
       var bsqLayerPanes = null;
       function bsqInitLayerPanes() {
         bsqLayerPanes = {
-          "MBGFC fishing chart (georeferenced)": pane_16528315d77ca3d56468b8f17161d3ca,
-          "MBGFC FADs, SFADs & wave buoys": pane_9f7bec0486dade20ab233504bd71116e,
-          "Land outline": pane_27efd5d7b8a031208f4eb5b7565dc7da,
-          "Bathymetry contours (depth reference)": pane_9d0ed15456306c53934e4cbe236d6e33,
-          "Ocean fronts (FSLE)": pane_3e4a86862543edcffe5eb5775ab7008d,
-          "Bite Score heatmap (current, high-res)": pane_de5a8aab87402a74fd178c19e150d6b0,
-          "Bite Score heatmap (legacy, coarse - for comparison)": pane_372cd5165eadbad4f394d3f3bbc0b52b,
-          "Factor: SST thermal-front score": pane_ec76bd02b4e9025359efcf46d582a318,
-          "Factor: Chlorophyll-front score": pane_3a38a750e0a32b59135cc07906051cf2,
-          "Factor: Current-edge score": pane_4f481fb0fdc8b910c675819738bda673,
-          "Factor: SSHA / eddy-front score": pane_3dd94b1cf7eb08c6950b96cca964c6b8,
-          "Factor: MLD front score": pane_af3d7bfe473c3bc71fff44ee8aa1f03e,
-          "Factor: Depth-suitability score": pane_4245a39c9f327033835f84639a6cd724,
-          "Bite Score heatmap v2 (Beta - structure/eddy model)": pane_6047d3e02e4a1afbeb5a6c7d40a67022,
-          "Factor (v2 Beta): SST bell-curve score": pane_337a707a4636167fb7d17d3678a15ea7,
-          "Factor (v2 Beta): Chlorophyll optimal-band score": pane_ccc3a602ef12086d3271404fc4880858,
-          "Factor (v2 Beta): Current-edge score (v2 recomputed)": pane_d604ab744053b83b9820b40991c37926,
-          "Factor (v2 Beta): Depth-suitability score (v2 recomputed)": pane_4167a410a14790e55d75c0d57dabed43,
-          "Factor (v2 Beta): MLD gradient score (v2)": pane_40999725d7002270d76cd790d1dc9e81,
-          "Factor (v2 Beta): Structure proximity score": pane_09c5b6ccacc70262d734dffd95382674,
-          "Factor (v2 Beta): Eddy detection score": pane_326af5eb383ee389c783d203f243bbde,
-          "Bite Score heatmap Lenigas (SEQ fisherman model)": pane_7d9eba24943cf20e6d02fcaefe9aeece,
-          "Factor (Lenigas): EAC axis-position score": pane_7c7d6f8459e353d84716b498def27e06,
-          "Factor (Lenigas): EAC convergence-point score": pane_b5399065eec147bd7e921b24fb12c49a,
-          "Factor (Lenigas): Depth-suitability score (Lenigas)": pane_5e2e5f5e1e402a9cb332d466f7a98a21,
-          "Factor (Lenigas): Upwelling/downwelling score": pane_26dcad963a2224815d4b8369ab349fa8,
-          "Factor (Lenigas): SST bell-curve score (Lenigas)": pane_a879d70a3a2e15f36640c570150a1546,
-          "Factor (Lenigas): Distance-offshore score": pane_1629d08b3f87ed0ffed3ffc6a6999098,
-          "Factor (Lenigas): SSHA hotspot score (Lenigas)": pane_cc1ba2c50d1e5e5f03d4017cc700158c,
-          "Factor (Lenigas): Wind speed": pane_35ed7d8d906f67935ff72ec09ac07050,
-          "Sunshine Coast LiDAR bathymetry (high-res, 2011 survey)": pane_bb03b35688ac913bcba47e1f75a739ac,
-          "Moreton Bay Approaches bathymetry (high-res, 2023 survey)": pane_6f870551ed97f8bdeea6cb1e144a5695,
-          "Mudjimba Island bathymetry (high-res, 2024 survey)": pane_9e64eb3471c6e6add3f73ec744aec740,
-          "Bathymetry relief map": pane_239dfbea7060af23fb7f066b342df5a9
+          "MBGFC fishing chart (georeferenced)": pane_ea8ca78970315f0fc77d63a1126944b5,
+          "MBGFC FADs, SFADs & wave buoys": pane_c154d42f65f9c21ebe0265eeed8bf1e6,
+          "Land outline": pane_28df28677c983f978f19c372a513cd5d,
+          "Bathymetry contours (depth reference)": pane_eeeff318ab241a2e1c3ac3cc3fb93319,
+          "Ocean fronts (FSLE)": pane_77a0675050f635ab5c0b997817b270ed,
+          "Bite Score heatmap (current, high-res)": pane_ea64fc58b687d69fd2a9b1fcc3fecf03,
+          "Bite Score heatmap (legacy, coarse - for comparison)": pane_223cebffdee3ece7310ddf01fce14630,
+          "Factor: SST thermal-front score": pane_b017be8bc8fc274a9e32c64af7242802,
+          "Factor: Chlorophyll-front score": pane_ca75aa2f44e453413e2b72487a0245b2,
+          "Factor: Current-edge score": pane_fc3966e661d38f8820ae7c40a64a724f,
+          "Factor: SSHA / eddy-front score": pane_e7b7507c304a8fd4f5eeea79319a1226,
+          "Factor: MLD front score": pane_42689c455e893e098abb3f1ff3b55629,
+          "Factor: Depth-suitability score": pane_bb7dc4f7cfc6a5283dc28197c3237154,
+          "Bite Score heatmap v2 (Beta - structure/eddy model)": pane_8c5ded94d4e7690435ef844131133f06,
+          "Factor (v2 Beta): SST bell-curve score": pane_54bebd93f38c5f0f35ba81b61fc379e3,
+          "Factor (v2 Beta): Chlorophyll optimal-band score": pane_de91bc2ef42352d59b62a73904b5d53e,
+          "Factor (v2 Beta): Current-edge score (v2 recomputed)": pane_3bced1226e054b04c26c0c89841a68ed,
+          "Factor (v2 Beta): Depth-suitability score (v2 recomputed)": pane_1efbbc02e1813422b096e229551d1044,
+          "Factor (v2 Beta): MLD gradient score (v2)": pane_e65b65504e18463cb2ceb32d99d64af4,
+          "Factor (v2 Beta): Structure proximity score": pane_7fcf610be0d579b34969cd20b7c41ed9,
+          "Factor (v2 Beta): Eddy detection score": pane_b7f0579ecb3feaf1c400f1dd16e34617,
+          "Bite Score heatmap Lenigas (SEQ fisherman model)": pane_d296d466007120e9574ee8e483c813fe,
+          "Factor (Lenigas): EAC axis-position score": pane_13cdd651f0e815687b20d8c0e235e81d,
+          "Factor (Lenigas): EAC convergence-point score": pane_499addb8ea6ab6697e5d42725b898c6e,
+          "Factor (Lenigas): Depth-suitability score (Lenigas)": pane_5d3ea073cb5daeb4560c5c350542d79f,
+          "Factor (Lenigas): Upwelling/downwelling score": pane_23dfddeb1211b1ace135da1a8a7d21ce,
+          "Factor (Lenigas): SST bell-curve score (Lenigas)": pane_de6f56d874dfab6b6b5b09db1861fd67,
+          "Factor (Lenigas): Distance-offshore score": pane_be0c17e3b04c195cf99a31ddaec6da27,
+          "Factor (Lenigas): SSHA hotspot score (Lenigas)": pane_49593c3d107cb43507ab2b48bb0eec42,
+          "Factor (Lenigas): Wind speed": pane_7d9dccda9d7628d2bcad91804aa00699,
+          "Sunshine Coast LiDAR bathymetry (high-res, 2011 survey)": pane_7ac24868ad93010d0c234f1c2a1bebc4,
+          "Moreton Bay Approaches bathymetry (high-res, 2023 survey)": pane_cd25bc5aa42e777f2a0fb370da8c98aa,
+          "Mudjimba Island bathymetry (high-res, 2024 survey)": pane_209600748a2123c6abf974391492f460,
+          "Bathymetry relief map": pane_77bc7fc6113fafa2b31931e4ee7bd715
         };
       }
 
@@ -1770,31 +1800,31 @@
       var bsqDateLayerByName = null;
       function bsqInitDateLayers() {
         bsqDateLayerByName = {
-          "Bite Score heatmap (current, high-res)": {key: "bite_score", layer: image_overlay_7c1cda5e7e0f57437f9b3e116fc28bf2},
-          "Bite Score heatmap (legacy, coarse - for comparison)": {key: "legacy", layer: image_overlay_98705d596d85509ca42fa030f3a1ef1b},
-          "Ocean fronts (FSLE)": {key: "fsle", layer: image_overlay_e46798223344a4200a2c772e6eb4c7b5},
-          "Bite Score heatmap v2 (Beta - structure/eddy model)": {key: "v2/bite_score_v2", layer: image_overlay_30f2d917e97e5a9f8878e340eb89f14f},
-          "Bite Score heatmap Lenigas (SEQ fisherman model)": {key: "lenigas/bite_score_lenigas", layer: image_overlay_1ae48da2e230288e97d60a3e8562c522},
-          "Factor: SST thermal-front score": {key: "sst", layer: image_overlay_6d4b56e14a6cd92b5ecab17bc065a7b4},
-          "Factor: Chlorophyll-front score": {key: "chl", layer: image_overlay_fc7619df1a22e9dd8cc42776a6081971},
-          "Factor: Current-edge score": {key: "current", layer: image_overlay_123ac46f52dc4ac8a4dab39165bbec10},
-          "Factor: SSHA / eddy-front score": {key: "ssha", layer: image_overlay_43973fa5ada1cd89478d1453a1dab91f},
-          "Factor: MLD front score": {key: "mld", layer: image_overlay_942d307ba2387a8aba178b011cb70a51},
-          "Factor (v2 Beta): SST bell-curve score": {key: "v2/sst_bell", layer: image_overlay_db627c43987845373bfc8ca4daa41cd9},
-          "Factor (v2 Beta): Chlorophyll optimal-band score": {key: "v2/chl_band", layer: image_overlay_6107c3689bf157debf2274d46d4f3d58},
-          "Factor (v2 Beta): Current-edge score (v2 recomputed)": {key: "v2/current", layer: image_overlay_a53dd6d6702d4a6f62f007d76d89e420},
-          "Factor (v2 Beta): Depth-suitability score (v2 recomputed)": {key: "v2/bathymetry", layer: image_overlay_c4fcba789605b9415db30334b9c8a915},
-          "Factor (v2 Beta): MLD gradient score (v2)": {key: "v2/mld", layer: image_overlay_2cc484682a81e9e53ede9a56d10e83df},
-          "Factor (v2 Beta): Structure proximity score": {key: "v2/structure", layer: image_overlay_221913ce664f971ae3e5b1ac733651c9},
-          "Factor (v2 Beta): Eddy detection score": {key: "v2/eddy", layer: image_overlay_d5fabdd42041bcaf44ac5cb3fb6e99ed},
-          "Factor (Lenigas): EAC axis-position score": {key: "lenigas/eac_axis_position", layer: image_overlay_7ddaddd88b1fa202a976d9ff337888fe},
-          "Factor (Lenigas): EAC convergence-point score": {key: "lenigas/eac_convergence", layer: image_overlay_f76ef11e283d5fcaa054762c2168d8df},
-          "Factor (Lenigas): Depth-suitability score (Lenigas)": {key: "lenigas/depth_suitability", layer: image_overlay_1aeb7c4ddcb2e4a1baa7716af2323233},
-          "Factor (Lenigas): Upwelling/downwelling score": {key: "lenigas/upwelling_downwelling", layer: image_overlay_59553b54ca470c7f293439978c7147e6},
-          "Factor (Lenigas): SST bell-curve score (Lenigas)": {key: "lenigas/sst_bell", layer: image_overlay_0ee20dc47814157545fa5fd0902b3e9f},
-          "Factor (Lenigas): Distance-offshore score": {key: "lenigas/distance_offshore", layer: image_overlay_8e675f18c01c8ca1350905176438a7c3},
-          "Factor (Lenigas): SSHA hotspot score (Lenigas)": {key: "lenigas/ssha_hotspot", layer: image_overlay_85636d97fb6d1da65f644577af538741},
-          "Factor (Lenigas): Wind speed": {key: "lenigas/wind_speed", layer: image_overlay_7a26b9ce4bf88d2e20b7713258ec61f7}
+          "Bite Score heatmap (current, high-res)": {key: "bite_score", layer: image_overlay_3fef0e1e3a29ce8c2118d68f0a960c49},
+          "Bite Score heatmap (legacy, coarse - for comparison)": {key: "legacy", layer: image_overlay_367e28d922838dbfe3a419389cf9076f},
+          "Ocean fronts (FSLE)": {key: "fsle", layer: image_overlay_521d3b6e05c1b7fabb7a058ca80ddf6c},
+          "Bite Score heatmap v2 (Beta - structure/eddy model)": {key: "v2/bite_score_v2", layer: image_overlay_802505d7a04777772cb461e6f13fd098},
+          "Bite Score heatmap Lenigas (SEQ fisherman model)": {key: "lenigas/bite_score_lenigas", layer: image_overlay_f3e15d600545ed6932e9e6333ca2eb51},
+          "Factor: SST thermal-front score": {key: "sst", layer: image_overlay_48c1899ff8068ee8f1f08bbe604c9db9},
+          "Factor: Chlorophyll-front score": {key: "chl", layer: image_overlay_b4ee20bf5203ab02f716d808360909cf},
+          "Factor: Current-edge score": {key: "current", layer: image_overlay_545c30952695b5df5246442d95b90d5d},
+          "Factor: SSHA / eddy-front score": {key: "ssha", layer: image_overlay_c3291961d03db7a93809b4b2570ebac6},
+          "Factor: MLD front score": {key: "mld", layer: image_overlay_3e738be64ff1b3fd193bae5ea7028dcd},
+          "Factor (v2 Beta): SST bell-curve score": {key: "v2/sst_bell", layer: image_overlay_7ec5495d82b853ae98d10a89ec95accf},
+          "Factor (v2 Beta): Chlorophyll optimal-band score": {key: "v2/chl_band", layer: image_overlay_759221876d667a04b4c18c20b86f5088},
+          "Factor (v2 Beta): Current-edge score (v2 recomputed)": {key: "v2/current", layer: image_overlay_0f31b29049fc2a146c95d8b82b85ed05},
+          "Factor (v2 Beta): Depth-suitability score (v2 recomputed)": {key: "v2/bathymetry", layer: image_overlay_2f0a367a3976e1cf3eb6bd7931913deb},
+          "Factor (v2 Beta): MLD gradient score (v2)": {key: "v2/mld", layer: image_overlay_41d0668fcaabfb989991c82e53a6a6b4},
+          "Factor (v2 Beta): Structure proximity score": {key: "v2/structure", layer: image_overlay_092a09c2b6f1c1fdb2e1e71d359807b5},
+          "Factor (v2 Beta): Eddy detection score": {key: "v2/eddy", layer: image_overlay_737ce1a0e18b8fb9e24d5934526f8dcc},
+          "Factor (Lenigas): EAC axis-position score": {key: "lenigas/eac_axis_position", layer: image_overlay_6eb2f1327f8242fd55718284fdf39846},
+          "Factor (Lenigas): EAC convergence-point score": {key: "lenigas/eac_convergence", layer: image_overlay_0299517651ee0e4271b0489f30ae322e},
+          "Factor (Lenigas): Depth-suitability score (Lenigas)": {key: "lenigas/depth_suitability", layer: image_overlay_af29a4622b1a46c797d5894335954d71},
+          "Factor (Lenigas): Upwelling/downwelling score": {key: "lenigas/upwelling_downwelling", layer: image_overlay_2012dae04811c47951789c054a370187},
+          "Factor (Lenigas): SST bell-curve score (Lenigas)": {key: "lenigas/sst_bell", layer: image_overlay_b77b58ee3079640036f78d1ffbe2a76f},
+          "Factor (Lenigas): Distance-offshore score": {key: "lenigas/distance_offshore", layer: image_overlay_dc3436eaaeaaa4171468cbdac6ecad1e},
+          "Factor (Lenigas): SSHA hotspot score (Lenigas)": {key: "lenigas/ssha_hotspot", layer: image_overlay_4af98d6d5c1ff60a24db49df43795261},
+          "Factor (Lenigas): Wind speed": {key: "lenigas/wind_speed", layer: image_overlay_754d22a66b2b2a773ac734e22ac391fc}
         };
       }
 
@@ -1859,28 +1889,281 @@
         });
       }
 
+      // Persist the checked overlay set across full-page navigations
+      // (Part 1, 2026-07-25, Lambert) -- switching historical dates loads
+      // a brand-new copy of this same static HTML (see bsqResolveDateAndLoad()
+      // above), which otherwise resets every layer back to its Folium-
+      // authored default every time. Keyed/versioned ("_v1") so a future
+      // change to this format can start fresh instead of trying to
+      // interpret stale saved data. Only the overlay checklist is
+      // persisted here -- basemap choice has its own separate key (see
+      // bsqSwitchBasemap() below), and is unaffected by this.
+      var BSQ_LAYER_SELECTION_KEY = "bsqLayerSelection_v1";
+
+      function bsqGetCheckedLayerNames() {
+        var container = document.querySelector("#bsq-layers-slot .leaflet-control-layers-overlays");
+        var names = [];
+        if (!container) return names;
+        Array.prototype.forEach.call(container.querySelectorAll(":scope > label"), function (row) {
+          var input = row.querySelector("input[type=checkbox]");
+          var span = row.querySelector("span:last-child");
+          if (input && input.checked && span) { names.push(span.textContent.trim()); }
+        });
+        return names;
+      }
+
+      function bsqSaveLayerSelection() {
+        try {
+          localStorage.setItem(BSQ_LAYER_SELECTION_KEY, JSON.stringify(bsqGetCheckedLayerNames()));
+        } catch (e) {}
+      }
+
+      // Additive only: turns ON any saved-checked layer that isn't already
+      // checked by Folium's default -- via a genuine `input.click()` (not
+      // `input.checked = true`) so Leaflet's own Control.Layers click
+      // handler runs, firing the real "overlayadd" event that both the
+      // per-date lazy-load listener and bsqSaveLayerSelection() above key
+      // off. Never unchecks anything, so a layer with no saved state (or
+      // a saved name no longer present in the current overlay list, e.g.
+      // one that's been removed/renamed since) simply keeps behaving
+      // exactly like a fresh page load. Must run before
+      // bsqInsertLayerGroupHeaders() below, so a just-restored layer's
+      // group is correctly computed as already "open".
+      function bsqRestoreLayerSelection() {
+        var container = document.querySelector("#bsq-layers-slot .leaflet-control-layers-overlays");
+        if (!container) return;
+        var raw;
+        try { raw = localStorage.getItem(BSQ_LAYER_SELECTION_KEY); } catch (e) { return; }
+        if (!raw) return;
+        var saved;
+        try { saved = JSON.parse(raw); } catch (e) { return; }
+        if (!Array.isArray(saved)) return;
+        var savedSet = {};
+        saved.forEach(function (name) { savedSet[name] = true; });
+        Array.prototype.forEach.call(container.querySelectorAll(":scope > label"), function (row) {
+          var input = row.querySelector("input[type=checkbox]");
+          var span = row.querySelector("span:last-child");
+          if (!input || !span) return;
+          var name = span.textContent.trim();
+          if (savedSet[name] && !input.checked) { input.click(); }
+        });
+      }
+
+      // Compact bottom-left map control (Parts 3 & 4, 2026-07-25, Lambert):
+      // a basemap switcher (replacing the sidebar's old basemap radios,
+      // now removed -- see the DOMContentLoaded reparenting code above)
+      // plus 2 quick-access reference-chart toggles, styled like Leaflet's
+      // own zoom control (reuses the `.leaflet-bar`/`a` dark theme above).
+      // `bsqBasemapLayers` is built by a function (called from
+      // DOMContentLoaded), not a top-level `var ... =`, for the same
+      // eager-vs-later-script-tag reason as bsqLayerPanes/bsqDateLayerByName
+      // above -- Folium declares each `tile_layer_xxx` identifier in its
+      // own <script> tag emitted later in the document.
+      var bsqBasemapLayers = null;
+      function bsqInitBasemapLayers() {
+        bsqBasemapLayers = {light: tile_layer_f3d5e80b2d75ef8de65a0cb27ba31007, streets: tile_layer_73f5f866986f6af0da243d2747a7d96a, satellite: tile_layer_8179c679e412fd6ee82e89c53de20ddf};
+      }
+      var bsqActiveBasemapKey = "light";
+      var BSQ_BASEMAP_KEY = "bsqBasemap_v1";
+
+      function bsqSwitchBasemap(key) {
+        if (!bsqBasemapLayers[key] || key === bsqActiveBasemapKey) return;
+        Object.keys(bsqBasemapLayers).forEach(function (k) {
+          if (k !== key) { try { map_cd503f118d0bcef49a9e612ef7aba812.removeLayer(bsqBasemapLayers[k]); } catch (e) {} }
+        });
+        try { map_cd503f118d0bcef49a9e612ef7aba812.addLayer(bsqBasemapLayers[key]); } catch (e) {}
+        bsqActiveBasemapKey = key;
+        try { localStorage.setItem(BSQ_BASEMAP_KEY, key); } catch (e) {}
+        document.querySelectorAll(".bsq-basemap-btn").forEach(function (btn) {
+          btn.classList.toggle("active", btn.getAttribute("data-basemap") === key);
+        });
+      }
+
+      // Reference-chart toggles proxy a real `.click()` on the matching
+      // sidebar checkbox (rather than driving the MBGFC layers directly),
+      // so the sidebar Layers list stays the single source of truth --
+      // toggling either place fires the same native "overlayadd"/
+      // "overlayremove" events, which bsqSyncRefChartButtons() (below)
+      // already listens for to keep both in sync.
+      function bsqFindOverlayRow(name) {
+        var container = document.querySelector("#bsq-layers-slot .leaflet-control-layers-overlays");
+        if (!container) return null;
+        var rows = container.querySelectorAll(":scope > label");
+        for (var i = 0; i < rows.length; i++) {
+          var span = rows[i].querySelector("span:last-child");
+          if (span && span.textContent.trim() === name) return rows[i];
+        }
+        return null;
+      }
+
+      function bsqToggleRefChartLayer(name) {
+        var row = bsqFindOverlayRow(name);
+        var input = row ? row.querySelector("input[type=checkbox]") : null;
+        if (input) { input.click(); }
+      }
+
+      function bsqSyncRefChartButtons() {
+        document.querySelectorAll(".bsq-refchart-btn").forEach(function (btn) {
+          var name = btn.getAttribute("data-refchart-name");
+          var row = bsqFindOverlayRow(name);
+          var input = row ? row.querySelector("input[type=checkbox]") : null;
+          btn.classList.toggle("active", !!(input && input.checked));
+        });
+      }
+
+      function bsqBuildMapControls() {
+        var BsqMapControls = L.Control.extend({
+          options: {position: "bottomleft"},
+          onAdd: function () {
+            var container = L.DomUtil.create("div", "leaflet-bar bsq-map-controls");
+            L.DomEvent.disableClickPropagation(container);
+            L.DomEvent.disableScrollPropagation(container);
+
+            [
+              {key: "light", label: "Light", icon: "light_mode"},
+              {key: "streets", label: "Streets", icon: "map"},
+              {key: "satellite", label: "Satellite", icon: "satellite_alt"}
+            ].forEach(function (bm) {
+              var a = document.createElement("a");
+              a.href = "#";
+              a.className = "bsq-basemap-btn" + (bm.key === bsqActiveBasemapKey ? " active" : "");
+              a.setAttribute("data-basemap", bm.key);
+              a.title = bm.label + " basemap";
+              a.innerHTML = '<span class="material-symbols-outlined">' + bm.icon + '</span>' + bm.label;
+              a.addEventListener("click", function (e) { e.preventDefault(); bsqSwitchBasemap(bm.key); });
+              container.appendChild(a);
+            });
+
+            var divider = document.createElement("div");
+            divider.className = "bsq-map-controls-divider";
+            container.appendChild(divider);
+
+            [
+              {name: "MBGFC FADs, SFADs & wave buoys", label: "FADs/buoys", icon: "anchor"},
+              {name: "MBGFC fishing chart (georeferenced)", label: "Fishing chart", icon: "map"}
+            ].forEach(function (rc) {
+              var a = document.createElement("a");
+              a.href = "#";
+              a.className = "bsq-refchart-btn";
+              a.setAttribute("data-refchart-name", rc.name);
+              a.title = "Toggle " + rc.label;
+              a.innerHTML = '<span class="material-symbols-outlined">' + rc.icon + '</span>' + rc.label;
+              a.addEventListener("click", function (e) { e.preventDefault(); bsqToggleRefChartLayer(rc.name); });
+              container.appendChild(a);
+            });
+
+            return container;
+          }
+        });
+        map_cd503f118d0bcef49a9e612ef7aba812.addControl(new BsqMapControls());
+        bsqSyncRefChartButtons();
+      }
+
       document.addEventListener("DOMContentLoaded", function () {
         // The sidebar takes up part of the viewport width, so re-fit the
         // view to the actual data bounds afterwards (rather than relying
         // on the original fixed zoom_start) to keep the coastline and
         // bathymetry contours fully in view instead of being cropped.
         try {
-          map_21c2ddea183fb2d441145c2e9e078577.invalidateSize();
-          map_21c2ddea183fb2d441145c2e9e078577.fitBounds([[-28.3, 152.99999999999997], [-25.999999999999996, 154.49999999999997]]);
+          map_cd503f118d0bcef49a9e612ef7aba812.invalidateSize();
+          map_cd503f118d0bcef49a9e612ef7aba812.fitBounds([[-28.3, 152.99999999999997], [-25.999999999999996, 154.49999999999997]]);
         } catch (e) {}
 
         // Reparent the native Leaflet layer-control and colour legend from
         // their floating map corners into the sidebar, so nothing sits on
         // top of the map -- everything lives in one coherent side panel.
         var layersCtrl = document.querySelector(".leaflet-control-layers");
-        if (layersCtrl) { document.getElementById("bsq-layers-slot").appendChild(layersCtrl); }
+        if (layersCtrl) {
+          // Basemap radios relocated to the new bottom-left map control
+          // (Part 3, 2026-07-25, Lambert -- see bsqBuildMapControls() /
+          // bsqSwitchBasemap() below) -- remove Folium's own base-layers
+          // section (and its divider) so it no longer appears in the
+          // sidebar's Layers list at all.
+          var baseSection = layersCtrl.querySelector(".leaflet-control-layers-base");
+          if (baseSection) { baseSection.remove(); }
+          var baseSeparator = layersCtrl.querySelector(".leaflet-control-layers-separator");
+          if (baseSeparator) { baseSeparator.remove(); }
+          document.getElementById("bsq-layers-slot").appendChild(layersCtrl);
+        }
         var legendCtrl = document.querySelector(".legend.leaflet-control");
         if (legendCtrl) { document.getElementById("bsq-legend-slot").appendChild(legendCtrl); }
 
+        // Restore any previously-saved basemap choice as early as possible
+        // (2026-07-23, Lambert -- bugfix) -- switching basemap calls
+        // map.removeLayer()/addLayer() on the *base* tile layers, which
+        // Leaflet's own Control.Layers listens for (via each layer's own
+        // "add"/"remove" events) and reacts to by fully rebuilding its
+        // "_overlaysList" DOM from scratch. Doing this restore here, before
+        // bsqInsertLayerGroupHeaders()/bsqEnableLayerReorder()/
+        // bsqEnhanceLayerRows() below run, means that native rebuild
+        // happens on the plain, not-yet-enhanced list -- so nothing is lost.
+        // Previously this restore happened inside bsqBuildMapControls(),
+        // called LAST, which silently wiped every info icon, mini-legend,
+        // group header and drag-reorder attribute right back off every
+        // row whenever the saved basemap wasn't the "light" default.
+        bsqInitBasemapLayers();
+        try {
+          var savedBasemap = localStorage.getItem(BSQ_BASEMAP_KEY);
+          if (savedBasemap) { bsqSwitchBasemap(savedBasemap); }
+        } catch (e) {}
+
         bsqInitLayerPanes();
+
+        // These layers carry no data of their own on this page -- fetch
+        // them from the dashboard server the first time each is switched
+        // on in the layer list, so they stay available on every date's
+        // map without ever needing that date regenerated. Registered here
+        // (moved up from further below, 2026-07-25, Lambert) so it's
+        // already listening before bsqRestoreLayerSelection() below
+        // programmatically re-checks any saved layer -- a restored layer
+        // triggers its lazy load exactly like a real user click would.
+        map_cd503f118d0bcef49a9e612ef7aba812.on("overlayadd", function (e) {
+          if (e.name === "MBGFC fishing chart (georeferenced)" || e.name === "MBGFC FADs, SFADs & wave buoys") {
+            bsqLoadMbgfc();
+          } else if (e.name === "Factor: Depth-suitability score") {
+            bsqLoadRasterLayer("depth_suitability", image_overlay_8ece5a4f4cf97f9369181b016443c8bd);
+          } else if (e.name === "Sunshine Coast LiDAR bathymetry (high-res, 2011 survey)") {
+            bsqLoadRasterLayer("lidar", image_overlay_25a7c03a16bd81bb2f2499b5d2dea8e2);
+          } else if (e.name === "Moreton Bay Approaches bathymetry (high-res, 2023 survey)") {
+            bsqLoadRasterLayer("moreton_bay_approaches", image_overlay_6e8f8c6963ee3b56ec54d6e369164dc3);
+          } else if (e.name === "Mudjimba Island bathymetry (high-res, 2024 survey)") {
+            bsqLoadRasterLayer("mudjimba_island", image_overlay_c0549ad333edd1023284fd6c4d05e963);
+          } else if (e.name === "Bathymetry relief map") {
+            bsqLoadRasterLayer("relief_map", image_overlay_8d63608590d762e20af0a12fd6ee9817);
+          } else if (e.name === "Bathymetry contours (depth reference)") {
+            bsqLoadContours();
+          } else if (e.name === "Land outline") {
+            bsqLoadLandOutline();
+          } else if (bsqDateLayerByName[e.name]) {
+            var entry = bsqDateLayerByName[e.name];
+            bsqLoadDateLayer(entry.key, entry.layer, entry.key === "bite_score");
+          }
+        });
+
+        // Persist which overlays are checked across full-page navigations
+        // (Part 1, 2026-07-25, Lambert -- switching historical dates is a
+        // real navigation to /history/<date>, which otherwise reloads this
+        // same static HTML with every layer back at its Folium-authored
+        // default). Saves the full set of currently-checked layer names on
+        // every toggle (whether from this Layers list or the new bottom-
+        // left reference-chart buttons -- both ultimately fire the same
+        // native "overlayadd"/"overlayremove" map events), then restores
+        // them (additively -- only checks layers that were saved-checked
+        // and aren't already checked by default; never unchecks a default-
+        // on layer) before bsqInsertLayerGroupHeaders() below computes
+        // each group's initial open/closed state, so a restored layer's
+        // group starts open too. Also keeps the bottom-left reference-
+        // chart buttons' active state in sync with the sidebar checkboxes.
+        map_cd503f118d0bcef49a9e612ef7aba812.on("overlayadd overlayremove", function () {
+          bsqSaveLayerSelection();
+          bsqSyncRefChartButtons();
+        });
+        bsqRestoreLayerSelection();
+
         bsqInsertLayerGroupHeaders();
         bsqEnableLayerReorder();
         bsqEnhanceLayerRows();
+        bsqBuildMapControls();
 
         document.getElementById("bsq-info-popover-close").addEventListener("click", bsqHideInfoPopover);
         document.addEventListener("click", function (e) {
@@ -1894,7 +2177,7 @@
         });
 
         document.getElementById("bsq-recenter").addEventListener("click", function () {
-          try { map_21c2ddea183fb2d441145c2e9e078577.fitBounds([[-28.3, 152.99999999999997], [-25.999999999999996, 154.49999999999997]]); } catch (e) {}
+          try { map_cd503f118d0bcef49a9e612ef7aba812.fitBounds([[-28.3, 152.99999999999997], [-25.999999999999996, 154.49999999999997]]); } catch (e) {}
         });
 
         document.getElementById("bsq-history-toggle").addEventListener("click", function () {
@@ -1942,29 +2225,9 @@
         // These layers carry no data of their own on this page -- fetch
         // them from the dashboard server the first time each is switched
         // on in the layer list, so they stay available on every date's
-        // map without ever needing that date regenerated.
-        map_21c2ddea183fb2d441145c2e9e078577.on("overlayadd", function (e) {
-          if (e.name === "MBGFC fishing chart (georeferenced)" || e.name === "MBGFC FADs, SFADs & wave buoys") {
-            bsqLoadMbgfc();
-          } else if (e.name === "Factor: Depth-suitability score") {
-            bsqLoadRasterLayer("depth_suitability", image_overlay_162fcee225e51678514ebe6aa029cb40);
-          } else if (e.name === "Sunshine Coast LiDAR bathymetry (high-res, 2011 survey)") {
-            bsqLoadRasterLayer("lidar", image_overlay_986c7660890c02707b0f832cf6625d6e);
-          } else if (e.name === "Moreton Bay Approaches bathymetry (high-res, 2023 survey)") {
-            bsqLoadRasterLayer("moreton_bay_approaches", image_overlay_6fc6085d281c8edc8a6fa52901f08881);
-          } else if (e.name === "Mudjimba Island bathymetry (high-res, 2024 survey)") {
-            bsqLoadRasterLayer("mudjimba_island", image_overlay_22a23de0729350fb6ed19678c0dc8585);
-          } else if (e.name === "Bathymetry relief map") {
-            bsqLoadRasterLayer("relief_map", image_overlay_03e890fd6c3773858db2ddba3fe0884d);
-          } else if (e.name === "Bathymetry contours (depth reference)") {
-            bsqLoadContours();
-          } else if (e.name === "Land outline") {
-            bsqLoadLandOutline();
-          } else if (bsqDateLayerByName[e.name]) {
-            var entry = bsqDateLayerByName[e.name];
-            bsqLoadDateLayer(entry.key, entry.layer, entry.key === "bite_score");
-          }
-        });
+        // map without ever needing that date regenerated. (Registered
+        // earlier above, alongside bsqRestoreLayerSelection() -- see the
+        // 2026-07-25, Lambert comment there.)
 
         bsqInitDateLayers();
         bsqLoadContours();
@@ -2009,7 +2272,7 @@
         // bsqLoadDateLayer() below. The heatmap itself is shown by
         // default, so it's loaded directly here rather than waiting for
         // an "overlayadd" event.
-        bsqLoadDateLayer("bite_score", image_overlay_7c1cda5e7e0f57437f9b3e116fc28bf2, true);
+        bsqLoadDateLayer("bite_score", image_overlay_3fef0e1e3a29ce8c2118d68f0a960c49, true);
         bsqLoadMoonPhase();
         bsqCheckV2Availability();
         bsqCheckLenigasAvailability();
@@ -2182,7 +2445,7 @@
             L.geoJSON(geojson, {
               style: function () { return {fillColor: "none", fillOpacity: 0, color: "#20232a", weight: 1.6}; },
               pane: "bsqPane2",
-            }).addTo(feature_group_eda950dd3dbd083af25383c52df43f6c);
+            }).addTo(feature_group_a089e43edf2fd56cc881d7a4428ea270);
           })
           .catch(function (e) { console.warn("Land outline unavailable (is python -m bite_score.webapp running?)", e); });
       }
@@ -2243,8 +2506,8 @@
         fetch("/api/mbgfc/meta", {cache: "no-store"})
           .then(function (r) { return r.json(); })
           .then(function (meta) {
-            image_overlay_f5ec6090cab77651ec640ab87fc5bd9d.setUrl("/api/mbgfc/chart.png");
-            image_overlay_f5ec6090cab77651ec640ab87fc5bd9d.setBounds(meta.bounds);
+            image_overlay_1f9a692ecf0cb1a887ce01eb4364363f.setUrl("/api/mbgfc/chart.png");
+            image_overlay_1f9a692ecf0cb1a887ce01eb4364363f.setBounds(meta.bounds);
           })
           .catch(function (e) { console.warn("MBGFC chart unavailable (is python -m bite_score.webapp running?)", e); });
 
@@ -2269,7 +2532,7 @@
                 "<b>" + loc.name + "</b><br>" + style.label + "<br>" +
                 loc.lat.toFixed(4) + ", " + loc.lon.toFixed(4) + "<br>Depth: " + depthTxt
               );
-              marker.addTo(feature_group_39f06423010008fbde6b40df373ae884);
+              marker.addTo(feature_group_0407b58336b093aa4c2438cd4684e6f0);
             });
           })
           .catch(function (e) { console.warn("MBGFC locations unavailable (is python -m bite_score.webapp running?)", e); });
@@ -2314,7 +2577,7 @@
                   layer.bindTooltip("Depth (m): " + feature.properties.depth_m);
                 }
               },
-            }).addTo(feature_group_2af48184af4a35be7422c3e0354a5442);
+            }).addTo(feature_group_2ab6381ea4f510f25804023fcb5eb72a);
 
             (data.labels || []).forEach(function (label) {
               L.marker([label.lat, label.lon], {
@@ -2324,7 +2587,7 @@
                   html: '<div class="bsq-depth-label">' + Math.round(label.depth_m) + ' m</div>',
                 }),
                 interactive: false,
-              }).addTo(feature_group_2af48184af4a35be7422c3e0354a5442);
+              }).addTo(feature_group_2ab6381ea4f510f25804023fcb5eb72a);
             });
           })
           .catch(function (e) { console.warn("Bathymetry contours unavailable (is python -m bite_score.webapp running?)", e); });
@@ -2378,14 +2641,14 @@
     </script>
     
     
-            <div class="folium-map" id="map_21c2ddea183fb2d441145c2e9e078577" ></div>
+            <div class="folium-map" id="map_cd503f118d0bcef49a9e612ef7aba812" ></div>
         
 </body>
 <script>
     
     
-            var map_21c2ddea183fb2d441145c2e9e078577 = L.map(
-                "map_21c2ddea183fb2d441145c2e9e078577",
+            var map_cd503f118d0bcef49a9e612ef7aba812 = L.map(
+                "map_cd503f118d0bcef49a9e612ef7aba812",
                 {
                     center: [-26.85, 153.35],
                     crs: L.CRS.EPSG3857,
@@ -2397,13 +2660,13 @@
 
                 }
             );
-            L.control.scale().addTo(map_21c2ddea183fb2d441145c2e9e078577);
+            L.control.scale().addTo(map_cd503f118d0bcef49a9e612ef7aba812);
 
             
 
         
     
-            var tile_layer_96a8b5f65fa6f360c01e28a2e1d03349 = L.tileLayer(
+            var tile_layer_f3d5e80b2d75ef8de65a0cb27ba31007 = L.tileLayer(
                 "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
                 {
   "minZoom": 0,
@@ -2420,10 +2683,10 @@
             );
         
     
-            tile_layer_96a8b5f65fa6f360c01e28a2e1d03349.addTo(map_21c2ddea183fb2d441145c2e9e078577);
+            tile_layer_f3d5e80b2d75ef8de65a0cb27ba31007.addTo(map_cd503f118d0bcef49a9e612ef7aba812);
         
     
-            var tile_layer_d6301c907d596afbfaeb326195ecb6d7 = L.tileLayer(
+            var tile_layer_73f5f866986f6af0da243d2747a7d96a = L.tileLayer(
                 "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
                 {
   "minZoom": 0,
@@ -2440,7 +2703,7 @@
             );
         
     
-            var tile_layer_a74557e01ca5389d9e06d04da4ac3683 = L.tileLayer(
+            var tile_layer_8179c679e412fd6ee82e89c53de20ddf = L.tileLayer(
                 "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
                 {
   "minZoom": 0,
@@ -2457,13 +2720,13 @@
             );
         
     
-            var pane_16528315d77ca3d56468b8f17161d3ca = map_21c2ddea183fb2d441145c2e9e078577.createPane(
+            var pane_ea8ca78970315f0fc77d63a1126944b5 = map_cd503f118d0bcef49a9e612ef7aba812.createPane(
                 "bsqPane0");
-            pane_16528315d77ca3d56468b8f17161d3ca.style.zIndex = 500;
+            pane_ea8ca78970315f0fc77d63a1126944b5.style.zIndex = 500;
             
         
     
-            var image_overlay_f5ec6090cab77651ec640ab87fc5bd9d = L.imageOverlay(
+            var image_overlay_1f9a692ecf0cb1a887ce01eb4364363f = L.imageOverlay(
                 "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR42mNgAAIAAAUAAen63NgAAAAASUVORK5CYII=",
                 [[-28.3, 152.99999999999997], [-25.999999999999996, 154.49999999999997]],
                 {
@@ -2475,55 +2738,55 @@
             );
         
     
-            var pane_9f7bec0486dade20ab233504bd71116e = map_21c2ddea183fb2d441145c2e9e078577.createPane(
+            var pane_c154d42f65f9c21ebe0265eeed8bf1e6 = map_cd503f118d0bcef49a9e612ef7aba812.createPane(
                 "bsqPane1");
-            pane_9f7bec0486dade20ab233504bd71116e.style.zIndex = 499;
+            pane_c154d42f65f9c21ebe0265eeed8bf1e6.style.zIndex = 499;
             
         
     
-            var feature_group_39f06423010008fbde6b40df373ae884 = L.featureGroup(
+            var feature_group_0407b58336b093aa4c2438cd4684e6f0 = L.featureGroup(
                 {
 }
             );
         
     
-            var pane_27efd5d7b8a031208f4eb5b7565dc7da = map_21c2ddea183fb2d441145c2e9e078577.createPane(
+            var pane_28df28677c983f978f19c372a513cd5d = map_cd503f118d0bcef49a9e612ef7aba812.createPane(
                 "bsqPane2");
-            pane_27efd5d7b8a031208f4eb5b7565dc7da.style.zIndex = 498;
+            pane_28df28677c983f978f19c372a513cd5d.style.zIndex = 498;
             
         
     
-            var feature_group_eda950dd3dbd083af25383c52df43f6c = L.featureGroup(
+            var feature_group_a089e43edf2fd56cc881d7a4428ea270 = L.featureGroup(
                 {
 }
             );
         
     
-            feature_group_eda950dd3dbd083af25383c52df43f6c.addTo(map_21c2ddea183fb2d441145c2e9e078577);
+            feature_group_a089e43edf2fd56cc881d7a4428ea270.addTo(map_cd503f118d0bcef49a9e612ef7aba812);
         
     
-            var pane_9d0ed15456306c53934e4cbe236d6e33 = map_21c2ddea183fb2d441145c2e9e078577.createPane(
+            var pane_eeeff318ab241a2e1c3ac3cc3fb93319 = map_cd503f118d0bcef49a9e612ef7aba812.createPane(
                 "bsqPane3");
-            pane_9d0ed15456306c53934e4cbe236d6e33.style.zIndex = 497;
+            pane_eeeff318ab241a2e1c3ac3cc3fb93319.style.zIndex = 497;
             
         
     
-            var feature_group_2af48184af4a35be7422c3e0354a5442 = L.featureGroup(
+            var feature_group_2ab6381ea4f510f25804023fcb5eb72a = L.featureGroup(
                 {
 }
             );
         
     
-            feature_group_2af48184af4a35be7422c3e0354a5442.addTo(map_21c2ddea183fb2d441145c2e9e078577);
+            feature_group_2ab6381ea4f510f25804023fcb5eb72a.addTo(map_cd503f118d0bcef49a9e612ef7aba812);
         
     
-            var pane_3e4a86862543edcffe5eb5775ab7008d = map_21c2ddea183fb2d441145c2e9e078577.createPane(
+            var pane_77a0675050f635ab5c0b997817b270ed = map_cd503f118d0bcef49a9e612ef7aba812.createPane(
                 "bsqPane4");
-            pane_3e4a86862543edcffe5eb5775ab7008d.style.zIndex = 496;
+            pane_77a0675050f635ab5c0b997817b270ed.style.zIndex = 496;
             
         
     
-            var image_overlay_e46798223344a4200a2c772e6eb4c7b5 = L.imageOverlay(
+            var image_overlay_521d3b6e05c1b7fabb7a058ca80ddf6c = L.imageOverlay(
                 "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR42mNgAAIAAAUAAen63NgAAAAASUVORK5CYII=",
                 [[-28.3, 152.99999999999997], [-25.999999999999996, 154.49999999999997]],
                 {
@@ -2535,13 +2798,13 @@
             );
         
     
-            var pane_de5a8aab87402a74fd178c19e150d6b0 = map_21c2ddea183fb2d441145c2e9e078577.createPane(
+            var pane_ea64fc58b687d69fd2a9b1fcc3fecf03 = map_cd503f118d0bcef49a9e612ef7aba812.createPane(
                 "bsqPane5");
-            pane_de5a8aab87402a74fd178c19e150d6b0.style.zIndex = 495;
+            pane_ea64fc58b687d69fd2a9b1fcc3fecf03.style.zIndex = 495;
             
         
     
-            var image_overlay_7c1cda5e7e0f57437f9b3e116fc28bf2 = L.imageOverlay(
+            var image_overlay_3fef0e1e3a29ce8c2118d68f0a960c49 = L.imageOverlay(
                 "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR42mNgAAIAAAUAAen63NgAAAAASUVORK5CYII=",
                 [[-28.3, 152.99999999999997], [-25.999999999999996, 154.49999999999997]],
                 {
@@ -2553,16 +2816,16 @@
             );
         
     
-            image_overlay_7c1cda5e7e0f57437f9b3e116fc28bf2.addTo(map_21c2ddea183fb2d441145c2e9e078577);
+            image_overlay_3fef0e1e3a29ce8c2118d68f0a960c49.addTo(map_cd503f118d0bcef49a9e612ef7aba812);
         
     
-            var pane_372cd5165eadbad4f394d3f3bbc0b52b = map_21c2ddea183fb2d441145c2e9e078577.createPane(
+            var pane_223cebffdee3ece7310ddf01fce14630 = map_cd503f118d0bcef49a9e612ef7aba812.createPane(
                 "bsqPane6");
-            pane_372cd5165eadbad4f394d3f3bbc0b52b.style.zIndex = 494;
+            pane_223cebffdee3ece7310ddf01fce14630.style.zIndex = 494;
             
         
     
-            var image_overlay_98705d596d85509ca42fa030f3a1ef1b = L.imageOverlay(
+            var image_overlay_367e28d922838dbfe3a419389cf9076f = L.imageOverlay(
                 "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR42mNgAAIAAAUAAen63NgAAAAASUVORK5CYII=",
                 [[-28.3, 152.99999999999997], [-25.999999999999996, 154.49999999999997]],
                 {
@@ -2574,13 +2837,13 @@
             );
         
     
-            var pane_ec76bd02b4e9025359efcf46d582a318 = map_21c2ddea183fb2d441145c2e9e078577.createPane(
+            var pane_b017be8bc8fc274a9e32c64af7242802 = map_cd503f118d0bcef49a9e612ef7aba812.createPane(
                 "bsqPane7");
-            pane_ec76bd02b4e9025359efcf46d582a318.style.zIndex = 493;
+            pane_b017be8bc8fc274a9e32c64af7242802.style.zIndex = 493;
             
         
     
-            var image_overlay_6d4b56e14a6cd92b5ecab17bc065a7b4 = L.imageOverlay(
+            var image_overlay_48c1899ff8068ee8f1f08bbe604c9db9 = L.imageOverlay(
                 "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR42mNgAAIAAAUAAen63NgAAAAASUVORK5CYII=",
                 [[-28.3, 152.99999999999997], [-25.999999999999996, 154.49999999999997]],
                 {
@@ -2592,13 +2855,13 @@
             );
         
     
-            var pane_3a38a750e0a32b59135cc07906051cf2 = map_21c2ddea183fb2d441145c2e9e078577.createPane(
+            var pane_ca75aa2f44e453413e2b72487a0245b2 = map_cd503f118d0bcef49a9e612ef7aba812.createPane(
                 "bsqPane8");
-            pane_3a38a750e0a32b59135cc07906051cf2.style.zIndex = 492;
+            pane_ca75aa2f44e453413e2b72487a0245b2.style.zIndex = 492;
             
         
     
-            var image_overlay_fc7619df1a22e9dd8cc42776a6081971 = L.imageOverlay(
+            var image_overlay_b4ee20bf5203ab02f716d808360909cf = L.imageOverlay(
                 "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR42mNgAAIAAAUAAen63NgAAAAASUVORK5CYII=",
                 [[-28.3, 152.99999999999997], [-25.999999999999996, 154.49999999999997]],
                 {
@@ -2610,13 +2873,13 @@
             );
         
     
-            var pane_4f481fb0fdc8b910c675819738bda673 = map_21c2ddea183fb2d441145c2e9e078577.createPane(
+            var pane_fc3966e661d38f8820ae7c40a64a724f = map_cd503f118d0bcef49a9e612ef7aba812.createPane(
                 "bsqPane9");
-            pane_4f481fb0fdc8b910c675819738bda673.style.zIndex = 491;
+            pane_fc3966e661d38f8820ae7c40a64a724f.style.zIndex = 491;
             
         
     
-            var image_overlay_123ac46f52dc4ac8a4dab39165bbec10 = L.imageOverlay(
+            var image_overlay_545c30952695b5df5246442d95b90d5d = L.imageOverlay(
                 "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR42mNgAAIAAAUAAen63NgAAAAASUVORK5CYII=",
                 [[-28.3, 152.99999999999997], [-25.999999999999996, 154.49999999999997]],
                 {
@@ -2628,13 +2891,13 @@
             );
         
     
-            var pane_3dd94b1cf7eb08c6950b96cca964c6b8 = map_21c2ddea183fb2d441145c2e9e078577.createPane(
+            var pane_e7b7507c304a8fd4f5eeea79319a1226 = map_cd503f118d0bcef49a9e612ef7aba812.createPane(
                 "bsqPane10");
-            pane_3dd94b1cf7eb08c6950b96cca964c6b8.style.zIndex = 490;
+            pane_e7b7507c304a8fd4f5eeea79319a1226.style.zIndex = 490;
             
         
     
-            var image_overlay_43973fa5ada1cd89478d1453a1dab91f = L.imageOverlay(
+            var image_overlay_c3291961d03db7a93809b4b2570ebac6 = L.imageOverlay(
                 "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR42mNgAAIAAAUAAen63NgAAAAASUVORK5CYII=",
                 [[-28.3, 152.99999999999997], [-25.999999999999996, 154.49999999999997]],
                 {
@@ -2646,13 +2909,13 @@
             );
         
     
-            var pane_af3d7bfe473c3bc71fff44ee8aa1f03e = map_21c2ddea183fb2d441145c2e9e078577.createPane(
+            var pane_42689c455e893e098abb3f1ff3b55629 = map_cd503f118d0bcef49a9e612ef7aba812.createPane(
                 "bsqPane11");
-            pane_af3d7bfe473c3bc71fff44ee8aa1f03e.style.zIndex = 489;
+            pane_42689c455e893e098abb3f1ff3b55629.style.zIndex = 489;
             
         
     
-            var image_overlay_942d307ba2387a8aba178b011cb70a51 = L.imageOverlay(
+            var image_overlay_3e738be64ff1b3fd193bae5ea7028dcd = L.imageOverlay(
                 "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR42mNgAAIAAAUAAen63NgAAAAASUVORK5CYII=",
                 [[-28.3, 152.99999999999997], [-25.999999999999996, 154.49999999999997]],
                 {
@@ -2664,13 +2927,13 @@
             );
         
     
-            var pane_4245a39c9f327033835f84639a6cd724 = map_21c2ddea183fb2d441145c2e9e078577.createPane(
+            var pane_bb7dc4f7cfc6a5283dc28197c3237154 = map_cd503f118d0bcef49a9e612ef7aba812.createPane(
                 "bsqPane12");
-            pane_4245a39c9f327033835f84639a6cd724.style.zIndex = 488;
+            pane_bb7dc4f7cfc6a5283dc28197c3237154.style.zIndex = 488;
             
         
     
-            var image_overlay_162fcee225e51678514ebe6aa029cb40 = L.imageOverlay(
+            var image_overlay_8ece5a4f4cf97f9369181b016443c8bd = L.imageOverlay(
                 "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR42mNgAAIAAAUAAen63NgAAAAASUVORK5CYII=",
                 [[-28.3, 152.99999999999997], [-25.999999999999996, 154.49999999999997]],
                 {
@@ -2682,13 +2945,13 @@
             );
         
     
-            var pane_6047d3e02e4a1afbeb5a6c7d40a67022 = map_21c2ddea183fb2d441145c2e9e078577.createPane(
+            var pane_8c5ded94d4e7690435ef844131133f06 = map_cd503f118d0bcef49a9e612ef7aba812.createPane(
                 "bsqPane13");
-            pane_6047d3e02e4a1afbeb5a6c7d40a67022.style.zIndex = 487;
+            pane_8c5ded94d4e7690435ef844131133f06.style.zIndex = 487;
             
         
     
-            var image_overlay_30f2d917e97e5a9f8878e340eb89f14f = L.imageOverlay(
+            var image_overlay_802505d7a04777772cb461e6f13fd098 = L.imageOverlay(
                 "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR42mNgAAIAAAUAAen63NgAAAAASUVORK5CYII=",
                 [[-28.3, 152.99999999999997], [-25.999999999999996, 154.49999999999997]],
                 {
@@ -2700,13 +2963,13 @@
             );
         
     
-            var pane_337a707a4636167fb7d17d3678a15ea7 = map_21c2ddea183fb2d441145c2e9e078577.createPane(
+            var pane_54bebd93f38c5f0f35ba81b61fc379e3 = map_cd503f118d0bcef49a9e612ef7aba812.createPane(
                 "bsqPane14");
-            pane_337a707a4636167fb7d17d3678a15ea7.style.zIndex = 486;
+            pane_54bebd93f38c5f0f35ba81b61fc379e3.style.zIndex = 486;
             
         
     
-            var image_overlay_db627c43987845373bfc8ca4daa41cd9 = L.imageOverlay(
+            var image_overlay_7ec5495d82b853ae98d10a89ec95accf = L.imageOverlay(
                 "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR42mNgAAIAAAUAAen63NgAAAAASUVORK5CYII=",
                 [[-28.3, 152.99999999999997], [-25.999999999999996, 154.49999999999997]],
                 {
@@ -2718,13 +2981,13 @@
             );
         
     
-            var pane_ccc3a602ef12086d3271404fc4880858 = map_21c2ddea183fb2d441145c2e9e078577.createPane(
+            var pane_de91bc2ef42352d59b62a73904b5d53e = map_cd503f118d0bcef49a9e612ef7aba812.createPane(
                 "bsqPane15");
-            pane_ccc3a602ef12086d3271404fc4880858.style.zIndex = 485;
+            pane_de91bc2ef42352d59b62a73904b5d53e.style.zIndex = 485;
             
         
     
-            var image_overlay_6107c3689bf157debf2274d46d4f3d58 = L.imageOverlay(
+            var image_overlay_759221876d667a04b4c18c20b86f5088 = L.imageOverlay(
                 "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR42mNgAAIAAAUAAen63NgAAAAASUVORK5CYII=",
                 [[-28.3, 152.99999999999997], [-25.999999999999996, 154.49999999999997]],
                 {
@@ -2736,13 +2999,13 @@
             );
         
     
-            var pane_d604ab744053b83b9820b40991c37926 = map_21c2ddea183fb2d441145c2e9e078577.createPane(
+            var pane_3bced1226e054b04c26c0c89841a68ed = map_cd503f118d0bcef49a9e612ef7aba812.createPane(
                 "bsqPane16");
-            pane_d604ab744053b83b9820b40991c37926.style.zIndex = 484;
+            pane_3bced1226e054b04c26c0c89841a68ed.style.zIndex = 484;
             
         
     
-            var image_overlay_a53dd6d6702d4a6f62f007d76d89e420 = L.imageOverlay(
+            var image_overlay_0f31b29049fc2a146c95d8b82b85ed05 = L.imageOverlay(
                 "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR42mNgAAIAAAUAAen63NgAAAAASUVORK5CYII=",
                 [[-28.3, 152.99999999999997], [-25.999999999999996, 154.49999999999997]],
                 {
@@ -2754,13 +3017,13 @@
             );
         
     
-            var pane_4167a410a14790e55d75c0d57dabed43 = map_21c2ddea183fb2d441145c2e9e078577.createPane(
+            var pane_1efbbc02e1813422b096e229551d1044 = map_cd503f118d0bcef49a9e612ef7aba812.createPane(
                 "bsqPane17");
-            pane_4167a410a14790e55d75c0d57dabed43.style.zIndex = 483;
+            pane_1efbbc02e1813422b096e229551d1044.style.zIndex = 483;
             
         
     
-            var image_overlay_c4fcba789605b9415db30334b9c8a915 = L.imageOverlay(
+            var image_overlay_2f0a367a3976e1cf3eb6bd7931913deb = L.imageOverlay(
                 "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR42mNgAAIAAAUAAen63NgAAAAASUVORK5CYII=",
                 [[-28.3, 152.99999999999997], [-25.999999999999996, 154.49999999999997]],
                 {
@@ -2772,13 +3035,13 @@
             );
         
     
-            var pane_40999725d7002270d76cd790d1dc9e81 = map_21c2ddea183fb2d441145c2e9e078577.createPane(
+            var pane_e65b65504e18463cb2ceb32d99d64af4 = map_cd503f118d0bcef49a9e612ef7aba812.createPane(
                 "bsqPane18");
-            pane_40999725d7002270d76cd790d1dc9e81.style.zIndex = 482;
+            pane_e65b65504e18463cb2ceb32d99d64af4.style.zIndex = 482;
             
         
     
-            var image_overlay_2cc484682a81e9e53ede9a56d10e83df = L.imageOverlay(
+            var image_overlay_41d0668fcaabfb989991c82e53a6a6b4 = L.imageOverlay(
                 "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR42mNgAAIAAAUAAen63NgAAAAASUVORK5CYII=",
                 [[-28.3, 152.99999999999997], [-25.999999999999996, 154.49999999999997]],
                 {
@@ -2790,13 +3053,13 @@
             );
         
     
-            var pane_09c5b6ccacc70262d734dffd95382674 = map_21c2ddea183fb2d441145c2e9e078577.createPane(
+            var pane_7fcf610be0d579b34969cd20b7c41ed9 = map_cd503f118d0bcef49a9e612ef7aba812.createPane(
                 "bsqPane19");
-            pane_09c5b6ccacc70262d734dffd95382674.style.zIndex = 481;
+            pane_7fcf610be0d579b34969cd20b7c41ed9.style.zIndex = 481;
             
         
     
-            var image_overlay_221913ce664f971ae3e5b1ac733651c9 = L.imageOverlay(
+            var image_overlay_092a09c2b6f1c1fdb2e1e71d359807b5 = L.imageOverlay(
                 "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR42mNgAAIAAAUAAen63NgAAAAASUVORK5CYII=",
                 [[-28.3, 152.99999999999997], [-25.999999999999996, 154.49999999999997]],
                 {
@@ -2808,13 +3071,13 @@
             );
         
     
-            var pane_326af5eb383ee389c783d203f243bbde = map_21c2ddea183fb2d441145c2e9e078577.createPane(
+            var pane_b7f0579ecb3feaf1c400f1dd16e34617 = map_cd503f118d0bcef49a9e612ef7aba812.createPane(
                 "bsqPane20");
-            pane_326af5eb383ee389c783d203f243bbde.style.zIndex = 480;
+            pane_b7f0579ecb3feaf1c400f1dd16e34617.style.zIndex = 480;
             
         
     
-            var image_overlay_d5fabdd42041bcaf44ac5cb3fb6e99ed = L.imageOverlay(
+            var image_overlay_737ce1a0e18b8fb9e24d5934526f8dcc = L.imageOverlay(
                 "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR42mNgAAIAAAUAAen63NgAAAAASUVORK5CYII=",
                 [[-28.3, 152.99999999999997], [-25.999999999999996, 154.49999999999997]],
                 {
@@ -2826,13 +3089,13 @@
             );
         
     
-            var pane_7d9eba24943cf20e6d02fcaefe9aeece = map_21c2ddea183fb2d441145c2e9e078577.createPane(
+            var pane_d296d466007120e9574ee8e483c813fe = map_cd503f118d0bcef49a9e612ef7aba812.createPane(
                 "bsqPane21");
-            pane_7d9eba24943cf20e6d02fcaefe9aeece.style.zIndex = 479;
+            pane_d296d466007120e9574ee8e483c813fe.style.zIndex = 479;
             
         
     
-            var image_overlay_1ae48da2e230288e97d60a3e8562c522 = L.imageOverlay(
+            var image_overlay_f3e15d600545ed6932e9e6333ca2eb51 = L.imageOverlay(
                 "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR42mNgAAIAAAUAAen63NgAAAAASUVORK5CYII=",
                 [[-28.3, 152.99999999999997], [-25.999999999999996, 154.49999999999997]],
                 {
@@ -2844,13 +3107,13 @@
             );
         
     
-            var pane_7c7d6f8459e353d84716b498def27e06 = map_21c2ddea183fb2d441145c2e9e078577.createPane(
+            var pane_13cdd651f0e815687b20d8c0e235e81d = map_cd503f118d0bcef49a9e612ef7aba812.createPane(
                 "bsqPane22");
-            pane_7c7d6f8459e353d84716b498def27e06.style.zIndex = 478;
+            pane_13cdd651f0e815687b20d8c0e235e81d.style.zIndex = 478;
             
         
     
-            var image_overlay_7ddaddd88b1fa202a976d9ff337888fe = L.imageOverlay(
+            var image_overlay_6eb2f1327f8242fd55718284fdf39846 = L.imageOverlay(
                 "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR42mNgAAIAAAUAAen63NgAAAAASUVORK5CYII=",
                 [[-28.3, 152.99999999999997], [-25.999999999999996, 154.49999999999997]],
                 {
@@ -2862,13 +3125,13 @@
             );
         
     
-            var pane_b5399065eec147bd7e921b24fb12c49a = map_21c2ddea183fb2d441145c2e9e078577.createPane(
+            var pane_499addb8ea6ab6697e5d42725b898c6e = map_cd503f118d0bcef49a9e612ef7aba812.createPane(
                 "bsqPane23");
-            pane_b5399065eec147bd7e921b24fb12c49a.style.zIndex = 477;
+            pane_499addb8ea6ab6697e5d42725b898c6e.style.zIndex = 477;
             
         
     
-            var image_overlay_f76ef11e283d5fcaa054762c2168d8df = L.imageOverlay(
+            var image_overlay_0299517651ee0e4271b0489f30ae322e = L.imageOverlay(
                 "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR42mNgAAIAAAUAAen63NgAAAAASUVORK5CYII=",
                 [[-28.3, 152.99999999999997], [-25.999999999999996, 154.49999999999997]],
                 {
@@ -2880,13 +3143,13 @@
             );
         
     
-            var pane_5e2e5f5e1e402a9cb332d466f7a98a21 = map_21c2ddea183fb2d441145c2e9e078577.createPane(
+            var pane_5d3ea073cb5daeb4560c5c350542d79f = map_cd503f118d0bcef49a9e612ef7aba812.createPane(
                 "bsqPane24");
-            pane_5e2e5f5e1e402a9cb332d466f7a98a21.style.zIndex = 476;
+            pane_5d3ea073cb5daeb4560c5c350542d79f.style.zIndex = 476;
             
         
     
-            var image_overlay_1aeb7c4ddcb2e4a1baa7716af2323233 = L.imageOverlay(
+            var image_overlay_af29a4622b1a46c797d5894335954d71 = L.imageOverlay(
                 "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR42mNgAAIAAAUAAen63NgAAAAASUVORK5CYII=",
                 [[-28.3, 152.99999999999997], [-25.999999999999996, 154.49999999999997]],
                 {
@@ -2898,13 +3161,13 @@
             );
         
     
-            var pane_26dcad963a2224815d4b8369ab349fa8 = map_21c2ddea183fb2d441145c2e9e078577.createPane(
+            var pane_23dfddeb1211b1ace135da1a8a7d21ce = map_cd503f118d0bcef49a9e612ef7aba812.createPane(
                 "bsqPane25");
-            pane_26dcad963a2224815d4b8369ab349fa8.style.zIndex = 475;
+            pane_23dfddeb1211b1ace135da1a8a7d21ce.style.zIndex = 475;
             
         
     
-            var image_overlay_59553b54ca470c7f293439978c7147e6 = L.imageOverlay(
+            var image_overlay_2012dae04811c47951789c054a370187 = L.imageOverlay(
                 "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR42mNgAAIAAAUAAen63NgAAAAASUVORK5CYII=",
                 [[-28.3, 152.99999999999997], [-25.999999999999996, 154.49999999999997]],
                 {
@@ -2916,13 +3179,13 @@
             );
         
     
-            var pane_a879d70a3a2e15f36640c570150a1546 = map_21c2ddea183fb2d441145c2e9e078577.createPane(
+            var pane_de6f56d874dfab6b6b5b09db1861fd67 = map_cd503f118d0bcef49a9e612ef7aba812.createPane(
                 "bsqPane26");
-            pane_a879d70a3a2e15f36640c570150a1546.style.zIndex = 474;
+            pane_de6f56d874dfab6b6b5b09db1861fd67.style.zIndex = 474;
             
         
     
-            var image_overlay_0ee20dc47814157545fa5fd0902b3e9f = L.imageOverlay(
+            var image_overlay_b77b58ee3079640036f78d1ffbe2a76f = L.imageOverlay(
                 "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR42mNgAAIAAAUAAen63NgAAAAASUVORK5CYII=",
                 [[-28.3, 152.99999999999997], [-25.999999999999996, 154.49999999999997]],
                 {
@@ -2934,13 +3197,13 @@
             );
         
     
-            var pane_1629d08b3f87ed0ffed3ffc6a6999098 = map_21c2ddea183fb2d441145c2e9e078577.createPane(
+            var pane_be0c17e3b04c195cf99a31ddaec6da27 = map_cd503f118d0bcef49a9e612ef7aba812.createPane(
                 "bsqPane27");
-            pane_1629d08b3f87ed0ffed3ffc6a6999098.style.zIndex = 473;
+            pane_be0c17e3b04c195cf99a31ddaec6da27.style.zIndex = 473;
             
         
     
-            var image_overlay_8e675f18c01c8ca1350905176438a7c3 = L.imageOverlay(
+            var image_overlay_dc3436eaaeaaa4171468cbdac6ecad1e = L.imageOverlay(
                 "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR42mNgAAIAAAUAAen63NgAAAAASUVORK5CYII=",
                 [[-28.3, 152.99999999999997], [-25.999999999999996, 154.49999999999997]],
                 {
@@ -2952,13 +3215,13 @@
             );
         
     
-            var pane_cc1ba2c50d1e5e5f03d4017cc700158c = map_21c2ddea183fb2d441145c2e9e078577.createPane(
+            var pane_49593c3d107cb43507ab2b48bb0eec42 = map_cd503f118d0bcef49a9e612ef7aba812.createPane(
                 "bsqPane28");
-            pane_cc1ba2c50d1e5e5f03d4017cc700158c.style.zIndex = 472;
+            pane_49593c3d107cb43507ab2b48bb0eec42.style.zIndex = 472;
             
         
     
-            var image_overlay_85636d97fb6d1da65f644577af538741 = L.imageOverlay(
+            var image_overlay_4af98d6d5c1ff60a24db49df43795261 = L.imageOverlay(
                 "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR42mNgAAIAAAUAAen63NgAAAAASUVORK5CYII=",
                 [[-28.3, 152.99999999999997], [-25.999999999999996, 154.49999999999997]],
                 {
@@ -2970,13 +3233,13 @@
             );
         
     
-            var pane_35ed7d8d906f67935ff72ec09ac07050 = map_21c2ddea183fb2d441145c2e9e078577.createPane(
+            var pane_7d9dccda9d7628d2bcad91804aa00699 = map_cd503f118d0bcef49a9e612ef7aba812.createPane(
                 "bsqPane29");
-            pane_35ed7d8d906f67935ff72ec09ac07050.style.zIndex = 471;
+            pane_7d9dccda9d7628d2bcad91804aa00699.style.zIndex = 471;
             
         
     
-            var image_overlay_7a26b9ce4bf88d2e20b7713258ec61f7 = L.imageOverlay(
+            var image_overlay_754d22a66b2b2a773ac734e22ac391fc = L.imageOverlay(
                 "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR42mNgAAIAAAUAAen63NgAAAAASUVORK5CYII=",
                 [[-28.3, 152.99999999999997], [-25.999999999999996, 154.49999999999997]],
                 {
@@ -2988,13 +3251,13 @@
             );
         
     
-            var pane_bb03b35688ac913bcba47e1f75a739ac = map_21c2ddea183fb2d441145c2e9e078577.createPane(
+            var pane_7ac24868ad93010d0c234f1c2a1bebc4 = map_cd503f118d0bcef49a9e612ef7aba812.createPane(
                 "bsqPane30");
-            pane_bb03b35688ac913bcba47e1f75a739ac.style.zIndex = 470;
+            pane_7ac24868ad93010d0c234f1c2a1bebc4.style.zIndex = 470;
             
         
     
-            var image_overlay_986c7660890c02707b0f832cf6625d6e = L.imageOverlay(
+            var image_overlay_25a7c03a16bd81bb2f2499b5d2dea8e2 = L.imageOverlay(
                 "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR42mNgAAIAAAUAAen63NgAAAAASUVORK5CYII=",
                 [[-28.3, 152.99999999999997], [-25.999999999999996, 154.49999999999997]],
                 {
@@ -3006,13 +3269,13 @@
             );
         
     
-            var pane_6f870551ed97f8bdeea6cb1e144a5695 = map_21c2ddea183fb2d441145c2e9e078577.createPane(
+            var pane_cd25bc5aa42e777f2a0fb370da8c98aa = map_cd503f118d0bcef49a9e612ef7aba812.createPane(
                 "bsqPane31");
-            pane_6f870551ed97f8bdeea6cb1e144a5695.style.zIndex = 469;
+            pane_cd25bc5aa42e777f2a0fb370da8c98aa.style.zIndex = 469;
             
         
     
-            var image_overlay_6fc6085d281c8edc8a6fa52901f08881 = L.imageOverlay(
+            var image_overlay_6e8f8c6963ee3b56ec54d6e369164dc3 = L.imageOverlay(
                 "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR42mNgAAIAAAUAAen63NgAAAAASUVORK5CYII=",
                 [[-28.3, 152.99999999999997], [-25.999999999999996, 154.49999999999997]],
                 {
@@ -3024,13 +3287,13 @@
             );
         
     
-            var pane_9e64eb3471c6e6add3f73ec744aec740 = map_21c2ddea183fb2d441145c2e9e078577.createPane(
+            var pane_209600748a2123c6abf974391492f460 = map_cd503f118d0bcef49a9e612ef7aba812.createPane(
                 "bsqPane32");
-            pane_9e64eb3471c6e6add3f73ec744aec740.style.zIndex = 468;
+            pane_209600748a2123c6abf974391492f460.style.zIndex = 468;
             
         
     
-            var image_overlay_22a23de0729350fb6ed19678c0dc8585 = L.imageOverlay(
+            var image_overlay_c0549ad333edd1023284fd6c4d05e963 = L.imageOverlay(
                 "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR42mNgAAIAAAUAAen63NgAAAAASUVORK5CYII=",
                 [[-28.3, 152.99999999999997], [-25.999999999999996, 154.49999999999997]],
                 {
@@ -3042,13 +3305,13 @@
             );
         
     
-            var pane_239dfbea7060af23fb7f066b342df5a9 = map_21c2ddea183fb2d441145c2e9e078577.createPane(
+            var pane_77bc7fc6113fafa2b31931e4ee7bd715 = map_cd503f118d0bcef49a9e612ef7aba812.createPane(
                 "bsqPane33");
-            pane_239dfbea7060af23fb7f066b342df5a9.style.zIndex = 467;
+            pane_77bc7fc6113fafa2b31931e4ee7bd715.style.zIndex = 467;
             
         
     
-            var image_overlay_03e890fd6c3773858db2ddba3fe0884d = L.imageOverlay(
+            var image_overlay_8d63608590d762e20af0a12fd6ee9817 = L.imageOverlay(
                 "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR42mNgAAIAAAUAAen63NgAAAAASUVORK5CYII=",
                 [[-28.3, 152.99999999999997], [-25.999999999999996, 154.49999999999997]],
                 {
@@ -3060,43 +3323,43 @@
             );
         
     
-    var color_map_48deb57d4548272b32fdb155db3d43e3 = {};
+    var color_map_69174cba3508e5181ae5bdd392bb1b54 = {};
 
     
-    color_map_48deb57d4548272b32fdb155db3d43e3.color = d3.scale.threshold()
+    color_map_69174cba3508e5181ae5bdd392bb1b54.color = d3.scale.threshold()
               .domain([0.0, 0.20040080160320642, 0.40080160320641284, 0.6012024048096193, 0.8016032064128257, 1.002004008016032, 1.2024048096192386, 1.402805611222445, 1.6032064128256514, 1.8036072144288577, 2.004008016032064, 2.2044088176352705, 2.404809619238477, 2.6052104208416833, 2.80561122244489, 3.006012024048096, 3.2064128256513027, 3.406813627254509, 3.6072144288577155, 3.8076152304609217, 4.008016032064128, 4.208416833667335, 4.408817635270541, 4.609218436873747, 4.809619238476954, 5.01002004008016, 5.210420841683367, 5.410821643286573, 5.61122244488978, 5.811623246492986, 6.012024048096192, 6.212424849699399, 6.412825651302605, 6.613226452905812, 6.813627254509018, 7.014028056112225, 7.214428857715431, 7.414829659318637, 7.615230460921843, 7.81563126252505, 8.016032064128256, 8.216432865731463, 8.41683366733467, 8.617234468937875, 8.817635270541082, 9.01803607214429, 9.218436873747494, 9.418837675350701, 9.619238476953909, 9.819639278557114, 10.02004008016032, 10.220440881763528, 10.420841683366733, 10.62124248496994, 10.821643286573146, 11.022044088176353, 11.22244488977956, 11.422845691382765, 11.623246492985972, 11.823647294589179, 12.024048096192384, 12.224448897795591, 12.424849699398798, 12.625250501002004, 12.82565130260521, 13.026052104208416, 13.226452905811623, 13.42685370741483, 13.627254509018035, 13.827655310621243, 14.02805611222445, 14.228456913827655, 14.428857715430862, 14.629258517034069, 14.829659318637274, 15.030060120240481, 15.230460921843687, 15.430861723446894, 15.6312625250501, 15.831663326653306, 16.03206412825651, 16.23246492985972, 16.432865731462925, 16.63326653306613, 16.83366733466934, 17.034068136272545, 17.23446893787575, 17.43486973947896, 17.635270541082164, 17.83567134268537, 18.03607214428858, 18.236472945891784, 18.43687374749499, 18.637274549098198, 18.837675350701403, 19.03807615230461, 19.238476953907817, 19.438877755511022, 19.639278557114228, 19.839679358717436, 20.04008016032064, 20.240480961923847, 20.440881763527056, 20.64128256513026, 20.841683366733466, 21.04208416833667, 21.24248496993988, 21.442885771543086, 21.64328657314629, 21.8436873747495, 22.044088176352705, 22.24448897795591, 22.44488977955912, 22.645290581162325, 22.84569138276553, 23.04609218436874, 23.246492985971944, 23.44689378757515, 23.647294589178358, 23.847695390781563, 24.04809619238477, 24.248496993987978, 24.448897795591183, 24.649298597194388, 24.849699398797597, 25.050100200400802, 25.250501002004007, 25.450901803607213, 25.65130260521042, 25.851703406813627, 26.052104208416832, 26.25250501002004, 26.452905811623246, 26.65330661322645, 26.85370741482966, 27.054108216432866, 27.25450901803607, 27.45490981963928, 27.655310621242485, 27.85571142284569, 28.0561122244489, 28.256513026052104, 28.45691382765531, 28.65731462925852, 28.857715430861724, 29.05811623246493, 29.258517034068138, 29.458917835671343, 29.65931863727455, 29.859719438877754, 30.060120240480963, 30.260521042084168, 30.460921843687373, 30.661322645290582, 30.861723446893787, 31.062124248496993, 31.2625250501002, 31.462925851703407, 31.663326653306612, 31.86372745490982, 32.06412825651302, 32.26452905811623, 32.46492985971944, 32.66533066132264, 32.86573146292585, 33.06613226452906, 33.26653306613226, 33.46693386773547, 33.66733466933868, 33.86773547094188, 34.06813627254509, 34.2685370741483, 34.4689378757515, 34.66933867735471, 34.86973947895792, 35.07014028056112, 35.27054108216433, 35.47094188376754, 35.67134268537074, 35.87174348697395, 36.07214428857716, 36.27254509018036, 36.47294589178357, 36.673346693386776, 36.87374749498998, 37.07414829659319, 37.274549098196395, 37.4749498997996, 37.675350701402806, 37.875751503006015, 38.07615230460922, 38.276553106212425, 38.476953907815634, 38.677354709418836, 38.877755511022045, 39.078156312625254, 39.278557114228455, 39.478957915831664, 39.67935871743487, 39.879759519038075, 40.08016032064128, 40.28056112224449, 40.480961923847694, 40.6813627254509, 40.88176352705411, 41.08216432865731, 41.28256513026052, 41.482965931863724, 41.68336673346693, 41.88376753507014, 42.08416833667334, 42.28456913827655, 42.48496993987976, 42.68537074148296, 42.88577154308617, 43.08617234468938, 43.28657314629258, 43.48697394789579, 43.687374749499, 43.8877755511022, 44.08817635270541, 44.28857715430862, 44.48897795591182, 44.68937875751503, 44.88977955911824, 45.09018036072144, 45.29058116232465, 45.49098196392786, 45.69138276553106, 45.89178356713427, 46.09218436873748, 46.29258517034068, 46.49298597194389, 46.6933867735471, 46.8937875751503, 47.09418837675351, 47.294589178356716, 47.49498997995992, 47.69539078156313, 47.895791583166336, 48.09619238476954, 48.296593186372746, 48.496993987975955, 48.69739478957916, 48.897795591182366, 49.098196392785574, 49.298597194388776, 49.498997995991985, 49.699398797595194, 49.899799599198396, 50.100200400801604, 50.300601202404806, 50.501002004008015, 50.701402805611224, 50.901803607214426, 51.102204408817634, 51.30260521042084, 51.503006012024045, 51.703406813627254, 51.90380761523046, 52.104208416833664, 52.30460921843687, 52.50501002004008, 52.705410821643284, 52.90581162324649, 53.1062124248497, 53.3066132264529, 53.50701402805611, 53.70741482965932, 53.90781563126252, 54.10821643286573, 54.30861723446894, 54.50901803607214, 54.70941883767535, 54.90981963927856, 55.11022044088176, 55.31062124248497, 55.51102204408818, 55.71142284569138, 55.91182364729459, 56.1122244488978, 56.312625250501, 56.51302605210421, 56.71342685370742, 56.91382765531062, 57.11422845691383, 57.31462925851704, 57.51503006012024, 57.71543086172345, 57.91583166332666, 58.11623246492986, 58.31663326653307, 58.517034068136276, 58.71743486973948, 58.91783567134269, 59.11823647294589, 59.3186372745491, 59.519038076152306, 59.71943887775551, 59.91983967935872, 60.120240480961925, 60.32064128256513, 60.521042084168336, 60.721442885771545, 60.921843687374746, 61.122244488977955, 61.322645290581164, 61.523046092184366, 61.723446893787575, 61.92384769539078, 62.124248496993985, 62.324649298597194, 62.5250501002004, 62.725450901803605, 62.92585170340681, 63.12625250501002, 63.326653306613224, 63.52705410821643, 63.72745490981964, 63.92785571142284, 64.12825651302605, 64.32865731462925, 64.52905811623246, 64.72945891783567, 64.92985971943888, 65.13026052104209, 65.33066132264528, 65.53106212424849, 65.7314629258517, 65.93186372745491, 66.13226452905812, 66.33266533066133, 66.53306613226452, 66.73346693386773, 66.93386773547094, 67.13426853707415, 67.33466933867736, 67.53507014028057, 67.73547094188376, 67.93587174348697, 68.13627254509018, 68.33667334669339, 68.5370741482966, 68.7374749498998, 68.937875751503, 69.13827655310621, 69.33867735470942, 69.53907815631263, 69.73947895791584, 69.93987975951904, 70.14028056112224, 70.34068136272545, 70.54108216432866, 70.74148296593187, 70.94188376753507, 71.14228456913828, 71.34268537074148, 71.54308617234469, 71.7434869739479, 71.9438877755511, 72.14428857715431, 72.34468937875752, 72.54509018036072, 72.74549098196393, 72.94589178356713, 73.14629258517034, 73.34669338677355, 73.54709418837675, 73.74749498997996, 73.94789579158316, 74.14829659318637, 74.34869739478958, 74.54909819639279, 74.74949899799599, 74.9498997995992, 75.1503006012024, 75.35070140280561, 75.55110220440882, 75.75150300601203, 75.95190380761522, 76.15230460921843, 76.35270541082164, 76.55310621242485, 76.75350701402806, 76.95390781563127, 77.15430861723446, 77.35470941883767, 77.55511022044088, 77.75551102204409, 77.9559118236473, 78.15631262525051, 78.3567134268537, 78.55711422845691, 78.75751503006012, 78.95791583166333, 79.15831663326654, 79.35871743486975, 79.55911823647294, 79.75951903807615, 79.95991983967936, 80.16032064128257, 80.36072144288578, 80.56112224448898, 80.76152304609218, 80.96192384769539, 81.1623246492986, 81.3627254509018, 81.56312625250501, 81.76352705410822, 81.96392785571142, 82.16432865731463, 82.36472945891784, 82.56513026052104, 82.76553106212425, 82.96593186372745, 83.16633266533066, 83.36673346693387, 83.56713426853707, 83.76753507014028, 83.96793587174349, 84.16833667334669, 84.3687374749499, 84.5691382765531, 84.76953907815631, 84.96993987975952, 85.17034068136273, 85.37074148296593, 85.57114228456913, 85.77154308617234, 85.97194388777555, 86.17234468937876, 86.37274549098197, 86.57314629258516, 86.77354709418837, 86.97394789579158, 87.17434869739479, 87.374749498998, 87.57515030060121, 87.7755511022044, 87.97595190380761, 88.17635270541082, 88.37675350701403, 88.57715430861724, 88.77755511022045, 88.97795591182364, 89.17835671342685, 89.37875751503006, 89.57915831663327, 89.77955911823648, 89.97995991983969, 90.18036072144288, 90.38076152304609, 90.5811623246493, 90.78156312625251, 90.98196392785572, 91.18236472945891, 91.38276553106212, 91.58316633266533, 91.78356713426854, 91.98396793587175, 92.18436873747495, 92.38476953907815, 92.58517034068136, 92.78557114228457, 92.98597194388778, 93.18637274549098, 93.3867735470942, 93.58717434869739, 93.7875751503006, 93.9879759519038, 94.18837675350701, 94.38877755511022, 94.58917835671343, 94.78957915831663, 94.98997995991984, 95.19038076152304, 95.39078156312625, 95.59118236472946, 95.79158316633267, 95.99198396793587, 96.19238476953907, 96.39278557114228, 96.59318637274549, 96.7935871743487, 96.99398797595191, 97.1943887775551, 97.39478957915831, 97.59519038076152, 97.79559118236473, 97.99599198396794, 98.19639278557115, 98.39679358717434, 98.59719438877755, 98.79759519038076, 98.99799599198397, 99.19839679358718, 99.39879759519039, 99.59919839679358, 99.79959919839679, 100.0])
               .range(['#30123bff', '#30133eff', '#311441ff', '#311644ff', '#321747ff', '#32194bff', '#331a4eff', '#331c51ff', '#341d54ff', '#341e57ff', '#34205aff', '#35215dff', '#352361ff', '#362464ff', '#362667ff', '#37276aff', '#37296dff', '#382a70ff', '#382b74ff', '#392d77ff', '#392e7aff', '#3a307dff', '#3a3180ff', '#3b3383ff', '#3b3486ff', '#3c358aff', '#3c378dff', '#3d3890ff', '#3d3a93ff', '#3e3b96ff', '#3e3d99ff', '#3f3e9dff', '#3f40a0ff', '#3f41a3ff', '#4042a6ff', '#4044a9ff', '#4145acff', '#4147aeff', '#4148b0ff', '#4149b1ff', '#414bb3ff', '#424cb5ff', '#424db7ff', '#424fb9ff', '#4250bbff', '#4251bdff', '#4253beff', '#4254c0ff', '#4255c2ff', '#4357c4ff', '#4358c6ff', '#435ac8ff', '#435bcaff', '#435ccbff', '#435ecdff', '#435fcfff', '#4460d1ff', '#4462d3ff', '#4463d5ff', '#4464d7ff', '#4466d8ff', '#4467daff', '#4468dcff', '#456adeff', '#456be0ff', '#456ce2ff', '#456ee4ff', '#456fe5ff', '#4571e7ff', '#4572e9ff', '#4673ebff', '#4675edff', '#4676eeff', '#4577eeff', '#4578efff', '#447aefff', '#447befff', '#447cf0ff', '#437df0ff', '#437ff1ff', '#4380f1ff', '#4281f2ff', '#4283f2ff', '#4184f2ff', '#4185f3ff', '#4186f3ff', '#4088f4ff', '#4089f4ff', '#408af4ff', '#3f8bf5ff', '#3f8df5ff', '#3f8ef6ff', '#3e8ff6ff', '#3e90f7ff', '#3d92f7ff', '#3d93f7ff', '#3d94f8ff', '#3c96f8ff', '#3c97f9ff', '#3c98f9ff', '#3b99faff', '#3b9bfaff', '#3b9cfaff', '#3a9dfbff', '#3a9efbff', '#39a0fcff', '#39a1fcff', '#39a2fcff', '#38a3fbff', '#37a5faff', '#36a6f9ff', '#35a7f8ff', '#34a9f7ff', '#34aaf6ff', '#33abf5ff', '#32acf3ff', '#31aef2ff', '#30aff1ff', '#2fb0f0ff', '#2fb1efff', '#2eb3eeff', '#2db4edff', '#2cb5ecff', '#2bb7eaff', '#2ab8e9ff', '#29b9e8ff', '#29bae7ff', '#28bce6ff', '#27bde5ff', '#26bee4ff', '#25bfe2ff', '#24c1e1ff', '#24c2e0ff', '#23c3dfff', '#22c4deff', '#21c6ddff', '#20c7dcff', '#1fc8dbff', '#1ecad9ff', '#1ecbd8ff', '#1dccd7ff', '#1ccdd6ff', '#1bcfd5ff', '#1bd0d4ff', '#1bd0d2ff', '#1bd1d1ff', '#1bd2d0ff', '#1cd3cfff', '#1cd4cdff', '#1cd5ccff', '#1cd5cbff', '#1dd6c9ff', '#1dd7c8ff', '#1dd8c7ff', '#1ed9c6ff', '#1ed9c4ff', '#1edac3ff', '#1edbc2ff', '#1fdcc0ff', '#1fddbfff', '#1fdebeff', '#1fdebcff', '#20dfbbff', '#20e0baff', '#20e1b9ff', '#20e2b7ff', '#21e2b6ff', '#21e3b5ff', '#21e4b3ff', '#21e5b2ff', '#22e6b1ff', '#22e7afff', '#22e7aeff', '#22e8adff', '#23e9acff', '#23eaaaff', '#23eba9ff', '#23eba8ff', '#24eca6ff', '#25eda5ff', '#27eda3ff', '#28eea2ff', '#2aeea0ff', '#2cef9eff', '#2eef9dff', '#2fef9bff', '#31f099ff', '#33f098ff', '#34f196ff', '#36f195ff', '#38f293ff', '#3af291ff', '#3bf390ff', '#3df38eff', '#3ff48cff', '#40f48bff', '#42f489ff', '#44f587ff', '#46f586ff', '#47f684ff', '#49f683ff', '#4bf781ff', '#4df77fff', '#4ef87eff', '#50f87cff', '#52f87aff', '#53f979ff', '#55f977ff', '#57fa75ff', '#59fa74ff', '#5afb72ff', '#5cfb71ff', '#5efc6fff', '#5ffc6dff', '#61fc6cff', '#63fc6aff', '#65fc69ff', '#67fc68ff', '#69fc66ff', '#6bfc65ff', '#6cfc63ff', '#6efc62ff', '#70fc61ff', '#72fc5fff', '#74fc5eff', '#76fc5dff', '#78fc5bff', '#7afc5aff', '#7cfc58ff', '#7dfc57ff', '#7ffc56ff', '#81fc54ff', '#83fc53ff', '#85fc52ff', '#87fc50ff', '#89fc4fff', '#8bfc4dff', '#8dfc4cff', '#8efc4bff', '#90fc49ff', '#92fc48ff', '#94fc46ff', '#96fc45ff', '#98fc44ff', '#9afc42ff', '#9cfc41ff', '#9efc40ff', '#9ffc3eff', '#a1fc3dff', '#a3fc3bff', '#a5fc3bff', '#a6fc3aff', '#a7fb3aff', '#a9fb3aff', '#aafa3aff', '#abf93aff', '#acf939ff', '#aef839ff', '#aff839ff', '#b0f739ff', '#b1f739ff', '#b3f638ff', '#b4f538ff', '#b5f538ff', '#b7f438ff', '#b8f438ff', '#b9f337ff', '#baf337ff', '#bcf237ff', '#bdf237ff', '#bef137ff', '#bff036ff', '#c1f036ff', '#c2ef36ff', '#c3ef36ff', '#c4ee36ff', '#c6ee36ff', '#c7ed35ff', '#c8ec35ff', '#caec35ff', '#cbeb35ff', '#cceb35ff', '#cdea34ff', '#cfea34ff', '#d0e934ff', '#d1e834ff', '#d2e834ff', '#d3e734ff', '#d4e634ff', '#d5e534ff', '#d6e435ff', '#d7e335ff', '#d8e235ff', '#d9e135ff', '#dae035ff', '#dbdf35ff', '#dcde36ff', '#dddd36ff', '#dedc36ff', '#dfdb36ff', '#e0da36ff', '#e1d936ff', '#e1d837ff', '#e2d737ff', '#e3d637ff', '#e4d537ff', '#e5d437ff', '#e6d337ff', '#e7d338ff', '#e8d238ff', '#e9d138ff', '#ead038ff', '#ebcf38ff', '#ecce38ff', '#edcd39ff', '#eecc39ff', '#efcb39ff', '#f0ca39ff', '#f1c939ff', '#f2c839ff', '#f3c73aff', '#f4c63aff', '#f4c539ff', '#f4c439ff', '#f4c239ff', '#f5c138ff', '#f5c038ff', '#f5bf37ff', '#f6be37ff', '#f6bc37ff', '#f6bb36ff', '#f7ba36ff', '#f7b936ff', '#f7b735ff', '#f8b635ff', '#f8b535ff', '#f8b434ff', '#f8b334ff', '#f9b133ff', '#f9b033ff', '#f9af33ff', '#faae32ff', '#faad32ff', '#faab32ff', '#fbaa31ff', '#fba931ff', '#fba830ff', '#fca730ff', '#fca530ff', '#fca42fff', '#fda32fff', '#fda22fff', '#fda02eff', '#fd9f2eff', '#fe9e2eff', '#fe9d2dff', '#fe9c2dff', '#fe9a2cff', '#fe992cff', '#fe972bff', '#fd952aff', '#fd942aff', '#fd9229ff', '#fc9128ff', '#fc8f28ff', '#fc8e27ff', '#fc8c26ff', '#fb8a26ff', '#fb8925ff', '#fb8724ff', '#fa8624ff', '#fa8423ff', '#fa8322ff', '#f98121ff', '#f97f21ff', '#f97e20ff', '#f87c1fff', '#f87b1fff', '#f8791eff', '#f8781dff', '#f7761dff', '#f7741cff', '#f7731bff', '#f6711bff', '#f6701aff', '#f66e19ff', '#f56c19ff', '#f56b18ff', '#f56917ff', '#f46817ff', '#f46616ff', '#f46515ff', '#f36315ff', '#f36214ff', '#f26114ff', '#f15f13ff', '#f15e13ff', '#f05d13ff', '#ef5c12ff', '#ee5a12ff', '#ee5911ff', '#ed5811ff', '#ec5711ff', '#eb5610ff', '#eb5410ff', '#ea530fff', '#e9520fff', '#e9510fff', '#e8500eff', '#e74e0eff', '#e64d0eff', '#e64c0dff', '#e54b0dff', '#e44a0cff', '#e3480cff', '#e3470cff', '#e2460bff', '#e1450bff', '#e0430aff', '#e0420aff', '#df410aff', '#de4009ff', '#de3f09ff', '#dd3d08ff', '#dc3c08ff', '#db3b08ff', '#db3a07ff', '#da3907ff', '#d93706ff', '#d83706ff', '#d73606ff', '#d63506ff', '#d53406ff', '#d33306ff', '#d23205ff', '#d13105ff', '#d03005ff', '#cf3005ff', '#ce2f05ff', '#cd2e05ff', '#cc2d04ff', '#ca2c04ff', '#c92b04ff', '#c82a04ff', '#c72904ff', '#c62904ff', '#c52803ff', '#c42703ff', '#c22603ff', '#c12503ff', '#c02403ff', '#bf2303ff', '#be2302ff', '#bd2202ff', '#bc2102ff', '#bb2002ff', '#b91f02ff', '#b81e02ff', '#b71d01ff', '#b61c01ff', '#b51c01ff', '#b41b01ff', '#b31a01ff', '#b21901ff', '#b01801ff', '#af1801ff', '#ad1701ff', '#ac1601ff', '#aa1601ff', '#a81501ff', '#a71501ff', '#a51401ff', '#a41301ff', '#a21301ff', '#a11201ff', '#9f1201ff', '#9e1101ff', '#9c1101ff', '#9b1001ff', '#990f01ff', '#970f01ff', '#960e01ff', '#940e02ff', '#930d02ff', '#910c02ff', '#900c02ff', '#8e0b02ff', '#8d0b02ff', '#8b0a02ff', '#890902ff', '#880902ff', '#860802ff', '#850802ff', '#830702ff', '#820602ff', '#800602ff', '#7f0502ff', '#7d0502ff', '#7c0402ff', '#7a0403ff']);
     
 
-    color_map_48deb57d4548272b32fdb155db3d43e3.x = d3.scale.linear()
+    color_map_69174cba3508e5181ae5bdd392bb1b54.x = d3.scale.linear()
               .domain([0.0, 100.0])
               .range([0, 450 - 50]);
 
-    color_map_48deb57d4548272b32fdb155db3d43e3.legend = L.control({position: 'topright'});
-    color_map_48deb57d4548272b32fdb155db3d43e3.legend.onAdd = function (map) {var div = L.DomUtil.create('div', 'legend'); return div};
-    color_map_48deb57d4548272b32fdb155db3d43e3.legend.addTo(map_21c2ddea183fb2d441145c2e9e078577);
+    color_map_69174cba3508e5181ae5bdd392bb1b54.legend = L.control({position: 'topright'});
+    color_map_69174cba3508e5181ae5bdd392bb1b54.legend.onAdd = function (map) {var div = L.DomUtil.create('div', 'legend'); return div};
+    color_map_69174cba3508e5181ae5bdd392bb1b54.legend.addTo(map_cd503f118d0bcef49a9e612ef7aba812);
 
-    color_map_48deb57d4548272b32fdb155db3d43e3.xAxis = d3.svg.axis()
-        .scale(color_map_48deb57d4548272b32fdb155db3d43e3.x)
+    color_map_69174cba3508e5181ae5bdd392bb1b54.xAxis = d3.svg.axis()
+        .scale(color_map_69174cba3508e5181ae5bdd392bb1b54.x)
         .orient("top")
         .tickSize(1)
         .tickValues([0.0, '', 14.285714285714286, '', 28.571428571428573, '', 42.857142857142854, '', 57.142857142857146, '', 71.42857142857143, '', 85.71428571428571, '', 100.0, '']);
 
-    color_map_48deb57d4548272b32fdb155db3d43e3.svg = d3.select(".legend.leaflet-control").append("svg")
+    color_map_69174cba3508e5181ae5bdd392bb1b54.svg = d3.select(".legend.leaflet-control").append("svg")
         .attr("id", 'legend')
         .attr("width", 450)
         .attr("height", 40);
 
-    color_map_48deb57d4548272b32fdb155db3d43e3.g = color_map_48deb57d4548272b32fdb155db3d43e3.svg.append("g")
+    color_map_69174cba3508e5181ae5bdd392bb1b54.g = color_map_69174cba3508e5181ae5bdd392bb1b54.svg.append("g")
         .attr("class", "key")
         .attr("fill", "#c4c6cf")
         .attr("transform", "translate(25,16)");
 
-    color_map_48deb57d4548272b32fdb155db3d43e3.g.selectAll("rect")
-        .data(color_map_48deb57d4548272b32fdb155db3d43e3.color.range().map(function(d, i) {
+    color_map_69174cba3508e5181ae5bdd392bb1b54.g.selectAll("rect")
+        .data(color_map_69174cba3508e5181ae5bdd392bb1b54.color.range().map(function(d, i) {
           return {
-            x0: i ? color_map_48deb57d4548272b32fdb155db3d43e3.x(color_map_48deb57d4548272b32fdb155db3d43e3.color.domain()[i - 1]) : color_map_48deb57d4548272b32fdb155db3d43e3.x.range()[0],
-            x1: i < color_map_48deb57d4548272b32fdb155db3d43e3.color.domain().length ? color_map_48deb57d4548272b32fdb155db3d43e3.x(color_map_48deb57d4548272b32fdb155db3d43e3.color.domain()[i]) : color_map_48deb57d4548272b32fdb155db3d43e3.x.range()[1],
+            x0: i ? color_map_69174cba3508e5181ae5bdd392bb1b54.x(color_map_69174cba3508e5181ae5bdd392bb1b54.color.domain()[i - 1]) : color_map_69174cba3508e5181ae5bdd392bb1b54.x.range()[0],
+            x1: i < color_map_69174cba3508e5181ae5bdd392bb1b54.color.domain().length ? color_map_69174cba3508e5181ae5bdd392bb1b54.x(color_map_69174cba3508e5181ae5bdd392bb1b54.color.domain()[i]) : color_map_69174cba3508e5181ae5bdd392bb1b54.x.range()[1],
             z: d
           };
         }))
@@ -3106,64 +3369,64 @@
         .attr("width", function(d) { return d.x1 - d.x0; })
         .style("fill", function(d) { return d.z; });
 
-    color_map_48deb57d4548272b32fdb155db3d43e3.g.call(color_map_48deb57d4548272b32fdb155db3d43e3.xAxis).append("text")
+    color_map_69174cba3508e5181ae5bdd392bb1b54.g.call(color_map_69174cba3508e5181ae5bdd392bb1b54.xAxis).append("text")
         .attr("class", "caption")
         .attr("y", 21)
         .attr("fill", "#c4c6cf")
         .text("Yellowfin Tuna Bite Score (0-100)");
     
-            var layer_control_c6f839a34dc228acc4d2c502e5361302_layers = {
+            var layer_control_95b8d4c8a8a06d692db8f62b41220bc8_layers = {
                 base_layers : {
-                    "Light basemap" : tile_layer_96a8b5f65fa6f360c01e28a2e1d03349,
-                    "Streets basemap" : tile_layer_d6301c907d596afbfaeb326195ecb6d7,
-                    "Satellite basemap" : tile_layer_a74557e01ca5389d9e06d04da4ac3683,
+                    "Light basemap" : tile_layer_f3d5e80b2d75ef8de65a0cb27ba31007,
+                    "Streets basemap" : tile_layer_73f5f866986f6af0da243d2747a7d96a,
+                    "Satellite basemap" : tile_layer_8179c679e412fd6ee82e89c53de20ddf,
                 },
                 overlays :  {
-                    "MBGFC fishing chart (georeferenced)" : image_overlay_f5ec6090cab77651ec640ab87fc5bd9d,
-                    "MBGFC FADs, SFADs \u0026 wave buoys" : feature_group_39f06423010008fbde6b40df373ae884,
-                    "Land outline" : feature_group_eda950dd3dbd083af25383c52df43f6c,
-                    "Bathymetry contours (depth reference)" : feature_group_2af48184af4a35be7422c3e0354a5442,
-                    "Ocean fronts (FSLE)" : image_overlay_e46798223344a4200a2c772e6eb4c7b5,
-                    "Bite Score heatmap (current, high-res)" : image_overlay_7c1cda5e7e0f57437f9b3e116fc28bf2,
-                    "Bite Score heatmap (legacy, coarse - for comparison)" : image_overlay_98705d596d85509ca42fa030f3a1ef1b,
-                    "Factor: SST thermal-front score" : image_overlay_6d4b56e14a6cd92b5ecab17bc065a7b4,
-                    "Factor: Chlorophyll-front score" : image_overlay_fc7619df1a22e9dd8cc42776a6081971,
-                    "Factor: Current-edge score" : image_overlay_123ac46f52dc4ac8a4dab39165bbec10,
-                    "Factor: SSHA / eddy-front score" : image_overlay_43973fa5ada1cd89478d1453a1dab91f,
-                    "Factor: MLD front score" : image_overlay_942d307ba2387a8aba178b011cb70a51,
-                    "Factor: Depth-suitability score" : image_overlay_162fcee225e51678514ebe6aa029cb40,
-                    "Bite Score heatmap v2 (Beta - structure/eddy model)" : image_overlay_30f2d917e97e5a9f8878e340eb89f14f,
-                    "Factor (v2 Beta): SST bell-curve score" : image_overlay_db627c43987845373bfc8ca4daa41cd9,
-                    "Factor (v2 Beta): Chlorophyll optimal-band score" : image_overlay_6107c3689bf157debf2274d46d4f3d58,
-                    "Factor (v2 Beta): Current-edge score (v2 recomputed)" : image_overlay_a53dd6d6702d4a6f62f007d76d89e420,
-                    "Factor (v2 Beta): Depth-suitability score (v2 recomputed)" : image_overlay_c4fcba789605b9415db30334b9c8a915,
-                    "Factor (v2 Beta): MLD gradient score (v2)" : image_overlay_2cc484682a81e9e53ede9a56d10e83df,
-                    "Factor (v2 Beta): Structure proximity score" : image_overlay_221913ce664f971ae3e5b1ac733651c9,
-                    "Factor (v2 Beta): Eddy detection score" : image_overlay_d5fabdd42041bcaf44ac5cb3fb6e99ed,
-                    "Bite Score heatmap Lenigas (SEQ fisherman model)" : image_overlay_1ae48da2e230288e97d60a3e8562c522,
-                    "Factor (Lenigas): EAC axis-position score" : image_overlay_7ddaddd88b1fa202a976d9ff337888fe,
-                    "Factor (Lenigas): EAC convergence-point score" : image_overlay_f76ef11e283d5fcaa054762c2168d8df,
-                    "Factor (Lenigas): Depth-suitability score (Lenigas)" : image_overlay_1aeb7c4ddcb2e4a1baa7716af2323233,
-                    "Factor (Lenigas): Upwelling/downwelling score" : image_overlay_59553b54ca470c7f293439978c7147e6,
-                    "Factor (Lenigas): SST bell-curve score (Lenigas)" : image_overlay_0ee20dc47814157545fa5fd0902b3e9f,
-                    "Factor (Lenigas): Distance-offshore score" : image_overlay_8e675f18c01c8ca1350905176438a7c3,
-                    "Factor (Lenigas): SSHA hotspot score (Lenigas)" : image_overlay_85636d97fb6d1da65f644577af538741,
-                    "Factor (Lenigas): Wind speed" : image_overlay_7a26b9ce4bf88d2e20b7713258ec61f7,
-                    "Sunshine Coast LiDAR bathymetry (high-res, 2011 survey)" : image_overlay_986c7660890c02707b0f832cf6625d6e,
-                    "Moreton Bay Approaches bathymetry (high-res, 2023 survey)" : image_overlay_6fc6085d281c8edc8a6fa52901f08881,
-                    "Mudjimba Island bathymetry (high-res, 2024 survey)" : image_overlay_22a23de0729350fb6ed19678c0dc8585,
-                    "Bathymetry relief map" : image_overlay_03e890fd6c3773858db2ddba3fe0884d,
+                    "MBGFC fishing chart (georeferenced)" : image_overlay_1f9a692ecf0cb1a887ce01eb4364363f,
+                    "MBGFC FADs, SFADs \u0026 wave buoys" : feature_group_0407b58336b093aa4c2438cd4684e6f0,
+                    "Land outline" : feature_group_a089e43edf2fd56cc881d7a4428ea270,
+                    "Bathymetry contours (depth reference)" : feature_group_2ab6381ea4f510f25804023fcb5eb72a,
+                    "Ocean fronts (FSLE)" : image_overlay_521d3b6e05c1b7fabb7a058ca80ddf6c,
+                    "Bite Score heatmap (current, high-res)" : image_overlay_3fef0e1e3a29ce8c2118d68f0a960c49,
+                    "Bite Score heatmap (legacy, coarse - for comparison)" : image_overlay_367e28d922838dbfe3a419389cf9076f,
+                    "Factor: SST thermal-front score" : image_overlay_48c1899ff8068ee8f1f08bbe604c9db9,
+                    "Factor: Chlorophyll-front score" : image_overlay_b4ee20bf5203ab02f716d808360909cf,
+                    "Factor: Current-edge score" : image_overlay_545c30952695b5df5246442d95b90d5d,
+                    "Factor: SSHA / eddy-front score" : image_overlay_c3291961d03db7a93809b4b2570ebac6,
+                    "Factor: MLD front score" : image_overlay_3e738be64ff1b3fd193bae5ea7028dcd,
+                    "Factor: Depth-suitability score" : image_overlay_8ece5a4f4cf97f9369181b016443c8bd,
+                    "Bite Score heatmap v2 (Beta - structure/eddy model)" : image_overlay_802505d7a04777772cb461e6f13fd098,
+                    "Factor (v2 Beta): SST bell-curve score" : image_overlay_7ec5495d82b853ae98d10a89ec95accf,
+                    "Factor (v2 Beta): Chlorophyll optimal-band score" : image_overlay_759221876d667a04b4c18c20b86f5088,
+                    "Factor (v2 Beta): Current-edge score (v2 recomputed)" : image_overlay_0f31b29049fc2a146c95d8b82b85ed05,
+                    "Factor (v2 Beta): Depth-suitability score (v2 recomputed)" : image_overlay_2f0a367a3976e1cf3eb6bd7931913deb,
+                    "Factor (v2 Beta): MLD gradient score (v2)" : image_overlay_41d0668fcaabfb989991c82e53a6a6b4,
+                    "Factor (v2 Beta): Structure proximity score" : image_overlay_092a09c2b6f1c1fdb2e1e71d359807b5,
+                    "Factor (v2 Beta): Eddy detection score" : image_overlay_737ce1a0e18b8fb9e24d5934526f8dcc,
+                    "Bite Score heatmap Lenigas (SEQ fisherman model)" : image_overlay_f3e15d600545ed6932e9e6333ca2eb51,
+                    "Factor (Lenigas): EAC axis-position score" : image_overlay_6eb2f1327f8242fd55718284fdf39846,
+                    "Factor (Lenigas): EAC convergence-point score" : image_overlay_0299517651ee0e4271b0489f30ae322e,
+                    "Factor (Lenigas): Depth-suitability score (Lenigas)" : image_overlay_af29a4622b1a46c797d5894335954d71,
+                    "Factor (Lenigas): Upwelling/downwelling score" : image_overlay_2012dae04811c47951789c054a370187,
+                    "Factor (Lenigas): SST bell-curve score (Lenigas)" : image_overlay_b77b58ee3079640036f78d1ffbe2a76f,
+                    "Factor (Lenigas): Distance-offshore score" : image_overlay_dc3436eaaeaaa4171468cbdac6ecad1e,
+                    "Factor (Lenigas): SSHA hotspot score (Lenigas)" : image_overlay_4af98d6d5c1ff60a24db49df43795261,
+                    "Factor (Lenigas): Wind speed" : image_overlay_754d22a66b2b2a773ac734e22ac391fc,
+                    "Sunshine Coast LiDAR bathymetry (high-res, 2011 survey)" : image_overlay_25a7c03a16bd81bb2f2499b5d2dea8e2,
+                    "Moreton Bay Approaches bathymetry (high-res, 2023 survey)" : image_overlay_6e8f8c6963ee3b56ec54d6e369164dc3,
+                    "Mudjimba Island bathymetry (high-res, 2024 survey)" : image_overlay_c0549ad333edd1023284fd6c4d05e963,
+                    "Bathymetry relief map" : image_overlay_8d63608590d762e20af0a12fd6ee9817,
                 },
             };
-            let layer_control_c6f839a34dc228acc4d2c502e5361302 = L.control.layers(
-                layer_control_c6f839a34dc228acc4d2c502e5361302_layers.base_layers,
-                layer_control_c6f839a34dc228acc4d2c502e5361302_layers.overlays,
+            let layer_control_95b8d4c8a8a06d692db8f62b41220bc8 = L.control.layers(
+                layer_control_95b8d4c8a8a06d692db8f62b41220bc8_layers.base_layers,
+                layer_control_95b8d4c8a8a06d692db8f62b41220bc8_layers.overlays,
                 {
   "position": "topright",
   "collapsed": false,
   "autoZIndex": true,
 }
-            ).addTo(map_21c2ddea183fb2d441145c2e9e078577);
+            ).addTo(map_cd503f118d0bcef49a9e612ef7aba812);
 
         
 </script>
