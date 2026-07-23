@@ -1,0 +1,3170 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=block" rel="stylesheet">
+    
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.0/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/python-visualization/folium/folium/templates/leaflet.awesome.rotate.min.css"/>
+    
+            <meta name="viewport" content="width=device-width,
+                initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+            <style>
+                #map_21c2ddea183fb2d441145c2e9e078577 {
+                    position: relative;
+                    width: 100.0%;
+                    height: 100.0%;
+                    left: 0.0%;
+                    top: 0.0%;
+                }
+                .leaflet-container { font-size: 1rem; }
+            </style>
+
+            <style>html, body {
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
+            </style>
+
+            <style>#map {
+                position:absolute;
+                top:0;
+                bottom:0;
+                right:0;
+                left:0;
+                }
+            </style>
+
+            <script>
+                L_NO_TOUCH = false;
+                L_DISABLE_3D = false;
+            </script>
+
+        
+    
+            
+                <style>
+                    .leaflet-image-layer {
+                        /* old android/safari*/
+                        image-rendering: -webkit-optimize-contrast;
+                        image-rendering: crisp-edges; /* safari */
+                        image-rendering: pixelated; /* chrome */
+                        image-rendering: -moz-crisp-edges; /* firefox */
+                        image-rendering: -o-crisp-edges; /* opera */
+                        -ms-interpolation-mode: nearest-neighbor; /* ie */
+                    }
+                </style>
+            
+        
+    
+            
+                <style>
+                    .leaflet-image-layer {
+                        /* old android/safari*/
+                        image-rendering: -webkit-optimize-contrast;
+                        image-rendering: crisp-edges; /* safari */
+                        image-rendering: pixelated; /* chrome */
+                        image-rendering: -moz-crisp-edges; /* firefox */
+                        image-rendering: -o-crisp-edges; /* opera */
+                        -ms-interpolation-mode: nearest-neighbor; /* ie */
+                    }
+                </style>
+            
+        
+    
+            
+                <style>
+                    .leaflet-image-layer {
+                        /* old android/safari*/
+                        image-rendering: -webkit-optimize-contrast;
+                        image-rendering: crisp-edges; /* safari */
+                        image-rendering: pixelated; /* chrome */
+                        image-rendering: -moz-crisp-edges; /* firefox */
+                        image-rendering: -o-crisp-edges; /* opera */
+                        -ms-interpolation-mode: nearest-neighbor; /* ie */
+                    }
+                </style>
+            
+        
+    
+            
+                <style>
+                    .leaflet-image-layer {
+                        /* old android/safari*/
+                        image-rendering: -webkit-optimize-contrast;
+                        image-rendering: crisp-edges; /* safari */
+                        image-rendering: pixelated; /* chrome */
+                        image-rendering: -moz-crisp-edges; /* firefox */
+                        image-rendering: -o-crisp-edges; /* opera */
+                        -ms-interpolation-mode: nearest-neighbor; /* ie */
+                    }
+                </style>
+            
+        
+    
+            
+                <style>
+                    .leaflet-image-layer {
+                        /* old android/safari*/
+                        image-rendering: -webkit-optimize-contrast;
+                        image-rendering: crisp-edges; /* safari */
+                        image-rendering: pixelated; /* chrome */
+                        image-rendering: -moz-crisp-edges; /* firefox */
+                        image-rendering: -o-crisp-edges; /* opera */
+                        -ms-interpolation-mode: nearest-neighbor; /* ie */
+                    }
+                </style>
+            
+        
+    
+            
+                <style>
+                    .leaflet-image-layer {
+                        /* old android/safari*/
+                        image-rendering: -webkit-optimize-contrast;
+                        image-rendering: crisp-edges; /* safari */
+                        image-rendering: pixelated; /* chrome */
+                        image-rendering: -moz-crisp-edges; /* firefox */
+                        image-rendering: -o-crisp-edges; /* opera */
+                        -ms-interpolation-mode: nearest-neighbor; /* ie */
+                    }
+                </style>
+            
+        
+    
+            
+                <style>
+                    .leaflet-image-layer {
+                        /* old android/safari*/
+                        image-rendering: -webkit-optimize-contrast;
+                        image-rendering: crisp-edges; /* safari */
+                        image-rendering: pixelated; /* chrome */
+                        image-rendering: -moz-crisp-edges; /* firefox */
+                        image-rendering: -o-crisp-edges; /* opera */
+                        -ms-interpolation-mode: nearest-neighbor; /* ie */
+                    }
+                </style>
+            
+        
+    
+            
+                <style>
+                    .leaflet-image-layer {
+                        /* old android/safari*/
+                        image-rendering: -webkit-optimize-contrast;
+                        image-rendering: crisp-edges; /* safari */
+                        image-rendering: pixelated; /* chrome */
+                        image-rendering: -moz-crisp-edges; /* firefox */
+                        image-rendering: -o-crisp-edges; /* opera */
+                        -ms-interpolation-mode: nearest-neighbor; /* ie */
+                    }
+                </style>
+            
+        
+    
+            
+                <style>
+                    .leaflet-image-layer {
+                        /* old android/safari*/
+                        image-rendering: -webkit-optimize-contrast;
+                        image-rendering: crisp-edges; /* safari */
+                        image-rendering: pixelated; /* chrome */
+                        image-rendering: -moz-crisp-edges; /* firefox */
+                        image-rendering: -o-crisp-edges; /* opera */
+                        -ms-interpolation-mode: nearest-neighbor; /* ie */
+                    }
+                </style>
+            
+        
+    
+            
+                <style>
+                    .leaflet-image-layer {
+                        /* old android/safari*/
+                        image-rendering: -webkit-optimize-contrast;
+                        image-rendering: crisp-edges; /* safari */
+                        image-rendering: pixelated; /* chrome */
+                        image-rendering: -moz-crisp-edges; /* firefox */
+                        image-rendering: -o-crisp-edges; /* opera */
+                        -ms-interpolation-mode: nearest-neighbor; /* ie */
+                    }
+                </style>
+            
+        
+    
+            
+                <style>
+                    .leaflet-image-layer {
+                        /* old android/safari*/
+                        image-rendering: -webkit-optimize-contrast;
+                        image-rendering: crisp-edges; /* safari */
+                        image-rendering: pixelated; /* chrome */
+                        image-rendering: -moz-crisp-edges; /* firefox */
+                        image-rendering: -o-crisp-edges; /* opera */
+                        -ms-interpolation-mode: nearest-neighbor; /* ie */
+                    }
+                </style>
+            
+        
+    
+            
+                <style>
+                    .leaflet-image-layer {
+                        /* old android/safari*/
+                        image-rendering: -webkit-optimize-contrast;
+                        image-rendering: crisp-edges; /* safari */
+                        image-rendering: pixelated; /* chrome */
+                        image-rendering: -moz-crisp-edges; /* firefox */
+                        image-rendering: -o-crisp-edges; /* opera */
+                        -ms-interpolation-mode: nearest-neighbor; /* ie */
+                    }
+                </style>
+            
+        
+    
+            
+                <style>
+                    .leaflet-image-layer {
+                        /* old android/safari*/
+                        image-rendering: -webkit-optimize-contrast;
+                        image-rendering: crisp-edges; /* safari */
+                        image-rendering: pixelated; /* chrome */
+                        image-rendering: -moz-crisp-edges; /* firefox */
+                        image-rendering: -o-crisp-edges; /* opera */
+                        -ms-interpolation-mode: nearest-neighbor; /* ie */
+                    }
+                </style>
+            
+        
+    
+            
+                <style>
+                    .leaflet-image-layer {
+                        /* old android/safari*/
+                        image-rendering: -webkit-optimize-contrast;
+                        image-rendering: crisp-edges; /* safari */
+                        image-rendering: pixelated; /* chrome */
+                        image-rendering: -moz-crisp-edges; /* firefox */
+                        image-rendering: -o-crisp-edges; /* opera */
+                        -ms-interpolation-mode: nearest-neighbor; /* ie */
+                    }
+                </style>
+            
+        
+    
+            
+                <style>
+                    .leaflet-image-layer {
+                        /* old android/safari*/
+                        image-rendering: -webkit-optimize-contrast;
+                        image-rendering: crisp-edges; /* safari */
+                        image-rendering: pixelated; /* chrome */
+                        image-rendering: -moz-crisp-edges; /* firefox */
+                        image-rendering: -o-crisp-edges; /* opera */
+                        -ms-interpolation-mode: nearest-neighbor; /* ie */
+                    }
+                </style>
+            
+        
+    
+            
+                <style>
+                    .leaflet-image-layer {
+                        /* old android/safari*/
+                        image-rendering: -webkit-optimize-contrast;
+                        image-rendering: crisp-edges; /* safari */
+                        image-rendering: pixelated; /* chrome */
+                        image-rendering: -moz-crisp-edges; /* firefox */
+                        image-rendering: -o-crisp-edges; /* opera */
+                        -ms-interpolation-mode: nearest-neighbor; /* ie */
+                    }
+                </style>
+            
+        
+    
+            
+                <style>
+                    .leaflet-image-layer {
+                        /* old android/safari*/
+                        image-rendering: -webkit-optimize-contrast;
+                        image-rendering: crisp-edges; /* safari */
+                        image-rendering: pixelated; /* chrome */
+                        image-rendering: -moz-crisp-edges; /* firefox */
+                        image-rendering: -o-crisp-edges; /* opera */
+                        -ms-interpolation-mode: nearest-neighbor; /* ie */
+                    }
+                </style>
+            
+        
+    
+            
+                <style>
+                    .leaflet-image-layer {
+                        /* old android/safari*/
+                        image-rendering: -webkit-optimize-contrast;
+                        image-rendering: crisp-edges; /* safari */
+                        image-rendering: pixelated; /* chrome */
+                        image-rendering: -moz-crisp-edges; /* firefox */
+                        image-rendering: -o-crisp-edges; /* opera */
+                        -ms-interpolation-mode: nearest-neighbor; /* ie */
+                    }
+                </style>
+            
+        
+    
+            
+                <style>
+                    .leaflet-image-layer {
+                        /* old android/safari*/
+                        image-rendering: -webkit-optimize-contrast;
+                        image-rendering: crisp-edges; /* safari */
+                        image-rendering: pixelated; /* chrome */
+                        image-rendering: -moz-crisp-edges; /* firefox */
+                        image-rendering: -o-crisp-edges; /* opera */
+                        -ms-interpolation-mode: nearest-neighbor; /* ie */
+                    }
+                </style>
+            
+        
+    
+            
+                <style>
+                    .leaflet-image-layer {
+                        /* old android/safari*/
+                        image-rendering: -webkit-optimize-contrast;
+                        image-rendering: crisp-edges; /* safari */
+                        image-rendering: pixelated; /* chrome */
+                        image-rendering: -moz-crisp-edges; /* firefox */
+                        image-rendering: -o-crisp-edges; /* opera */
+                        -ms-interpolation-mode: nearest-neighbor; /* ie */
+                    }
+                </style>
+            
+        
+    
+            
+                <style>
+                    .leaflet-image-layer {
+                        /* old android/safari*/
+                        image-rendering: -webkit-optimize-contrast;
+                        image-rendering: crisp-edges; /* safari */
+                        image-rendering: pixelated; /* chrome */
+                        image-rendering: -moz-crisp-edges; /* firefox */
+                        image-rendering: -o-crisp-edges; /* opera */
+                        -ms-interpolation-mode: nearest-neighbor; /* ie */
+                    }
+                </style>
+            
+        
+    
+            
+                <style>
+                    .leaflet-image-layer {
+                        /* old android/safari*/
+                        image-rendering: -webkit-optimize-contrast;
+                        image-rendering: crisp-edges; /* safari */
+                        image-rendering: pixelated; /* chrome */
+                        image-rendering: -moz-crisp-edges; /* firefox */
+                        image-rendering: -o-crisp-edges; /* opera */
+                        -ms-interpolation-mode: nearest-neighbor; /* ie */
+                    }
+                </style>
+            
+        
+    
+            
+                <style>
+                    .leaflet-image-layer {
+                        /* old android/safari*/
+                        image-rendering: -webkit-optimize-contrast;
+                        image-rendering: crisp-edges; /* safari */
+                        image-rendering: pixelated; /* chrome */
+                        image-rendering: -moz-crisp-edges; /* firefox */
+                        image-rendering: -o-crisp-edges; /* opera */
+                        -ms-interpolation-mode: nearest-neighbor; /* ie */
+                    }
+                </style>
+            
+        
+    
+            
+                <style>
+                    .leaflet-image-layer {
+                        /* old android/safari*/
+                        image-rendering: -webkit-optimize-contrast;
+                        image-rendering: crisp-edges; /* safari */
+                        image-rendering: pixelated; /* chrome */
+                        image-rendering: -moz-crisp-edges; /* firefox */
+                        image-rendering: -o-crisp-edges; /* opera */
+                        -ms-interpolation-mode: nearest-neighbor; /* ie */
+                    }
+                </style>
+            
+        
+    
+            
+                <style>
+                    .leaflet-image-layer {
+                        /* old android/safari*/
+                        image-rendering: -webkit-optimize-contrast;
+                        image-rendering: crisp-edges; /* safari */
+                        image-rendering: pixelated; /* chrome */
+                        image-rendering: -moz-crisp-edges; /* firefox */
+                        image-rendering: -o-crisp-edges; /* opera */
+                        -ms-interpolation-mode: nearest-neighbor; /* ie */
+                    }
+                </style>
+            
+        
+    
+            
+                <style>
+                    .leaflet-image-layer {
+                        /* old android/safari*/
+                        image-rendering: -webkit-optimize-contrast;
+                        image-rendering: crisp-edges; /* safari */
+                        image-rendering: pixelated; /* chrome */
+                        image-rendering: -moz-crisp-edges; /* firefox */
+                        image-rendering: -o-crisp-edges; /* opera */
+                        -ms-interpolation-mode: nearest-neighbor; /* ie */
+                    }
+                </style>
+            
+        
+    
+            
+                <style>
+                    .leaflet-image-layer {
+                        /* old android/safari*/
+                        image-rendering: -webkit-optimize-contrast;
+                        image-rendering: crisp-edges; /* safari */
+                        image-rendering: pixelated; /* chrome */
+                        image-rendering: -moz-crisp-edges; /* firefox */
+                        image-rendering: -o-crisp-edges; /* opera */
+                        -ms-interpolation-mode: nearest-neighbor; /* ie */
+                    }
+                </style>
+            
+        
+    
+            
+                <style>
+                    .leaflet-image-layer {
+                        /* old android/safari*/
+                        image-rendering: -webkit-optimize-contrast;
+                        image-rendering: crisp-edges; /* safari */
+                        image-rendering: pixelated; /* chrome */
+                        image-rendering: -moz-crisp-edges; /* firefox */
+                        image-rendering: -o-crisp-edges; /* opera */
+                        -ms-interpolation-mode: nearest-neighbor; /* ie */
+                    }
+                </style>
+            
+        
+    
+            
+                <style>
+                    .leaflet-image-layer {
+                        /* old android/safari*/
+                        image-rendering: -webkit-optimize-contrast;
+                        image-rendering: crisp-edges; /* safari */
+                        image-rendering: pixelated; /* chrome */
+                        image-rendering: -moz-crisp-edges; /* firefox */
+                        image-rendering: -o-crisp-edges; /* opera */
+                        -ms-interpolation-mode: nearest-neighbor; /* ie */
+                    }
+                </style>
+            
+        
+    
+            
+                <style>
+                    .leaflet-image-layer {
+                        /* old android/safari*/
+                        image-rendering: -webkit-optimize-contrast;
+                        image-rendering: crisp-edges; /* safari */
+                        image-rendering: pixelated; /* chrome */
+                        image-rendering: -moz-crisp-edges; /* firefox */
+                        image-rendering: -o-crisp-edges; /* opera */
+                        -ms-interpolation-mode: nearest-neighbor; /* ie */
+                    }
+                </style>
+            
+        
+    
+            
+                <style>
+                    .leaflet-image-layer {
+                        /* old android/safari*/
+                        image-rendering: -webkit-optimize-contrast;
+                        image-rendering: crisp-edges; /* safari */
+                        image-rendering: pixelated; /* chrome */
+                        image-rendering: -moz-crisp-edges; /* firefox */
+                        image-rendering: -o-crisp-edges; /* opera */
+                        -ms-interpolation-mode: nearest-neighbor; /* ie */
+                    }
+                </style>
+            
+        
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js"></script>
+</head>
+<body>
+    
+    
+    <style>
+      html, body {
+        margin: 0; padding: 0; height: 100%; background: #0b1326;
+        color: #dae2fd; font-family: 'Inter', -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+        overflow: hidden;
+      }
+
+      /* The map fills the whole viewport to the right of the sidebar --
+         no floating header/panel/drawer sits on top of it any more, so
+         the coastline, bathymetry and heatmap stay fully visible.
+         invalidateSize() is called after load to make Leaflet recompute
+         tile layout for the new container size. */
+      #map_21c2ddea183fb2d441145c2e9e078577 {
+        position: fixed !important;
+        top: 0 !important;
+        left: 320px !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        width: auto !important;
+        height: auto !important;
+      }
+
+      .bsq-sidebar {
+        position: fixed; top: 0; left: 0; bottom: 0; width: 320px;
+        background: #0b1326; border-right: 1px solid rgba(142,145,152,0.15);
+        display: flex; flex-direction: column; overflow-y: auto;
+        z-index: 1000; box-sizing: border-box;
+      }
+      .bsq-sidebar::-webkit-scrollbar { width: 6px; }
+      .bsq-sidebar::-webkit-scrollbar-thumb { background: rgba(142,145,152,0.3); border-radius: 3px; }
+
+      .bsq-brand {
+        padding: 20px; border-bottom: 1px solid rgba(142,145,152,0.15);
+        display: flex; align-items: center; justify-content: space-between; gap: 8px;
+        flex-shrink: 0;
+      }
+      .bsq-brand h1 { margin: 0; font-size: 18px; font-weight: 800; color: #afc8f0; letter-spacing: -0.01em; }
+      .bsq-brand p { margin: 3px 0 0; font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; color: #8e9198; }
+      .bsq-recenter {
+        flex-shrink: 0; width: 32px; height: 32px; border-radius: 8px;
+        border: 1px solid rgba(142,145,152,0.25); background: rgba(34,42,61,0.6);
+        color: #63f7ff; cursor: pointer; display: flex; align-items: center; justify-content: center;
+      }
+      .bsq-recenter:hover { background: rgba(34,42,61,0.95); }
+      .bsq-recenter .material-symbols-outlined { font-size: 18px; }
+
+      .bsq-section { padding: 16px 20px; border-bottom: 1px solid rgba(142,145,152,0.12); }
+      .bsq-section:last-of-type { border-bottom: none; }
+      .bsq-section h3 {
+        margin: 0 0 4px 0; font-size: 12px; font-weight: 700; color: #63f7ff;
+        text-transform: uppercase; letter-spacing: 0.06em;
+        display: flex; align-items: center; gap: 6px;
+      }
+      .bsq-section h3 .material-symbols-outlined { font-size: 15px; }
+      .bsq-section .bsq-sub { margin: 0 0 10px 0; font-size: 11.5px; color: #8e9198; line-height: 1.4; }
+      .bsq-section label {
+        display: block; font-size: 11.5px; color: #c4c6cf; margin-top: 10px; margin-bottom: 4px;
+        text-transform: uppercase; letter-spacing: 0.03em;
+      }
+      .bsq-section label:first-of-type { margin-top: 0; }
+      .bsq-hint { font-weight: 400; text-transform: none; letter-spacing: normal; color: #8e9198; }
+      .bsq-section input[type="date"] {
+        width: 100%; box-sizing: border-box; padding: 6px 8px;
+        font-size: 13px; border: 1px solid rgba(142,145,152,0.35); border-radius: 6px;
+        background: #171f33; color: #dae2fd; font-family: 'JetBrains Mono', monospace;
+      }
+      .bsq-section input[type="range"] { width: 100%; accent-color: #63f7ff; }
+      #bsq-opacity-row { margin-top: 14px; }
+
+      .bsq-stat-row { display: flex; gap: 12px; margin-bottom: 4px; }
+      .bsq-stat { flex: 1; background: rgba(34,42,61,0.5); border-radius: 8px; padding: 8px 10px; }
+      .bsq-stat-label { display: block; font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.05em; color: #8e9198; }
+      .bsq-stat-value { font-family: 'JetBrains Mono', monospace; font-size: 14px; color: #63f7ff; font-weight: 500; }
+      a.bsq-stat { text-decoration: none; display: block; transition: background 0.15s; cursor: pointer; }
+      a.bsq-stat:hover { background: rgba(99,247,255,0.12); }
+      a.bsq-stat .bsq-stat-label .material-symbols-outlined { font-size: 12px; color: #63f7ff; margin-left: 2px; }
+
+      #bsq-update-btn {
+        width: 100%; margin-top: 12px; padding: 9px 0;
+        background: #63f7ff; color: #003739; border: none; border-radius: 8px;
+        font-size: 13px; font-weight: 700; cursor: pointer; transition: transform .1s ease;
+      }
+      #bsq-update-btn:hover { transform: scale(1.02); }
+      #bsq-update-btn:active { transform: scale(0.97); }
+      #bsq-update-btn:disabled { background: rgba(99,247,255,0.35); color: rgba(0,55,57,0.6); cursor: default; transform: none; }
+      #bsq-status { margin-top: 8px; font-size: 11.5px; color: #c4c6cf; min-height: 16px; line-height: 1.4; }
+
+      /* Collapsible history list -- it lives inline in the sidebar instead
+         of a separate overlay drawer, so it never covers the map. */
+      .bsq-accordion-header { display: flex; align-items: center; justify-content: space-between; cursor: pointer; user-select: none; }
+      .bsq-accordion-header h3 { margin-bottom: 0; }
+      .bsq-chevron { transition: transform .15s ease; font-size: 18px !important; color: #8e9198; }
+      .bsq-accordion-header.open .bsq-chevron { transform: rotate(180deg); }
+      .bsq-accordion-body { display: none; margin-top: 10px; }
+      .bsq-accordion-body.open { display: block; }
+      .bsq-history-item {
+        display: flex; align-items: center; gap: 8px;
+        padding: 9px 10px; margin-bottom: 6px; border-radius: 8px; cursor: pointer;
+        background: rgba(34,42,61,0.5); border: 1px solid transparent;
+        font-family: 'JetBrains Mono', monospace; font-size: 12.5px; color: #dae2fd;
+        transition: background .12s, border-color .12s;
+      }
+      .bsq-history-item:hover { background: rgba(34,42,61,0.9); border-color: rgba(99,247,255,0.3); }
+      .bsq-history-item.current { background: rgba(0,31,63,0.6); border-color: #63f7ff; color: #63f7ff; font-weight: 700; }
+      .bsq-history-item .material-symbols-outlined { font-size: 16px; opacity: 0.7; }
+
+      /* "How It's Calculated" methodology breakdown -- one row per
+         contributing factor, weight pulled straight from the same config
+         values that drive the real WLC overlay. */
+      .bsq-factor-row { padding: 10px 0; border-top: 1px solid rgba(142,145,152,0.12); }
+      .bsq-factor-row:first-child { border-top: none; padding-top: 0; }
+      .bsq-factor-head { display: flex; align-items: center; gap: 6px; }
+      .bsq-factor-head .material-symbols-outlined { font-size: 16px; color: #63f7ff; }
+      .bsq-factor-label { font-size: 12.5px; font-weight: 600; color: #dae2fd; flex: 1; }
+      .bsq-factor-weight {
+        font-family: 'JetBrains Mono', monospace; font-size: 11.5px; font-weight: 700;
+        color: #003739; background: #63f7ff; border-radius: 5px; padding: 1px 6px;
+      }
+      .bsq-factor-desc { margin: 4px 0 0; font-size: 11.5px; color: #8e9198; line-height: 1.45; }
+      .bsq-history-empty { font-size: 12px; color: #8e9198; padding: 4px 0; }
+
+      /* Per-layer info icon + mini legend (2026-07-24, Lambert) -- added
+         next to every selectable overlay's checkbox in the Layers list
+         (see bsqEnhanceLayerRows() below), so users don't have to hunt
+         through the accordions further down to know what a layer means
+         or what colour scale/value range it's showing. */
+      .bsq-info-icon {
+        background: none; border: none; cursor: pointer; padding: 0 0 0 4px;
+        margin: 0; font-size: 12px; line-height: 1; flex-shrink: 0; opacity: 0.8;
+      }
+      .bsq-info-icon:hover { opacity: 1; }
+      .bsq-mini-legend {
+        display: flex; align-items: center; gap: 6px; width: 100%; flex-basis: 100%;
+        margin: 3px 0 2px 0; font-family: 'JetBrains Mono', monospace;
+        font-size: 10px; color: #8e9198; cursor: default;
+      }
+      .bsq-legend-bar {
+        display: inline-block; width: 46px; height: 8px; border-radius: 3px;
+        border: 1px solid rgba(142,145,152,0.35); flex-shrink: 0;
+      }
+      .bsq-legend-score .bsq-legend-bar { background: linear-gradient(to right, #30123b, #4145ab, #4675ed, #39a2fc, #1bcfd4, #24eca6, #61fc6c, #a4fc3b, #d1e834, #f3c63a, #fe9b2d, #f36315, #d93807, #b11901, #7a0403); }
+      .bsq-legend-raw .bsq-legend-bar { background: linear-gradient(to right, #fde725, #b5de2b, #6ece58, #35b779, #1f9e89, #26828e, #31688e, #3e4a89, #482878, #440154); }
+      .bsq-legend-diverging .bsq-legend-bar { background: linear-gradient(to right, #26456e, #1f78b4, #5ab4d6, #a6d9c8, #8bc47a, #c9a86a, #e8dcc4); }
+      .bsq-legend-diagnostic .bsq-legend-bar { background: linear-gradient(to right, #000004, #1b0c41, #4a0c6b, #781c6d, #a52c60, #cf4446, #ed6925, #fb9b06, #f7d03c, #fcffa4); }
+      .bsq-legend-range { white-space: nowrap; }
+
+      /* Composite-vs-factor visual hierarchy within each Bite Score group
+         (2026-07-23, Lambert) -- the model's main heatmap row is styled
+         bolder/larger, its own contributing-factor rows are indented
+         underneath it, so the "answer vs ingredient" relationship reads
+         at a glance instead of 25+ flat, visually-identical rows. Roles
+         come from `_layer_ui[label].role` (see build_folium_map() above)
+         and are applied by bsqEnhanceLayerRows() (JS below). `!important`
+         needed on color to win over this list's own
+         `#bsq-layers-slot .leaflet-control-layers-overlays label { color: ... !important }`
+         rule above. */
+      #bsq-layers-slot .leaflet-control-layers-overlays label.bsq-layer-composite .bsq-layer-content-col {
+        font-weight: 800; font-size: 13.5px;
+      }
+      #bsq-layers-slot .leaflet-control-layers-overlays label.bsq-layer-composite span:last-child {
+        color: #63f7ff !important;
+      }
+      #bsq-layers-slot .leaflet-control-layers-overlays label.bsq-layer-factor .bsq-layer-content-col {
+        margin-left: 14px; font-size: 12px;
+      }
+      #bsq-layers-slot .leaflet-control-layers-overlays label.bsq-layer-factor span:last-child {
+        color: #c4c6cf !important;
+      }
+
+      /* Weight/informational pill next to each factor row (2026-07-23,
+         Lambert) -- reuses the exact same visual language as
+         .bsq-factor-weight in the "How It's Calculated" section below,
+         so the weight is scannable at a glance instead of being buried in
+         parenthetical label text ("...(33% weight)"). */
+      .bsq-layer-weight-pill {
+        font-family: 'JetBrains Mono', monospace; font-size: 10.5px; font-weight: 700;
+        color: #003739; background: #63f7ff; border-radius: 5px; padding: 1px 6px;
+        flex-shrink: 0;
+      }
+      .bsq-layer-weight-pill.bsq-layer-informational-pill {
+        background: rgba(142,145,152,0.4); color: #dae2fd;
+      }
+
+      /* Single shared popover reused for every layer's info icon (rather
+         than one per layer), positioned via JS next to whichever icon
+         was clicked/hovered. Dismissed by clicking elsewhere, Escape, or
+         its own close button -- never a full modal/overlay. */
+      #bsq-info-popover {
+        display: none; position: fixed; z-index: 5000; max-width: 270px;
+        background: #171f33; border: 1px solid rgba(99,247,255,0.35);
+        border-radius: 10px; padding: 12px 16px 12px 14px;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.45);
+      }
+      #bsq-info-popover-title { font-size: 12.5px; font-weight: 700; color: #63f7ff; margin-bottom: 6px; padding-right: 14px; }
+      #bsq-info-popover-body { font-size: 11.5px; color: #c4c6cf; line-height: 1.45; }
+      #bsq-info-popover-close {
+        position: absolute; top: 8px; right: 8px; background: none; border: none;
+        color: #8e9198; cursor: pointer; font-size: 15px; line-height: 1; padding: 2px;
+      }
+      #bsq-info-popover-close:hover { color: #dae2fd; }
+
+      .bsq-sidebar-footer { padding: 16px 20px; font-size: 11px; color: #8e9198; line-height: 1.5; flex-shrink: 0; }
+
+      /* The native Leaflet layer-control and colour legend are reparented
+         (via JS below) out of their floating corners on the map and into
+         these sidebar slots, so everything lives in one coherent panel
+         instead of scattering separate boxes across the map. */
+      #bsq-layers-slot .leaflet-control-layers,
+      #bsq-legend-slot .legend.leaflet-control {
+        position: static !important; float: none !important; margin: 0 !important;
+        background: transparent !important; border: none !important; box-shadow: none !important;
+        width: 100% !important; box-sizing: border-box; color: #dae2fd;
+      }
+      #bsq-layers-slot .leaflet-control-layers-list label,
+      #bsq-layers-slot .leaflet-control-layers span,
+      #bsq-layers-slot .leaflet-control-layers-base label,
+      #bsq-layers-slot .leaflet-control-layers-overlays label { color: #dae2fd !important; font-size: 13px; }
+      #bsq-layers-slot .leaflet-control-layers-separator { border-top: 1px solid rgba(142,145,152,0.25) !important; margin: 8px 0 !important; }
+
+      /* Drag-and-drop reordering of the overlay checklist (see
+         bsqEnableLayerReorder() below) -- draw order on the map follows
+         list order, top item drawn frontmost, so dragging a layer to the
+         top of this list brings it visually to the front. */
+      #bsq-layers-slot .leaflet-control-layers-overlays label {
+        display: flex !important; align-items: flex-start; gap: 0;
+        padding: 2px 4px; border-radius: 6px; cursor: grab;
+        border-top: 2px solid transparent; border-bottom: 2px solid transparent;
+        transition: background .1s;
+      }
+      #bsq-layers-slot .leaflet-control-layers-overlays label:hover { background: rgba(99,247,255,0.08); }
+
+      /* Fixed-width leading "control column" (drag handle + checkbox),
+         IDENTICAL for every row regardless of nesting depth or role
+         (composite/factor/plain static) -- built client-side by
+         bsqEnhanceLayerRows() (JS below), which moves the checkbox out of
+         Leaflet's own wrapper span into this dedicated column, and
+         everything else (label text, weight pill, info icon, legend)
+         into a sibling `.bsq-layer-content-col`. This is what keeps every
+         checkbox in the list aligned to the same x-position: any
+         indentation/role styling (see .bsq-layer-composite/-factor rules
+         below) is applied only to `.bsq-layer-content-col`, never to
+         this column or the row itself (2026-07-23, Lambert). */
+      #bsq-layers-slot .leaflet-control-layers-overlays .bsq-layer-control-col {
+        display: flex; align-items: center; gap: 3px; flex: 0 0 30px;
+        width: 30px; min-height: 18px; flex-shrink: 0;
+      }
+      #bsq-layers-slot .leaflet-control-layers-overlays .bsq-layer-control-col::before {
+        font-family: 'Material Symbols Outlined'; content: "drag_indicator";
+        font-size: 15px; color: #8e9198; flex-shrink: 0;
+      }
+      #bsq-layers-slot .leaflet-control-layers-overlays .bsq-layer-control-col input[type=checkbox] {
+        width: 16px; height: 16px; margin: 0; flex-shrink: 0; cursor: pointer;
+      }
+      /* Free-flowing content column -- label text, weight pill, info icon
+         and (wrapping to its own line via flex-basis:100%) the mini
+         legend all live here, NOT snapped to fixed sub-columns, so short
+         labels stay compact and only the control column above is rigid. */
+      #bsq-layers-slot .leaflet-control-layers-overlays .bsq-layer-content-col {
+        display: flex; align-items: center; flex-wrap: wrap; gap: 6px;
+        flex: 1 1 auto; min-width: 0; padding: 2px 0; line-height: 1.3;
+      }
+      #bsq-layers-slot .leaflet-control-layers-overlays label.bsq-dragging { opacity: 0.35; cursor: grabbing; }
+      #bsq-layers-slot .leaflet-control-layers-overlays label.bsq-drag-over-top { border-top-color: #63f7ff; }
+      #bsq-layers-slot .leaflet-control-layers-overlays label.bsq-drag-over-bottom { border-bottom-color: #63f7ff; }
+      /* Collapsible per-model group headers (2026-07-23, Lambert) --
+         upgraded from a static divider to a real expand/collapse row
+         (visual language matches the existing .bsq-accordion-header
+         chevron pattern used elsewhere in this sidebar), inserted by
+         bsqInsertLayerGroupHeaders() (JS below). Still a plain <div>, not
+         a <label>, so it's never draggable and never selected by
+         bsqEnableLayerReorder()'s ":scope > label" queries -- drag-
+         reorder and per-date lazy-load "overlayadd" listeners stay
+         completely unaffected. Collapsing a group only hides its member
+         rows via CSS (a class toggle, display:none), never unchecks or
+         removes them, so an already-toggled-on layer keeps rendering on
+         the map even while its group is collapsed. */
+      #bsq-layers-slot .leaflet-control-layers-overlays .bsq-layer-group-header {
+        display: flex !important; align-items: center; justify-content: space-between;
+        cursor: pointer; user-select: none;
+        font-size: 10px; font-weight: 700; letter-spacing: 0.06em;
+        text-transform: uppercase; color: #8e9198;
+        padding: 10px 4px 4px; margin-top: 6px;
+        border-top: 1px solid rgba(142,145,152,0.25);
+      }
+      #bsq-layers-slot .leaflet-control-layers-overlays .bsq-layer-group-header:first-child {
+        margin-top: 0; border-top: none; padding-top: 2px;
+      }
+      #bsq-layers-slot .leaflet-control-layers-overlays .bsq-layer-group-header:hover { color: #dae2fd; }
+      #bsq-layers-slot .leaflet-control-layers-overlays .bsq-layer-group-header .bsq-chevron {
+        font-size: 15px !important; color: #8e9198; transition: transform .15s ease;
+      }
+      #bsq-layers-slot .leaflet-control-layers-overlays .bsq-layer-group-header.open .bsq-chevron {
+        transform: rotate(180deg);
+      }
+      /* Hides a collapsed group's member rows -- needs !important to win
+         over this same list's own `label { display: flex !important }`
+         rule just below. */
+      #bsq-layers-slot .leaflet-control-layers-overlays label.bsq-group-collapsed {
+        display: none !important;
+      }
+      #bsq-legend-slot .legend svg { width: 100%; height: auto; }
+      #bsq-legend-slot .legend.leaflet-control svg .domain,
+      #bsq-legend-slot .legend.leaflet-control svg line { stroke: #8e9198 !important; }
+      #bsq-legend-slot .legend.leaflet-control text { fill: #c4c6cf !important; }
+
+      /* Permanent isobath depth labels on the map itself -- a small pill
+         that stays legible over any basemap (light/streets/satellite)
+         without needing to hover for the tooltip. */
+      .bsq-depth-label {
+        position: absolute;
+        left: 0; top: 0;
+        width: max-content;
+        transform: translate(-50%, -50%);
+        color: #0b5394;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 10.5px;
+        font-weight: 700;
+        white-space: nowrap;
+        pointer-events: none;
+        text-shadow:
+          -1px -1px 2px rgba(255,255,255,0.9),
+          1px -1px 2px rgba(255,255,255,0.9),
+          -1px 1px 2px rgba(255,255,255,0.9),
+          1px 1px 2px rgba(255,255,255,0.9);
+      }
+
+      /* The zoom control and attribution stay on the map itself -- small
+         and unobtrusive, standard Leaflet UX -- but restyled dark to match. */
+      .leaflet-control-zoom a, .leaflet-control-attribution {
+        background: rgba(23,31,51,0.88) !important;
+        color: #dae2fd !important;
+        border-color: rgba(142,145,152,0.25) !important;
+      }
+      .leaflet-control-attribution { font-size: 10.5px !important; }
+      .leaflet-control-attribution a { color: #63f7ff !important; }
+      .leaflet-bar a {
+        background: rgba(23,31,51,0.88) !important;
+        border-bottom: 1px solid rgba(142,145,152,0.2) !important;
+        color: #63f7ff !important;
+      }
+      .leaflet-bar a:hover { background: rgba(34,42,61,0.95) !important; }
+
+      @media (max-width: 820px) {
+        .bsq-sidebar { width: 100%; height: 42vh; bottom: auto; border-right: none; border-bottom: 1px solid rgba(142,145,152,0.15); }
+        #map_21c2ddea183fb2d441145c2e9e078577 { left: 0 !important; top: 42vh !important; }
+      }
+    </style>
+
+    <nav class="bsq-sidebar">
+      <div class="bsq-brand">
+        <div>
+          <h1>Yellowfin Tuna</h1>
+          <p>Bite Score Intelligence</p>
+        </div>
+        <button class="bsq-recenter" id="bsq-recenter" title="Recenter map on data">
+          <span class="material-symbols-outlined">my_location</span>
+        </button>
+      </div>
+
+      <div class="bsq-section">
+        <h3><span class="material-symbols-outlined">calendar_today</span>Data date: <span id="bsq-date-label">Loading&hellip;</span></h3>
+        <div class="bsq-stat-row">
+          <div class="bsq-stat">
+            <span class="bsq-stat-label">Score range</span>
+            <span class="bsq-stat-value" id="bsq-score-range">&ndash;</span>
+          </div>
+          <a class="bsq-stat" id="bsq-moon-stat" href="#" title="View full Moon &amp; Tides details" style="display: none;">
+            <span class="bsq-stat-label">&#127769; Moon illumination <span class="material-symbols-outlined">arrow_forward</span></span>
+            <span class="bsq-stat-value" id="bsq-moon-value">&ndash;</span>
+          </a>
+        </div>
+        <label for="bsq-date">Update data for date</label>
+        <input type="date" id="bsq-date" value="2026-07-20">
+        <button id="bsq-update-btn" onclick="bsqUpdateData()">Update Data</button>
+        <div id="bsq-status"></div>
+      </div>
+
+      <div class="bsq-section">
+        <h3><span class="material-symbols-outlined">opacity</span>Opacity</h3>
+        <label for="bsq-opacity">Heatmap opacity</label>
+        <input type="range" id="bsq-opacity" min="0" max="1" step="0.05" value="0.78"
+               oninput="bsqSetOpacity(this.value)">
+        
+        <div id="bsq-opacity-row">
+          <label for="bsq-opacity-legacy">Legacy overlay opacity <span class="bsq-hint">(enable it in the layer list first)</span></label>
+          <input type="range" id="bsq-opacity-legacy" min="0" max="1" step="0.05" value="0.78"
+                 oninput="bsqSetLegacyOpacity(this.value)">
+        </div>
+        
+      </div>
+
+      <div class="bsq-section">
+        <h3><span class="material-symbols-outlined">layers</span>Layers</h3>
+        <div id="bsq-layers-slot"></div>
+      </div>
+
+      <div class="bsq-section">
+        <h3><span class="material-symbols-outlined">palette</span>Legend</h3>
+        <div id="bsq-legend-slot"></div>
+      </div>
+
+      <div class="bsq-section">
+        <div class="bsq-accordion-header" id="bsq-methodology-toggle">
+          <h3><span class="material-symbols-outlined">school</span>How It's Calculated</h3>
+          <span class="material-symbols-outlined bsq-chevron">expand_more</span>
+        </div>
+        <div class="bsq-accordion-body" id="bsq-methodology-body">
+          <p class="bsq-sub">The Bite Score (0&ndash;100) blends six normalized ocean-condition layers using a fixed Weighted Linear Combination. Each factor is also available as its own toggleable layer above.</p>
+          
+            <div class="bsq-factor-row">
+              <div class="bsq-factor-head">
+                <span class="material-symbols-outlined">thermostat</span>
+                <span class="bsq-factor-label">SST thermal-front score</span>
+                <span class="bsq-factor-weight">33%</span>
+              </div>
+              <p class="bsq-factor-desc">Sharpest sea-surface-temperature gradients (thermal fronts), where Yellowfin Tuna often forage along temperature breaks. Source: NASA MUR satellite SST (~1km).</p>
+            </div>
+            
+            <div class="bsq-factor-row">
+              <div class="bsq-factor-head">
+                <span class="material-symbols-outlined">grass</span>
+                <span class="bsq-factor-label">Chlorophyll-front score</span>
+                <span class="bsq-factor-weight">24%</span>
+              </div>
+              <p class="bsq-factor-desc">Sharpest chlorophyll / water-colour gradients marking blue-water/green-water boundaries where baitfish concentrate. Source: NOAA VIIRS satellite chlorophyll-a (~4km).</p>
+            </div>
+            
+            <div class="bsq-factor-row">
+              <div class="bsq-factor-head">
+                <span class="material-symbols-outlined">waves</span>
+                <span class="bsq-factor-label">Current-edge score</span>
+                <span class="bsq-factor-weight">14%</span>
+              </div>
+              <p class="bsq-factor-desc">Intensity of surface current-velocity edges / eddy boundaries. Source: Copernicus Marine surface current vectors (~9km).</p>
+            </div>
+            
+            <div class="bsq-factor-row">
+              <div class="bsq-factor-head">
+                <span class="material-symbols-outlined">water</span>
+                <span class="bsq-factor-label">SSHA / eddy-front score</span>
+                <span class="bsq-factor-weight">14%</span>
+              </div>
+              <p class="bsq-factor-desc">Sharpest sea-surface-height-anomaly gradients, marking eddy edges via geostrophic shear -- often a cleaner eddy signal than current velocity alone. Source: Copernicus Marine SSHA (~9km).</p>
+            </div>
+            
+            <div class="bsq-factor-row">
+              <div class="bsq-factor-head">
+                <span class="material-symbols-outlined">layers</span>
+                <span class="bsq-factor-label">MLD front score</span>
+                <span class="bsq-factor-weight">6%</span>
+              </div>
+              <p class="bsq-factor-desc">Shoaling (shallower) mixed layer depth compresses baitfish and forage species closer to the surface -- a signal that matters most where it coincides with the thermal or chlorophyll fronts already scored above. Source: Copernicus Marine mixed layer depth (mlotst, ~9km).</p>
+            </div>
+            
+            <div class="bsq-factor-row">
+              <div class="bsq-factor-head">
+                <span class="material-symbols-outlined">terrain</span>
+                <span class="bsq-factor-label">Depth-suitability score</span>
+                <span class="bsq-factor-weight">9%</span>
+              </div>
+              <p class="bsq-factor-desc">Fuzzy suitability envelope peaking at the continental shelf-break / drop-off (favoured by pelagic gamefish). Land is masked out entirely. Source: composite bathymetry -- GEBCO (~450m) with real local multibeam/LiDAR surveys merged in nearshore, wherever available.</p>
+            </div>
+            
+          <p class="bsq-sub" style="margin-top: 10px;">All layers are resampled onto the fine bathymetry grid (bilinear) before blending, so coarser satellite/model fields don't destroy the fine shelf-break detail.</p>
+        </div>
+      </div>
+
+      
+      <div class="bsq-section">
+        <div class="bsq-accordion-header" id="bsq-mld-toggle">
+          <h3><span class="material-symbols-outlined">layers</span>Mixed Layer Depth (MLD) Front</h3>
+          <span class="material-symbols-outlined bsq-chevron">expand_more</span>
+        </div>
+        <div class="bsq-accordion-body" id="bsq-mld-body">
+          <p class="bsq-sub">A shoaling (shallower) mixed layer compresses baitfish and forage species closer to the surface, within easier reach of surface-feeding tuna -- particularly meaningful where it coincides with the thermal/chlorophyll fronts already scored above.</p>
+          <div class="bsq-factor-row">
+            <div class="bsq-factor-head">
+              <span class="material-symbols-outlined">travel_explore</span>
+              <span class="bsq-factor-label">Data source</span>
+            </div>
+            <p class="bsq-factor-desc">Copernicus Marine mixed layer thickness (<code>mlotst</code>), the same physics product family already used for SSHA/currents above.</p>
+          </div>
+          <div class="bsq-factor-row">
+            <div class="bsq-factor-head">
+              <span class="material-symbols-outlined">grid_on</span>
+              <span class="bsq-factor-label">Method</span>
+            </div>
+            <p class="bsq-factor-desc">Displayed here as the raw depth field (metres) on its own percentile-clipped scale, brighter where the mixed layer is shallower. Ripley is still wiring this into a gradient/front-strength score alongside the other four WLC factors above.</p>
+          </div>
+          <div class="bsq-factor-row">
+            <div class="bsq-factor-head">
+              <span class="material-symbols-outlined">colorize</span>
+              <span class="bsq-factor-label">Reading it</span>
+            </div>
+            <p class="bsq-factor-desc">Brighter areas are a shallower (shoaled) mixed layer; darker areas are deeper mixing -- look for bright patches lining up with the SST/chlorophyll front layers above.</p>
+          </div>
+          <p class="bsq-sub">Toggle on <strong>&ldquo;Factor: MLD front score&rdquo;</strong> in the Layers list above. Not available for every date -- the Copernicus mixed layer depth fetch degrades gracefully (skipped, with a warning) if it fails for that date, the same as FSLE below.</p><p class="bsq-sub"><strong>Reading it:</strong> this layer shows the raw <code>mlotst</code> depth field (metres, see its own mini legend once toggled on) -- not the normalized 0-100 gradient/front-strength value that actually feeds the weight above, which isn&rsquo;t currently exported as its own visual layer.</p>
+        </div>
+      </div>
+    
+
+      
+      <div class="bsq-section">
+        <div class="bsq-accordion-header" id="bsq-fsle-toggle">
+          <h3><span class="material-symbols-outlined">air</span>Ocean Fronts (FSLE)</h3>
+          <span class="material-symbols-outlined bsq-chevron">expand_more</span>
+        </div>
+        <div class="bsq-accordion-body" id="bsq-fsle-body">
+          <p class="bsq-sub">A Finite-Size Lyapunov Exponent (FSLE) highlights the thin, filamentary ocean fronts where converging surface currents concentrate drifting plankton and baitfish -- a Lagrangian signal invisible in any single day's current snapshot.</p>
+          <div class="bsq-factor-row">
+            <div class="bsq-factor-head">
+              <span class="material-symbols-outlined">travel_explore</span>
+              <span class="bsq-factor-label">Data source</span>
+            </div>
+            <p class="bsq-factor-desc">Free daily surface current vectors (u/v) from the Copernicus Marine Data Store, including several forecast days beyond the selected date.</p>
+          </div>
+          <div class="bsq-factor-row">
+            <div class="bsq-factor-head">
+              <span class="material-symbols-outlined">scatter_plot</span>
+              <span class="bsq-factor-label">Method</span>
+            </div>
+            <p class="bsq-factor-desc">A dense grid of virtual particle pairs is advected forward through the current field with a 4th-order Runge-Kutta integrator. Each pair's separation is tracked until it grows from an initial distance &delta;&#8320; to a final threshold &delta;<sub>f</sub>, taking time &tau;.</p>
+          </div>
+          <div class="bsq-factor-row">
+            <div class="bsq-factor-head">
+              <span class="material-symbols-outlined">functions</span>
+              <span class="bsq-factor-label">Formula</span>
+            </div>
+            <p class="bsq-factor-desc">&lambda; = (1&frasl;&tau;) &middot; ln(&delta;<sub>f</sub> &frasl; &delta;&#8320;), in units of 1/day. Brighter ridges mean faster separation, i.e. sharper convergence fronts.</p>
+          </div>
+          <p class="bsq-sub">Toggle on <strong>&ldquo;Ocean fronts (FSLE)&rdquo;</strong> in the Layers list above. Not available for every date -- it requires several days of forecast surface-current data beyond the selected date, which isn&rsquo;t always available (e.g. for far-past historical dates).</p>
+        </div>
+      </div>
+    
+
+      
+      <div class="bsq-section">
+        <div class="bsq-accordion-header" id="bsq-v2-toggle">
+          <h3><span class="material-symbols-outlined">science</span>v2 Bite Score (Beta)<span class="bsq-beta-pill">BETA</span></h3>
+          <span class="material-symbols-outlined bsq-chevron">expand_more</span>
+        </div>
+        <div class="bsq-accordion-body" id="bsq-v2-body">
+          <p class="bsq-sub"><strong>This is a separate, experimental scoring model</strong> -- not a refinement of the Bite Score above. It combines seafloor-structure proximity (shelf break + named canyons), real vorticity-based warm-core eddy detection, a bell-curve SST fit, an optimal-band chlorophyll fit, and a seasonal multiplier, using different weights and different inputs than v1. It has <strong>not</strong> been validated against catch data the way v1's model has -- treat it as a second opinion to compare against v1, not a replacement for it.</p>
+          <p class="bsq-v2-status" id="bsq-v2-status">Checking v2 (Beta) availability...</p>
+          <div class="bsq-factor-row">
+            <div class="bsq-factor-head">
+              <span class="material-symbols-outlined">toggle_on</span>
+              <span class="bsq-factor-label">Viewing it</span>
+            </div>
+            <p class="bsq-factor-desc">Toggle on <strong>&ldquo;Bite Score heatmap v2 (Beta - structure/eddy model)&rdquo;</strong> in the Layers list above (near the top, alongside the v1 and legacy heatmaps) to compare it directly against v1's heatmap. Its 7 individual contributing factors are also available lower down in the Layers list, each labelled <strong>&ldquo;Factor (v2 Beta): ...&rdquo;</strong>.</p>
+          </div>
+          
+            <div class="bsq-factor-row">
+              <div class="bsq-factor-head">
+                <span class="material-symbols-outlined">thermostat</span>
+                <span class="bsq-factor-label">SST bell-curve score</span>
+                <span class="bsq-factor-weight">33%</span>
+              </div>
+              <p class="bsq-factor-desc">How close sea-surface temperature (blended with its local gradient) sits to Yellowfin Tuna's preferred range, scored as a bell curve rather than v1's pure thermal-front-gradient approach -- peaks away from fronts too, not just on them.</p>
+            </div>
+            
+            <div class="bsq-factor-row">
+              <div class="bsq-factor-head">
+                <span class="material-symbols-outlined">grass</span>
+                <span class="bsq-factor-label">Chlorophyll optimal-band score</span>
+                <span class="bsq-factor-weight">24%</span>
+              </div>
+              <p class="bsq-factor-desc">Chlorophyll concentration scored against an optimal productivity band (too little = clear/oligotrophic water, too much = turbid/coastal water), rather than v1's pure chlorophyll-gradient/front approach.</p>
+            </div>
+            
+            <div class="bsq-factor-row">
+              <div class="bsq-factor-head">
+                <span class="material-symbols-outlined">waves</span>
+                <span class="bsq-factor-label">Current-edge score (v2 recomputed)</span>
+                <span class="bsq-factor-weight">14%</span>
+              </div>
+              <p class="bsq-factor-desc">Surface current-velocity edge intensity, recomputed on v2's wider AOI_V2 grid alongside the other v2 factors.</p>
+            </div>
+            
+            <div class="bsq-factor-row">
+              <div class="bsq-factor-head">
+                <span class="material-symbols-outlined">terrain</span>
+                <span class="bsq-factor-label">Depth-suitability score (v2 recomputed)</span>
+                <span class="bsq-factor-weight">9%</span>
+              </div>
+              <p class="bsq-factor-desc">Same depth-suitability envelope concept as v1, recomputed on v2's own wider-coverage bathymetry grid (data/gebco_seq_v2.nc).</p>
+            </div>
+            
+            <div class="bsq-factor-row">
+              <div class="bsq-factor-head">
+                <span class="material-symbols-outlined">layers</span>
+                <span class="bsq-factor-label">MLD gradient score (v2)</span>
+                <span class="bsq-factor-weight">6%</span>
+              </div>
+              <p class="bsq-factor-desc">Mixed-layer-depth gradient, normalized into a real 0-100 WLC factor (unlike v1's raw-metres MLD diagnostic layer).</p>
+            </div>
+            
+            <div class="bsq-factor-row">
+              <div class="bsq-factor-head">
+                <span class="material-symbols-outlined">hub</span>
+                <span class="bsq-factor-label">Structure proximity score</span>
+                <span class="bsq-factor-weight">8%</span>
+              </div>
+              <p class="bsq-factor-desc">Proximity to named seafloor structure (shelf break, canyons) -- a genuinely NEW v2 factor with no v1 equivalent. See config.STRUCTURE_FEATURES_V2 / structure_layers.py.</p>
+            </div>
+            
+            <div class="bsq-factor-row">
+              <div class="bsq-factor-head">
+                <span class="material-symbols-outlined">cyclone</span>
+                <span class="bsq-factor-label">Eddy detection score</span>
+                <span class="bsq-factor-weight">6%</span>
+              </div>
+              <p class="bsq-factor-desc">Real vorticity-based warm-core eddy detection (from surface current shear), rather than v1's SSHA-gradient proxy -- another genuinely NEW v2 factor with no v1 equivalent.</p>
+            </div>
+            
+          <div class="bsq-factor-row">
+            <div class="bsq-factor-head">
+              <span class="material-symbols-outlined">calendar_month</span>
+              <span class="bsq-factor-label">Seasonal multiplier</span>
+            </div>
+            <p class="bsq-factor-desc">The combined score above is further scaled by a calendar-month multiplier: &times;1.0 Sep&ndash;Nov (peak season), &times;0.8 Dec&ndash;Jan and May&ndash;Aug (winter &ldquo;barrel run&rdquo;), &times;0.3 Feb&ndash;Apr (seasonal low).</p>
+          </div>
+          <p class="bsq-sub">Only available for a small number of test dates so far -- if it hasn&rsquo;t been run for the date you&rsquo;re viewing, the status above will say so and the heatmap toggle simply stays blank (v1&rsquo;s heatmap is completely unaffected either way).</p>
+        </div>
+      </div>
+    
+
+      
+      <div class="bsq-section">
+        <div class="bsq-accordion-header" id="bsq-lenigas-toggle">
+          <h3><span class="material-symbols-outlined">record_voice_over</span>Lenigas Bite Score<span class="bsq-beta-pill">EXPERIMENTAL</span></h3>
+          <span class="material-symbols-outlined bsq-chevron">expand_more</span>
+        </div>
+        <div class="bsq-accordion-body" id="bsq-lenigas-body">
+          <p class="bsq-sub"><strong>This is a second, independent, experimental scoring model</strong> -- built from a real SEQ fisherman podcast account's informally-described conditions, not a refinement of v1 or v2 above. It combines EAC axis-position and convergence-point scores, a distance-offshore ramp, an upwelling/downwelling vorticity score, its own SST bell curve and depth-suitability ramp, using different weights and different inputs than either v1 or v2. It has <strong>not</strong> been validated against catch data -- treat it as an informal, experimental third opinion, not a replacement for v1 or v2.</p>
+          <p class="bsq-lenigas-status" id="bsq-lenigas-status">Checking Lenigas availability...</p>
+          <div class="bsq-factor-row">
+            <div class="bsq-factor-head">
+              <span class="material-symbols-outlined">toggle_on</span>
+              <span class="bsq-factor-label">Viewing it</span>
+            </div>
+            <p class="bsq-factor-desc">Toggle on <strong>&ldquo;Bite Score heatmap Lenigas (SEQ fisherman model)&rdquo;</strong> in the Layers list above (alongside the v1, legacy and v2 heatmaps) to compare it directly against them. Its 6 individual WLC factors plus an informational wind-speed layer are also available lower down in the Layers list, each labelled <strong>&ldquo;Factor (Lenigas): ...&rdquo;</strong>.</p>
+          </div>
+          
+            <div class="bsq-factor-row">
+              <div class="bsq-factor-head">
+                <span class="material-symbols-outlined">alt_route</span>
+                <span class="bsq-factor-label">EAC axis-position score</span>
+                <span class="bsq-factor-weight">18%</span>
+              </div>
+              <p class="bsq-factor-desc">5-zone score based on signed distance from the East Australian Current's traced core-jet axis -- the podcast's account of fishing relative to 'the current line' turned into a continuous km-based score.</p>
+            </div>
+            
+            <div class="bsq-factor-row">
+              <div class="bsq-factor-head">
+                <span class="material-symbols-outlined">join_inner</span>
+                <span class="bsq-factor-label">EAC convergence-point score</span>
+                <span class="bsq-factor-weight">18%</span>
+              </div>
+              <p class="bsq-factor-desc">Proximity to a single detected point where westward-flowing water most strongly meets the EAC's core-jet axis -- an honestly-documented v1-of-Lenigas simplification (falls back to a flat neutral 50 on days with no detected convergence).</p>
+            </div>
+            
+            <div class="bsq-factor-row">
+              <div class="bsq-factor-head">
+                <span class="material-symbols-outlined">terrain</span>
+                <span class="bsq-factor-label">Depth-suitability score (Lenigas)</span>
+                <span class="bsq-factor-weight">18%</span>
+              </div>
+              <p class="bsq-factor-desc">A separate depth-suitability ramp/envelope tuned to this model's own preferred depth band, recomputed on the same AOI_V2 bathymetry grid as v2's depth-suitability factor.</p>
+            </div>
+            
+            <div class="bsq-factor-row">
+              <div class="bsq-factor-head">
+                <span class="material-symbols-outlined">swap_vert</span>
+                <span class="bsq-factor-label">Upwelling/downwelling score</span>
+                <span class="bsq-factor-weight">14%</span>
+              </div>
+              <p class="bsq-factor-desc">Continuous tanh-scaled score from relative vorticity sign -- upwelling (nutrient-rich water rising) scores higher than downwelling, per the podcast's account of upwelling zones fishing better.</p>
+            </div>
+            
+            <div class="bsq-factor-row">
+              <div class="bsq-factor-head">
+                <span class="material-symbols-outlined">thermostat</span>
+                <span class="bsq-factor-label">SST bell-curve score (Lenigas)</span>
+                <span class="bsq-factor-weight">14%</span>
+              </div>
+              <p class="bsq-factor-desc">A clean Gaussian bell-curve fit around this model's own preferred sea-surface temperature, without v2's added gradient/front blending -- SST is this model's lowest-weighted factor, per the source account's own de-emphasis of exact temperature.</p>
+            </div>
+            
+            <div class="bsq-factor-row">
+              <div class="bsq-factor-head">
+                <span class="material-symbols-outlined">sailing</span>
+                <span class="bsq-factor-label">Distance-offshore score</span>
+                <span class="bsq-factor-weight">9%</span>
+              </div>
+              <p class="bsq-factor-desc">Ramped suitability envelope over real distance-from-coast (computed from the AOI_V2 land/sea mask), peaking at the offshore band the source account describes fishing, rather than v1/v2's shelf-break-proximity framing.</p>
+            </div>
+            
+            <div class="bsq-factor-row">
+              <div class="bsq-factor-head">
+                <span class="material-symbols-outlined">waves</span>
+                <span class="bsq-factor-label">SSHA hotspot score (Lenigas)</span>
+                <span class="bsq-factor-weight">10%</span>
+              </div>
+              <p class="bsq-factor-desc">Percentile-tiered score from a per-date, re-based sea surface height anomaly (zos) -- a hotspot/boundary signal distinct from upwelling/downwelling's current-shear-derived vorticity, using seasonal anchor tables that peak at the 30th percentile (upwelling-biased).</p>
+            </div>
+            
+            <div class="bsq-factor-row">
+              <div class="bsq-factor-head">
+                <span class="material-symbols-outlined">air</span>
+                <span class="bsq-factor-label">Wind speed</span>
+                
+              </div>
+              <p class="bsq-factor-desc">Real wind speed, fetched and reported for validation purposes but NOT yet part of the WLC weights below -- shown here only as an informational raw layer (own percentile-clipped scale, not a 0-100 score) until a wind-suitability curve is specified as follow-up work.</p>
+            </div>
+            
+          <p class="bsq-sub">Only available for a small number of test dates so far -- if it hasn&rsquo;t been run for the date you&rsquo;re viewing, the status above will say so and the heatmap toggle simply stays blank (v1's and v2's heatmaps are completely unaffected either way).</p>
+        </div>
+      </div>
+    
+
+      
+      <div class="bsq-section">
+        <div class="bsq-accordion-header" id="bsq-relief-toggle">
+          <h3><span class="material-symbols-outlined">terrain</span>Bathymetry Relief Map</h3>
+          <span class="material-symbols-outlined bsq-chevron">expand_more</span>
+        </div>
+        <div class="bsq-accordion-body" id="bsq-relief-body">
+          <p class="bsq-sub">A shaded-relief (hillshade) view of the sea floor across the whole map area -- the same composite bathymetry grid used for the Depth-suitability factor above, not just the 3 small high-res patches below.</p>
+          <div class="bsq-factor-row">
+            <div class="bsq-factor-head">
+              <span class="material-symbols-outlined">public</span>
+              <span class="bsq-factor-label">Data source</span>
+            </div>
+            <p class="bsq-factor-desc">GEBCO global grid (~450m) as the base, with the Sunshine Coast LiDAR, Moreton Bay Approaches and Mudjimba Island surveys below merged in wherever they cover a cell -- real soundings replacing GEBCO's satellite-derived estimate there.</p>
+          </div>
+          <div class="bsq-factor-row">
+            <div class="bsq-factor-head">
+              <span class="material-symbols-outlined">grid_on</span>
+              <span class="bsq-factor-label">Method</span>
+            </div>
+            <p class="bsq-factor-desc">Each survey is area-averaged down onto GEBCO's own ~450m cell size (not simply overlaid), so the merge doesn&rsquo;t change the reference grid's resolution -- only its accuracy where real survey data exists.</p>
+          </div>
+          <div class="bsq-factor-row">
+            <div class="bsq-factor-head">
+              <span class="material-symbols-outlined">colorize</span>
+              <span class="bsq-factor-label">Reading it</span>
+            </div>
+            <p class="bsq-factor-desc">Blue shades are underwater depth; green/brown shades are land. Look for visibly sharper detail over the Sunshine Coast, Moreton Bay approaches and Mudjimba Island -- the areas backed by real survey data.</p>
+          </div>
+          <p class="bsq-sub">Toggle on <strong>&ldquo;Bathymetry relief map&rdquo;</strong> in the Layers list above. Loaded on demand from the local dashboard server (<code>python -m bite_score.webapp</code>) the first time it&rsquo;s switched on.</p>
+        </div>
+      </div>
+    
+
+      
+      <div class="bsq-section">
+        <div class="bsq-accordion-header" id="bsq-lidar-toggle">
+          <h3><span class="material-symbols-outlined">terrain</span>Sunshine Coast LiDAR Bathymetry</h3>
+          <span class="material-symbols-outlined bsq-chevron">expand_more</span>
+        </div>
+        <div class="bsq-accordion-body" id="bsq-lidar-body">
+          <p class="bsq-sub">A much higher-resolution alternative to the ~450m GEBCO grid used everywhere else on this map, but limited to a narrow nearshore strip of the Sunshine Coast rather than the whole map area.</p>
+          <div class="bsq-factor-row">
+            <div class="bsq-factor-head">
+              <span class="material-symbols-outlined">flight</span>
+              <span class="bsq-factor-label">Data source</span>
+            </div>
+            <p class="bsq-factor-desc">2011 airborne LiDAR bathymetry survey of the Sunshine Coast, supplied as raw XYZ point clouds (GDA94 / MGA Zone 56, AHD height).</p>
+          </div>
+          <div class="bsq-factor-row">
+            <div class="bsq-factor-head">
+              <span class="material-symbols-outlined">grid_on</span>
+              <span class="bsq-factor-label">Method</span>
+            </div>
+            <p class="bsq-factor-desc">Tens of millions of raw survey points are averaged onto a 10m grid, then reprojected to WGS84 for display -- roughly 45&times; finer than the GEBCO grid used for the rest of the map.</p>
+          </div>
+          <div class="bsq-factor-row">
+            <div class="bsq-factor-head">
+              <span class="material-symbols-outlined">colorize</span>
+              <span class="bsq-factor-label">Reading it</span>
+            </div>
+            <p class="bsq-factor-desc">Blue shades are underwater depth; green/brown shades are the surveyed beach and dune land above sea level.</p>
+          </div>
+          <p class="bsq-sub">Toggle on <strong>&ldquo;Sunshine Coast LiDAR bathymetry&rdquo;</strong> in the Layers list above. Loaded on demand from the local dashboard server (<code>python -m bite_score.webapp</code>) the first time it&rsquo;s switched on.</p>
+        </div>
+      </div>
+    
+
+      
+      <div class="bsq-section">
+        <div class="bsq-accordion-header" id="bsq-mba-toggle">
+          <h3><span class="material-symbols-outlined">terrain</span>Moreton Bay Approaches Bathymetry</h3>
+          <span class="material-symbols-outlined bsq-chevron">expand_more</span>
+        </div>
+        <div class="bsq-accordion-body" id="bsq-mba-body">
+          <p class="bsq-sub">A much higher-resolution alternative to the ~450m GEBCO grid used everywhere else on this map, covering the offshore approaches between the Sunshine Coast and the Moreton Bay entrance.</p>
+          <div class="bsq-factor-row">
+            <div class="bsq-factor-head">
+              <span class="material-symbols-outlined">directions_boat</span>
+              <span class="bsq-factor-label">Data source</span>
+            </div>
+            <p class="bsq-factor-desc">Approaches to Moreton Bay (HIPP SI 1021) multibeam survey, 2023, published by Geoscience Australia&rsquo;s AusSeabed open data catalogue (CC BY 4.0).</p>
+          </div>
+          <div class="bsq-factor-row">
+            <div class="bsq-factor-head">
+              <span class="material-symbols-outlined">grid_on</span>
+              <span class="bsq-factor-label">Method</span>
+            </div>
+            <p class="bsq-factor-desc">Pre-gridded 30m depth raster, downloaded once and cached -- roughly 15&times; finer than the GEBCO grid used for the rest of the map.</p>
+          </div>
+          <div class="bsq-factor-row">
+            <div class="bsq-factor-head">
+              <span class="material-symbols-outlined">colorize</span>
+              <span class="bsq-factor-label">Reading it</span>
+            </div>
+            <p class="bsq-factor-desc">Shaded relief over water depth only -- this survey doesn&rsquo;t extend onto land.</p>
+          </div>
+          <p class="bsq-sub">Toggle on <strong>&ldquo;Moreton Bay Approaches bathymetry&rdquo;</strong> in the Layers list above. Loaded on demand from the local dashboard server (<code>python -m bite_score.webapp</code>) the first time it&rsquo;s switched on.</p>
+        </div>
+      </div>
+    
+
+      
+      <div class="bsq-section">
+        <div class="bsq-accordion-header" id="bsq-mudjimba-toggle">
+          <h3><span class="material-symbols-outlined">terrain</span>Mudjimba Island Bathymetry</h3>
+          <span class="material-symbols-outlined bsq-chevron">expand_more</span>
+        </div>
+        <div class="bsq-accordion-body" id="bsq-mudjimba-body">
+          <p class="bsq-sub">The finest-resolution layer on this map by far, though limited to a tiny ~1.5km &times; 1.5km patch right around Mudjimba Island, Sunshine Coast.</p>
+          <div class="bsq-factor-row">
+            <div class="bsq-factor-head">
+              <span class="material-symbols-outlined">directions_boat</span>
+              <span class="bsq-factor-label">Data source</span>
+            </div>
+            <p class="bsq-factor-desc">Mudjimba Island multibeam survey, 2024, published by Geoscience Australia&rsquo;s AusSeabed open data catalogue (CC BY 4.0).</p>
+          </div>
+          <div class="bsq-factor-row">
+            <div class="bsq-factor-head">
+              <span class="material-symbols-outlined">grid_on</span>
+              <span class="bsq-factor-label">Method</span>
+            </div>
+            <p class="bsq-factor-desc">Pre-gridded 0.5m depth raster, downloaded once and cached -- roughly 900&times; finer than the GEBCO grid used for the rest of the map.</p>
+          </div>
+          <div class="bsq-factor-row">
+            <div class="bsq-factor-head">
+              <span class="material-symbols-outlined">colorize</span>
+              <span class="bsq-factor-label">Reading it</span>
+            </div>
+            <p class="bsq-factor-desc">Shaded relief over water depth only -- this survey doesn&rsquo;t extend onto land.</p>
+          </div>
+          <p class="bsq-sub">Toggle on <strong>&ldquo;Mudjimba Island bathymetry&rdquo;</strong> in the Layers list above. Loaded on demand from the local dashboard server (<code>python -m bite_score.webapp</code>) the first time it&rsquo;s switched on.</p>
+        </div>
+      </div>
+    
+
+      
+      <div class="bsq-section">
+        <div class="bsq-accordion-header" id="bsq-mbgfc-toggle">
+          <h3><span class="material-symbols-outlined">map</span>MBGFC Fishing Chart</h3>
+          <span class="material-symbols-outlined bsq-chevron">expand_more</span>
+        </div>
+        <div class="bsq-accordion-body" id="bsq-mbgfc-body">
+          <p class="bsq-sub">A scanned nautical chart published by the Moreton Bay Game Fish Club, showing named reefs, banks and fishing grounds from Noosa to the Gold Coast, georeferenced onto the map using its own printed lat/lon grid.</p>
+          <div class="bsq-factor-row">
+            <div class="bsq-factor-head">
+              <span class="material-symbols-outlined">description</span>
+              <span class="bsq-factor-label">Data source</span>
+            </div>
+            <p class="bsq-factor-desc">MBGFC "Fishing Locations & Info" one-pager PDF (mbgfc.com.au) -- a scanned chart image plus a text table of exact FAD/SFAD/wave-buoy coordinates and depths.</p>
+          </div>
+          <div class="bsq-factor-row">
+            <div class="bsq-factor-head">
+              <span class="material-symbols-outlined">grid_on</span>
+              <span class="bsq-factor-label">Method</span>
+            </div>
+            <p class="bsq-factor-desc">The chart's own printed degree gridlines (153&ndash;155&deg;E, 26&ndash;28&deg;S) were located pixel-by-pixel and used to fit a linear lon/lat transform; the FAD/SFAD/wave-buoy markers are parsed directly from the PDF's text table, not estimated from the image.</p>
+          </div>
+          <div class="bsq-factor-row">
+            <div class="bsq-factor-head">
+              <span class="material-symbols-outlined">warning</span>
+              <span class="bsq-factor-label">Caveat</span>
+            </div>
+            <p class="bsq-factor-desc">Reference only, not for navigation -- print/scan registration may introduce small (sub-100m scale) positional error in the chart image itself.</p>
+          </div>
+          <p class="bsq-sub">Toggle on <strong>&ldquo;MBGFC fishing chart&rdquo;</strong> and <strong>&ldquo;MBGFC FADs, SFADs &amp; wave buoys&rdquo;</strong> in the Layers list above. Loaded on demand from the local dashboard server (<code>python -m bite_score.webapp</code>) the first time either is switched on, so this layer is always available on every date&rsquo;s map without needing to be regenerated.</p>
+        </div>
+      </div>
+    
+
+      <div class="bsq-section">
+        <div class="bsq-accordion-header" id="bsq-history-toggle">
+          <h3><span class="material-symbols-outlined">history</span>Historical Data</h3>
+          <span class="material-symbols-outlined bsq-chevron">expand_more</span>
+        </div>
+        <div class="bsq-accordion-body" id="bsq-history-body">
+          <p class="bsq-sub">Previously processed days stored in the output history folder. Select one to switch instantly (no pipeline re-run).</p>
+          <div id="bsq-history-list">
+            <div class="bsq-history-empty">Loading...</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="bsq-sidebar-footer">
+        SE Queensland &middot; Noosa &rarr; Gold Coast
+      </div>
+    </nav>
+
+    <div id="bsq-info-popover" role="dialog" aria-label="Layer information">
+      <button type="button" id="bsq-info-popover-close" aria-label="Close">&times;</button>
+      <div id="bsq-info-popover-title"></div>
+      <div id="bsq-info-popover-body"></div>
+    </div>
+
+    <script>
+      // Reused description/legend metadata for every selectable overlay
+      // (see the `_layer_ui` build block in build_folium_map() above),
+      // keyed by exact Layers-list label text -- pure data, no forward
+      // reference to any Folium-declared identifier, so (unlike
+      // bsqLayerPanes/bsqDateLayerByName below) this can be a plain
+      // top-level assignment rather than a function called from
+      // DOMContentLoaded.
+      var bsqLayerUI = {"Factor: SST thermal-front score": {"info": "Sharpest sea-surface-temperature gradients (thermal fronts), where Yellowfin Tuna often forage along temperature breaks. Source: NASA MUR satellite SST (~1km).", "legend": {"kind": "score"}, "role": "factor", "weight_pct": 33}, "Factor: Chlorophyll-front score": {"info": "Sharpest chlorophyll / water-colour gradients marking blue-water/green-water boundaries where baitfish concentrate. Source: NOAA VIIRS satellite chlorophyll-a (~4km).", "legend": {"kind": "score"}, "role": "factor", "weight_pct": 24}, "Factor: Current-edge score": {"info": "Intensity of surface current-velocity edges / eddy boundaries. Source: Copernicus Marine surface current vectors (~9km).", "legend": {"kind": "score"}, "role": "factor", "weight_pct": 14}, "Factor: SSHA / eddy-front score": {"info": "Sharpest sea-surface-height-anomaly gradients, marking eddy edges via geostrophic shear -- often a cleaner eddy signal than current velocity alone. Source: Copernicus Marine SSHA (~9km).", "legend": {"kind": "score"}, "role": "factor", "weight_pct": 14}, "Factor: MLD front score": {"info": "Shoaling (shallower) mixed layer depth compresses baitfish and forage species closer to the surface -- a signal that matters most where it coincides with the thermal or chlorophyll fronts already scored above. Source: Copernicus Marine mixed layer depth (mlotst, ~9km).", "legend": {"kind": "raw", "unit": "m"}, "role": "factor", "weight_pct": 6}, "Factor: Depth-suitability score": {"info": "Fuzzy suitability envelope peaking at the continental shelf-break / drop-off (favoured by pelagic gamefish). Land is masked out entirely. Source: composite bathymetry -- GEBCO (~450m) with real local multibeam/LiDAR surveys merged in nearshore, wherever available.", "legend": {"kind": "score"}, "role": "factor", "weight_pct": 9}, "Factor (v2 Beta): SST bell-curve score": {"info": "How close sea-surface temperature (blended with its local gradient) sits to Yellowfin Tuna's preferred range, scored as a bell curve rather than v1's pure thermal-front-gradient approach -- peaks away from fronts too, not just on them.", "legend": {"kind": "score"}, "role": "factor", "weight_pct": 33}, "Factor (v2 Beta): Chlorophyll optimal-band score": {"info": "Chlorophyll concentration scored against an optimal productivity band (too little = clear/oligotrophic water, too much = turbid/coastal water), rather than v1's pure chlorophyll-gradient/front approach.", "legend": {"kind": "score"}, "role": "factor", "weight_pct": 24}, "Factor (v2 Beta): Current-edge score (v2 recomputed)": {"info": "Surface current-velocity edge intensity, recomputed on v2's wider AOI_V2 grid alongside the other v2 factors.", "legend": {"kind": "score"}, "role": "factor", "weight_pct": 14}, "Factor (v2 Beta): Depth-suitability score (v2 recomputed)": {"info": "Same depth-suitability envelope concept as v1, recomputed on v2's own wider-coverage bathymetry grid (data/gebco_seq_v2.nc).", "legend": {"kind": "score"}, "role": "factor", "weight_pct": 9}, "Factor (v2 Beta): MLD gradient score (v2)": {"info": "Mixed-layer-depth gradient, normalized into a real 0-100 WLC factor (unlike v1's raw-metres MLD diagnostic layer).", "legend": {"kind": "score"}, "role": "factor", "weight_pct": 6}, "Factor (v2 Beta): Structure proximity score": {"info": "Proximity to named seafloor structure (shelf break, canyons) -- a genuinely NEW v2 factor with no v1 equivalent. See config.STRUCTURE_FEATURES_V2 / structure_layers.py.", "legend": {"kind": "score"}, "role": "factor", "weight_pct": 8}, "Factor (v2 Beta): Eddy detection score": {"info": "Real vorticity-based warm-core eddy detection (from surface current shear), rather than v1's SSHA-gradient proxy -- another genuinely NEW v2 factor with no v1 equivalent.", "legend": {"kind": "score"}, "role": "factor", "weight_pct": 6}, "Factor (Lenigas): EAC axis-position score": {"info": "5-zone score based on signed distance from the East Australian Current's traced core-jet axis -- the podcast's account of fishing relative to 'the current line' turned into a continuous km-based score.", "legend": {"kind": "score"}, "role": "factor", "weight_pct": 18}, "Factor (Lenigas): EAC convergence-point score": {"info": "Proximity to a single detected point where westward-flowing water most strongly meets the EAC's core-jet axis -- an honestly-documented v1-of-Lenigas simplification (falls back to a flat neutral 50 on days with no detected convergence).", "legend": {"kind": "score"}, "role": "factor", "weight_pct": 18}, "Factor (Lenigas): Depth-suitability score (Lenigas)": {"info": "A separate depth-suitability ramp/envelope tuned to this model's own preferred depth band, recomputed on the same AOI_V2 bathymetry grid as v2's depth-suitability factor.", "legend": {"kind": "score"}, "role": "factor", "weight_pct": 18}, "Factor (Lenigas): Upwelling/downwelling score": {"info": "Continuous tanh-scaled score from relative vorticity sign -- upwelling (nutrient-rich water rising) scores higher than downwelling, per the podcast's account of upwelling zones fishing better.", "legend": {"kind": "score"}, "role": "factor", "weight_pct": 14}, "Factor (Lenigas): SST bell-curve score (Lenigas)": {"info": "A clean Gaussian bell-curve fit around this model's own preferred sea-surface temperature, without v2's added gradient/front blending -- SST is this model's lowest-weighted factor, per the source account's own de-emphasis of exact temperature.", "legend": {"kind": "score"}, "role": "factor", "weight_pct": 14}, "Factor (Lenigas): Distance-offshore score": {"info": "Ramped suitability envelope over real distance-from-coast (computed from the AOI_V2 land/sea mask), peaking at the offshore band the source account describes fishing, rather than v1/v2's shelf-break-proximity framing.", "legend": {"kind": "score"}, "role": "factor", "weight_pct": 9}, "Factor (Lenigas): SSHA hotspot score (Lenigas)": {"info": "Percentile-tiered score from a per-date, re-based sea surface height anomaly (zos) -- a hotspot/boundary signal distinct from upwelling/downwelling's current-shear-derived vorticity, using seasonal anchor tables that peak at the 30th percentile (upwelling-biased).", "legend": {"kind": "score"}, "role": "factor", "weight_pct": 10}, "Factor (Lenigas): Wind speed": {"info": "Real wind speed, fetched and reported for validation purposes but NOT yet part of the WLC weights below -- shown here only as an informational raw layer (own percentile-clipped scale, not a 0-100 score) until a wind-suitability curve is specified as follow-up work.", "legend": {"kind": "raw", "unit": "m/s"}, "role": "factor", "informational": true}, "Bite Score heatmap (current, high-res)": {"info": "The final Yellowfin Tuna Bite Score (0-100): a Weighted Linear Combination of the six factors below (SST thermal fronts, chlorophyll fronts, current edges, SSHA/eddy fronts, MLD fronts and depth suitability), all resampled onto the fine bathymetry grid before blending.", "legend": {"kind": "score"}, "role": "composite"}, "Bite Score heatmap (legacy, coarse - for comparison)": {"info": "The original, lower-resolution scoring approach (SST as the alignment reference, nearest-neighbour resampling, no SSHA/MLD factors) -- kept only for direct comparison against the current, more accurate overlay above.", "legend": {"kind": "score"}, "role": "composite"}, "Ocean fronts (FSLE)": {"info": "A Finite-Size Lyapunov Exponent (FSLE) field highlighting the thin, filamentary ocean fronts where converging surface currents concentrate drifting plankton and baitfish -- an independent diagnostic layer, not one of the six weighted Bite Score factors. Shown on its own 95th-percentile-clipped scale (units 1/day), not 0-100.", "legend": {"kind": "diagnostic", "unit": "1/day"}}, "Bite Score heatmap v2 (Beta - structure/eddy model)": {"info": "A separate, experimental scoring model -- seafloor-structure proximity, real vorticity-based eddy detection, bell-curve SST, optimal-band chlorophyll and a seasonal multiplier. Not validated against catch data the way v1 has been -- treat it as a second opinion, not a replacement for v1.", "legend": {"kind": "score"}, "role": "composite"}, "Bite Score heatmap Lenigas (SEQ fisherman model)": {"info": "A second, independent, experimental scoring model built from a real SEQ fisherman podcast account's informally-described conditions (EAC axis position/convergence, distance offshore, upwelling/downwelling, its own SST bell curve and depth-suitability ramp). Not validated against catch data -- an informal third opinion, not a replacement for v1 or v2.", "legend": {"kind": "score"}, "role": "composite"}, "Sunshine Coast LiDAR bathymetry (high-res, 2011 survey)": {"info": "A much higher-resolution alternative (10m) to the ~450m GEBCO grid used everywhere else on this map, from a 2011 airborne LiDAR survey -- limited to a narrow nearshore strip of the Sunshine Coast. Legend shows raw depth in metres (negative values = surveyed land above sea level).", "legend": {"kind": "diverging", "unit": "m"}}, "Moreton Bay Approaches bathymetry (high-res, 2023 survey)": {"info": "A 30m-resolution AusSeabed multibeam survey covering the offshore approaches between the Sunshine Coast and the Moreton Bay entrance -- real soundings, not GEBCO's satellite-derived estimate. Legend shows raw depth in metres.", "legend": {"kind": "diverging", "unit": "m"}}, "Mudjimba Island bathymetry (high-res, 2024 survey)": {"info": "The finest-resolution layer on this map (0.5m), from a 2024 AusSeabed multibeam survey -- limited to a tiny ~1.5km patch around Mudjimba Island. Legend shows raw depth in metres.", "legend": {"kind": "diverging", "unit": "m"}}, "Bathymetry relief map": {"info": "A whole-domain shaded-relief view of the same composite bathymetry grid used for the Depth-suitability factor -- GEBCO (~450m) with the 3 high-res surveys above merged in nearshore wherever they cover a cell. Legend shows raw depth in metres (negative values = land).", "legend": {"kind": "diverging", "unit": "m"}}, "Bathymetry contours (depth reference)": {"info": "Isobath (depth contour) lines derived from the static composite bathymetry grid and labelled in metres -- a fixed reference for judging position/scale, identical on every date.", "legend": {"kind": "none"}}, "Land outline": {"info": "The coastline, traced directly from the Depth-suitability score raster's own land (nodata) mask -- pixel-perfectly aligned with every other layer on this map.", "legend": {"kind": "none"}}, "MBGFC fishing chart (georeferenced)": {"info": "A scanned Moreton Bay Game Fish Club nautical chart showing named reefs, banks and fishing grounds from Noosa to the Gold Coast, georeferenced using its own printed lat/lon grid. Reference only, not for navigation.", "legend": {"kind": "none"}}, "MBGFC FADs, SFADs & wave buoys": {"info": "Exact FAD/SFAD/wave-buoy coordinates and depths, parsed directly from the MBGFC chart's own text table (not estimated from the scanned image).", "legend": {"kind": "none"}}};
+      var bsqKeyToLabel = {"bite_score": "Bite Score heatmap (current, high-res)", "legacy": "Bite Score heatmap (legacy, coarse - for comparison)", "fsle": "Ocean fronts (FSLE)", "v2/bite_score_v2": "Bite Score heatmap v2 (Beta - structure/eddy model)", "lenigas/bite_score_lenigas": "Bite Score heatmap Lenigas (SEQ fisherman model)", "sst": "Factor: SST thermal-front score", "chl": "Factor: Chlorophyll-front score", "current": "Factor: Current-edge score", "ssha": "Factor: SSHA / eddy-front score", "mld": "Factor: MLD front score", "v2/sst_bell": "Factor (v2 Beta): SST bell-curve score", "v2/chl_band": "Factor (v2 Beta): Chlorophyll optimal-band score", "v2/current": "Factor (v2 Beta): Current-edge score (v2 recomputed)", "v2/bathymetry": "Factor (v2 Beta): Depth-suitability score (v2 recomputed)", "v2/mld": "Factor (v2 Beta): MLD gradient score (v2)", "v2/structure": "Factor (v2 Beta): Structure proximity score", "v2/eddy": "Factor (v2 Beta): Eddy detection score", "lenigas/eac_axis_position": "Factor (Lenigas): EAC axis-position score", "lenigas/eac_convergence": "Factor (Lenigas): EAC convergence-point score", "lenigas/depth_suitability": "Factor (Lenigas): Depth-suitability score (Lenigas)", "lenigas/upwelling_downwelling": "Factor (Lenigas): Upwelling/downwelling score", "lenigas/sst_bell": "Factor (Lenigas): SST bell-curve score (Lenigas)", "lenigas/distance_offshore": "Factor (Lenigas): Distance-offshore score", "lenigas/ssha_hotspot": "Factor (Lenigas): SSHA hotspot score (Lenigas)", "lenigas/wind_speed": "Factor (Lenigas): Wind speed"};
+      var bsqStaticKeyToLabel = {"depth_suitability": "Factor: Depth-suitability score", "lidar": "Sunshine Coast LiDAR bathymetry (high-res, 2011 survey)", "moreton_bay_approaches": "Moreton Bay Approaches bathymetry (high-res, 2023 survey)", "mudjimba_island": "Mudjimba Island bathymetry (high-res, 2024 survey)", "relief_map": "Bathymetry relief map"};
+
+      function bsqSetOpacity(v) {
+        try { image_overlay_7c1cda5e7e0f57437f9b3e116fc28bf2.setOpacity(parseFloat(v)); } catch (e) {}
+      }
+      
+      function bsqSetLegacyOpacity(v) {
+        try { image_overlay_98705d596d85509ca42fa030f3a1ef1b.setOpacity(parseFloat(v)); } catch (e) {}
+      }
+        
+
+      // Every overlay lives in its own dedicated Leaflet pane (see
+      // _add_pane() in visualize.py), so drag-and-drop reordering of the
+      // overlay checklist just needs to update each pane's CSS z-index to
+      // match list order -- works uniformly whether the layer underneath
+      // is a raster ImageOverlay or a vector GeoJson/FeatureGroup, and
+      // avoids relying on per-layer-type Leaflet methods (setZIndex only
+      // exists on some layer types; bringToFront doesn't reorder relative
+      // to layers of a different type sharing the default pane). Purely a
+      // runtime/session convenience -- order isn't persisted across reloads.
+      var bsqLayerPanes = null;
+      function bsqInitLayerPanes() {
+        bsqLayerPanes = {
+          "MBGFC fishing chart (georeferenced)": pane_16528315d77ca3d56468b8f17161d3ca,
+          "MBGFC FADs, SFADs & wave buoys": pane_9f7bec0486dade20ab233504bd71116e,
+          "Land outline": pane_27efd5d7b8a031208f4eb5b7565dc7da,
+          "Bathymetry contours (depth reference)": pane_9d0ed15456306c53934e4cbe236d6e33,
+          "Ocean fronts (FSLE)": pane_3e4a86862543edcffe5eb5775ab7008d,
+          "Bite Score heatmap (current, high-res)": pane_de5a8aab87402a74fd178c19e150d6b0,
+          "Bite Score heatmap (legacy, coarse - for comparison)": pane_372cd5165eadbad4f394d3f3bbc0b52b,
+          "Factor: SST thermal-front score": pane_ec76bd02b4e9025359efcf46d582a318,
+          "Factor: Chlorophyll-front score": pane_3a38a750e0a32b59135cc07906051cf2,
+          "Factor: Current-edge score": pane_4f481fb0fdc8b910c675819738bda673,
+          "Factor: SSHA / eddy-front score": pane_3dd94b1cf7eb08c6950b96cca964c6b8,
+          "Factor: MLD front score": pane_af3d7bfe473c3bc71fff44ee8aa1f03e,
+          "Factor: Depth-suitability score": pane_4245a39c9f327033835f84639a6cd724,
+          "Bite Score heatmap v2 (Beta - structure/eddy model)": pane_6047d3e02e4a1afbeb5a6c7d40a67022,
+          "Factor (v2 Beta): SST bell-curve score": pane_337a707a4636167fb7d17d3678a15ea7,
+          "Factor (v2 Beta): Chlorophyll optimal-band score": pane_ccc3a602ef12086d3271404fc4880858,
+          "Factor (v2 Beta): Current-edge score (v2 recomputed)": pane_d604ab744053b83b9820b40991c37926,
+          "Factor (v2 Beta): Depth-suitability score (v2 recomputed)": pane_4167a410a14790e55d75c0d57dabed43,
+          "Factor (v2 Beta): MLD gradient score (v2)": pane_40999725d7002270d76cd790d1dc9e81,
+          "Factor (v2 Beta): Structure proximity score": pane_09c5b6ccacc70262d734dffd95382674,
+          "Factor (v2 Beta): Eddy detection score": pane_326af5eb383ee389c783d203f243bbde,
+          "Bite Score heatmap Lenigas (SEQ fisherman model)": pane_7d9eba24943cf20e6d02fcaefe9aeece,
+          "Factor (Lenigas): EAC axis-position score": pane_7c7d6f8459e353d84716b498def27e06,
+          "Factor (Lenigas): EAC convergence-point score": pane_b5399065eec147bd7e921b24fb12c49a,
+          "Factor (Lenigas): Depth-suitability score (Lenigas)": pane_5e2e5f5e1e402a9cb332d466f7a98a21,
+          "Factor (Lenigas): Upwelling/downwelling score": pane_26dcad963a2224815d4b8369ab349fa8,
+          "Factor (Lenigas): SST bell-curve score (Lenigas)": pane_a879d70a3a2e15f36640c570150a1546,
+          "Factor (Lenigas): Distance-offshore score": pane_1629d08b3f87ed0ffed3ffc6a6999098,
+          "Factor (Lenigas): SSHA hotspot score (Lenigas)": pane_cc1ba2c50d1e5e5f03d4017cc700158c,
+          "Factor (Lenigas): Wind speed": pane_35ed7d8d906f67935ff72ec09ac07050,
+          "Sunshine Coast LiDAR bathymetry (high-res, 2011 survey)": pane_bb03b35688ac913bcba47e1f75a739ac,
+          "Moreton Bay Approaches bathymetry (high-res, 2023 survey)": pane_6f870551ed97f8bdeea6cb1e144a5695,
+          "Mudjimba Island bathymetry (high-res, 2024 survey)": pane_9e64eb3471c6e6add3f73ec744aec740,
+          "Bathymetry relief map": pane_239dfbea7060af23fb7f066b342df5a9
+        };
+      }
+
+      // Visual grouping of the Layers-list overlays (see the sidebar-
+      // grouping comment block in build_folium_map() above, which creates
+      // each group's layers contiguously so they land together in
+      // Folium's rendered overlays list). bsqInsertLayerGroupHeaders()
+      // (below) inserts one collapsible header row (a plain <div>, not a
+      // <label>) before the first layer of each group, matched by that
+      // layer's exact label text -- so this keeps working even if group
+      // membership shifts, as long as the trigger layer's name string
+      // below stays in sync with visualize.py. Header rows are plain
+      // <div>s (never draggable, and never matched by
+      // bsqEnableLayerReorder()'s ":scope > label" queries), so drag-and-
+      // drop reordering and per-date lazy-loading are completely
+      // unaffected by this.
+      var bsqLayerGroupStarts = {
+        "MBGFC fishing chart (georeferenced)": "Reference charts",
+        "Land outline": "Ocean & environmental context",
+        "Bite Score heatmap (current, high-res)": "Bite Score — v1 (current model)",
+        "Bite Score heatmap v2 (Beta - structure/eddy model)": "Bite Score — v2 (Beta model)",
+        "Bite Score heatmap Lenigas (SEQ fisherman model)": "Bite Score — Lenigas (SEQ fisherman model)",
+        "Sunshine Coast LiDAR bathymetry (high-res, 2011 survey)": "High-res bathymetry surveys"
+      };
+
+      // Inserts a collapsible header before each group's first layer and
+      // wires up click-to-toggle -- rows stay exactly where they are in
+      // the DOM (siblings of the header, direct children of `container`,
+      // same as before this feature), only a CSS class
+      // (`bsq-group-collapsed`) hides/shows them, so nothing here changes
+      // how bsqEnableLayerReorder()/bsqEnhanceLayerRows()'s own
+      // ":scope > label" queries or the per-date lazy-load "overlayadd"
+      // listener behave. A group starts OPEN if it already contains a
+      // checked/active layer on page load (e.g. v1's main heatmap, or the
+      // always-on land outline/contours) -- so collapsing never silently
+      // hides something the user (or the default state) already switched
+      // on -- and starts CLOSED otherwise (Reference charts, v2 Beta,
+      // Lenigas, and the high-res bathymetry surveys are all off by
+      // default), decluttering the initial view.
+      function bsqInsertLayerGroupHeaders() {
+        var container = document.querySelector("#bsq-layers-slot .leaflet-control-layers-overlays");
+        if (!container) return;
+        var rows = Array.prototype.slice.call(container.querySelectorAll(":scope > label"));
+        var headers = [];
+        var currentHeader = null;
+        rows.forEach(function (row) {
+          var span = row.querySelector("span:last-child");
+          var name = span ? span.textContent.trim() : null;
+          var groupLabel = name ? bsqLayerGroupStarts[name] : null;
+          if (groupLabel) {
+            var header = document.createElement("div");
+            header.className = "bsq-layer-group-header";
+            var title = document.createElement("span");
+            title.textContent = groupLabel;
+            var chevron = document.createElement("span");
+            chevron.className = "material-symbols-outlined bsq-chevron";
+            chevron.textContent = "expand_more";
+            header.appendChild(title);
+            header.appendChild(chevron);
+            header.bsqRows = [];
+            header.addEventListener("click", function () {
+              var opening = !header.classList.contains("open");
+              header.classList.toggle("open", opening);
+              header.bsqRows.forEach(function (r) { r.classList.toggle("bsq-group-collapsed", !opening); });
+            });
+            container.insertBefore(header, row);
+            headers.push(header);
+            currentHeader = header;
+          }
+          if (currentHeader) { currentHeader.bsqRows.push(row); }
+        });
+        headers.forEach(function (header) {
+          var hasChecked = header.bsqRows.some(function (r) {
+            var input = r.querySelector("input[type=checkbox]");
+            return !!(input && input.checked);
+          });
+          header.classList.toggle("open", hasChecked);
+          header.bsqRows.forEach(function (r) { r.classList.toggle("bsq-group-collapsed", !hasChecked); });
+        });
+      }
+
+      // Adds a small info icon + (where applicable) a mini colour-scale
+      // legend to every overlay row that has an entry in `bsqLayerUI`
+      // (built server-side in build_folium_map() above) -- covers every
+      // selectable layer generically, so no per-layer HTML had to be
+      // hand-written for this. Both are appended INSIDE the row's own
+      // <label> (after its checkbox + text span), which -- being a plain
+      // <button>/<div>, not another <label>/<input> -- doesn't interfere
+      // with bsqEnableLayerReorder()'s ":scope > label" queries or the
+      // per-date lazy-load "overlayadd" listener, which both key off
+      // row.querySelector("span:last-child") -- an existing, untouched
+      // element that stays exactly where it already was.
+      var bsqPopoverPinnedLabel = null;
+      function bsqEnhanceLayerRows() {
+        var container = document.querySelector("#bsq-layers-slot .leaflet-control-layers-overlays");
+        if (!container) return;
+        var rows = Array.prototype.slice.call(container.querySelectorAll(":scope > label"));
+        rows.forEach(function (row) {
+          var span = row.querySelector("span:last-child");
+          var name = span ? span.textContent.trim() : null;
+          var ui = name ? bsqLayerUI[name] : null;
+
+          // Split every row (not just ones with a bsqLayerUI entry, so
+          // even a plain/unregistered overlay still lines up) into a
+          // fixed-width leading control column (drag handle + checkbox)
+          // and a free-flowing content column holding everything else --
+          // this is what keeps every checkbox in the whole list aligned
+          // to the same x-position regardless of role/nesting (2026-07-23,
+          // Lambert). The checkbox is simply relocated (not cloned), so
+          // its native <label>-wraps-<input> click-to-toggle behavior and
+          // the row's own draggable/dragstart|dragover|drop listeners
+          // (already attached to `row` itself by bsqEnableLayerReorder(),
+          // which always runs before this) are completely unaffected.
+          var input = row.querySelector("input[type=checkbox]");
+          if (!input) return;
+          var controlCol = document.createElement("div");
+          controlCol.className = "bsq-layer-control-col";
+          controlCol.appendChild(input);
+          var contentCol = document.createElement("div");
+          contentCol.className = "bsq-layer-content-col";
+          while (row.firstChild) { contentCol.appendChild(row.firstChild); }
+          row.appendChild(controlCol);
+          row.appendChild(contentCol);
+
+          if (!ui) return;
+
+          // Visual hierarchy (2026-07-23, Lambert): bold/larger for a
+          // model's composite heatmap row, indented for its own
+          // contributing-factor rows underneath -- see the `role` field
+          // built into `_layer_ui` in build_folium_map() above. Applied to
+          // the row (for the `span:last-child` colour rules) as well as
+          // (via CSS) the content column, never the control column, so
+          // factor-row indentation never moves the checkbox.
+          if (ui.role === "composite") { row.classList.add("bsq-layer-composite"); }
+          if (ui.role === "factor") { row.classList.add("bsq-layer-factor"); }
+
+          // Weight/informational pill (2026-07-23, Lambert) -- replaces
+          // the old baked-in "(33% weight)" / "(informational only)"
+          // parenthetical text that used to live in the raw label string,
+          // reusing the same visual language as the .bsq-factor-weight
+          // pill already used in the "How It's Calculated" section below.
+          if (ui.informational) {
+            var infoPill = document.createElement("span");
+            infoPill.className = "bsq-layer-weight-pill bsq-layer-informational-pill";
+            infoPill.textContent = "Info only";
+            contentCol.appendChild(infoPill);
+          } else if (typeof ui.weight_pct === "number") {
+            var weightPill = document.createElement("span");
+            weightPill.className = "bsq-layer-weight-pill";
+            weightPill.textContent = ui.weight_pct + "%";
+            contentCol.appendChild(weightPill);
+          }
+
+          var icon = document.createElement("button");
+          icon.type = "button";
+          icon.className = "bsq-info-icon";
+          icon.setAttribute("aria-label", "About this layer");
+          icon.setAttribute("title", "About this layer");
+          icon.textContent = "\u2139\uFE0F";
+          // Nested interactive elements inside a <label> would otherwise
+          // also toggle that label's checkbox on click (label-forwarding)
+          // -- stopping propagation here keeps the info icon from
+          // silently switching the layer on/off every time it's opened.
+          icon.addEventListener("mousedown", function (e) { e.stopPropagation(); });
+          icon.addEventListener("click", function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            bsqToggleInfoPopover(name, icon);
+          });
+          icon.addEventListener("mouseenter", function () { bsqShowInfoPopover(name, icon); });
+          icon.addEventListener("mouseleave", function () {
+            if (bsqPopoverPinnedLabel !== name) { bsqHideInfoPopover(); }
+          });
+          contentCol.appendChild(icon);
+
+          if (ui.legend && ui.legend.kind !== "none") {
+            var legendRow = document.createElement("div");
+            legendRow.className = "bsq-mini-legend bsq-legend-" + ui.legend.kind;
+            legendRow.setAttribute("data-legend-label", name);
+            var bar = document.createElement("span");
+            bar.className = "bsq-legend-bar";
+            var rangeEl = document.createElement("span");
+            rangeEl.className = "bsq-legend-range";
+            rangeEl.textContent = ui.legend.kind === "score" ? "0\u2013100" : "\u2013";
+            legendRow.appendChild(bar);
+            legendRow.appendChild(rangeEl);
+            contentCol.appendChild(legendRow);
+          }
+        });
+      }
+
+      // Fills in a layer's mini-legend range with its real, live-fetched
+      // min/max (see bsqLoadDateLayer()/bsqLoadRasterLayer() below) --
+      // replaces the generic "0-100" / "-" placeholder text set by
+      // bsqEnhanceLayerRows() above once that layer's actual data has
+      // been loaded, so every legend shows today's real numbers rather
+      // than a stale/hardcoded range.
+      function bsqUpdateLegendRange(label, min, max) {
+        if (!label || min === null || min === undefined || max === null || max === undefined) return;
+        var rows = document.querySelectorAll(".bsq-mini-legend");
+        for (var i = 0; i < rows.length; i++) {
+          if (rows[i].getAttribute("data-legend-label") !== label) continue;
+          var el = rows[i].querySelector(".bsq-legend-range");
+          if (!el) return;
+          var ui = bsqLayerUI[label];
+          var unit = (ui && ui.legend && ui.legend.unit) ? (" " + ui.legend.unit) : "";
+          var fmt = function (v) { return (Math.round(v * 10) / 10).toString(); };
+          el.textContent = fmt(min) + unit + "\u2013" + fmt(max) + unit;
+          return;
+        }
+      }
+
+      // Single popover shared by every info icon (rather than one per
+      // layer) -- repositioned via JS to sit next to whichever icon was
+      // just clicked/hovered. Clicking an icon "pins" it open (stays open
+      // until dismissed via the close button, Escape, or clicking
+      // elsewhere); hovering shows it only while the mouse stays over the
+      // icon, matching the "click OR hover" requirement without needing
+      // two separate UI elements.
+      function bsqShowInfoPopover(label, anchorEl) {
+        var pop = document.getElementById("bsq-info-popover");
+        var ui = bsqLayerUI[label];
+        if (!pop || !ui) return;
+        var titleText = label
+          .replace(/^Factor( \(Lenigas\)| \(v2 Beta\))?: /, "")
+          .replace(/ \([^)]*% weight\)$/, "")
+          .replace(/ \(informational only\)$/, "");
+        document.getElementById("bsq-info-popover-title").textContent = titleText;
+        document.getElementById("bsq-info-popover-body").textContent = ui.info;
+        pop.setAttribute("data-label", label);
+        pop.style.display = "block";
+        var rect = anchorEl.getBoundingClientRect();
+        var popRect = pop.getBoundingClientRect();
+        var left = Math.max(8, Math.min(rect.left, window.innerWidth - popRect.width - 12));
+        var top = rect.bottom + 6;
+        if (top + popRect.height > window.innerHeight) { top = Math.max(8, rect.top - popRect.height - 6); }
+        pop.style.left = left + "px";
+        pop.style.top = top + "px";
+      }
+      function bsqHideInfoPopover() {
+        var pop = document.getElementById("bsq-info-popover");
+        if (pop) { pop.style.display = "none"; }
+        bsqPopoverPinnedLabel = null;
+      }
+      function bsqToggleInfoPopover(label, anchorEl) {
+        var pop = document.getElementById("bsq-info-popover");
+        if (bsqPopoverPinnedLabel === label && pop && pop.style.display === "block") {
+          bsqHideInfoPopover();
+          return;
+        }
+        bsqShowInfoPopover(label, anchorEl);
+        bsqPopoverPinnedLabel = label;
+      }
+
+      // Lookup from each per-date layer's Layers-list label to its API
+      // key + JS ImageOverlay variable (see date_layers.py / webapp.py's
+      // `/api/date-layer/*` endpoints), used by the "overlayadd" listener
+      // below to fetch it for whichever date is currently resolved
+      // (bsqCurrentDate, set by bsqResolveDateAndLoad()). Same eager-vs-
+      // later-script-tag reasoning as bsqLayerPanes above.
+      var bsqDateLayerByName = null;
+      function bsqInitDateLayers() {
+        bsqDateLayerByName = {
+          "Bite Score heatmap (current, high-res)": {key: "bite_score", layer: image_overlay_7c1cda5e7e0f57437f9b3e116fc28bf2},
+          "Bite Score heatmap (legacy, coarse - for comparison)": {key: "legacy", layer: image_overlay_98705d596d85509ca42fa030f3a1ef1b},
+          "Ocean fronts (FSLE)": {key: "fsle", layer: image_overlay_e46798223344a4200a2c772e6eb4c7b5},
+          "Bite Score heatmap v2 (Beta - structure/eddy model)": {key: "v2/bite_score_v2", layer: image_overlay_30f2d917e97e5a9f8878e340eb89f14f},
+          "Bite Score heatmap Lenigas (SEQ fisherman model)": {key: "lenigas/bite_score_lenigas", layer: image_overlay_1ae48da2e230288e97d60a3e8562c522},
+          "Factor: SST thermal-front score": {key: "sst", layer: image_overlay_6d4b56e14a6cd92b5ecab17bc065a7b4},
+          "Factor: Chlorophyll-front score": {key: "chl", layer: image_overlay_fc7619df1a22e9dd8cc42776a6081971},
+          "Factor: Current-edge score": {key: "current", layer: image_overlay_123ac46f52dc4ac8a4dab39165bbec10},
+          "Factor: SSHA / eddy-front score": {key: "ssha", layer: image_overlay_43973fa5ada1cd89478d1453a1dab91f},
+          "Factor: MLD front score": {key: "mld", layer: image_overlay_942d307ba2387a8aba178b011cb70a51},
+          "Factor (v2 Beta): SST bell-curve score": {key: "v2/sst_bell", layer: image_overlay_db627c43987845373bfc8ca4daa41cd9},
+          "Factor (v2 Beta): Chlorophyll optimal-band score": {key: "v2/chl_band", layer: image_overlay_6107c3689bf157debf2274d46d4f3d58},
+          "Factor (v2 Beta): Current-edge score (v2 recomputed)": {key: "v2/current", layer: image_overlay_a53dd6d6702d4a6f62f007d76d89e420},
+          "Factor (v2 Beta): Depth-suitability score (v2 recomputed)": {key: "v2/bathymetry", layer: image_overlay_c4fcba789605b9415db30334b9c8a915},
+          "Factor (v2 Beta): MLD gradient score (v2)": {key: "v2/mld", layer: image_overlay_2cc484682a81e9e53ede9a56d10e83df},
+          "Factor (v2 Beta): Structure proximity score": {key: "v2/structure", layer: image_overlay_221913ce664f971ae3e5b1ac733651c9},
+          "Factor (v2 Beta): Eddy detection score": {key: "v2/eddy", layer: image_overlay_d5fabdd42041bcaf44ac5cb3fb6e99ed},
+          "Factor (Lenigas): EAC axis-position score": {key: "lenigas/eac_axis_position", layer: image_overlay_7ddaddd88b1fa202a976d9ff337888fe},
+          "Factor (Lenigas): EAC convergence-point score": {key: "lenigas/eac_convergence", layer: image_overlay_f76ef11e283d5fcaa054762c2168d8df},
+          "Factor (Lenigas): Depth-suitability score (Lenigas)": {key: "lenigas/depth_suitability", layer: image_overlay_1aeb7c4ddcb2e4a1baa7716af2323233},
+          "Factor (Lenigas): Upwelling/downwelling score": {key: "lenigas/upwelling_downwelling", layer: image_overlay_59553b54ca470c7f293439978c7147e6},
+          "Factor (Lenigas): SST bell-curve score (Lenigas)": {key: "lenigas/sst_bell", layer: image_overlay_0ee20dc47814157545fa5fd0902b3e9f},
+          "Factor (Lenigas): Distance-offshore score": {key: "lenigas/distance_offshore", layer: image_overlay_8e675f18c01c8ca1350905176438a7c3},
+          "Factor (Lenigas): SSHA hotspot score (Lenigas)": {key: "lenigas/ssha_hotspot", layer: image_overlay_85636d97fb6d1da65f644577af538741},
+          "Factor (Lenigas): Wind speed": {key: "lenigas/wind_speed", layer: image_overlay_7a26b9ce4bf88d2e20b7713258ec61f7}
+        };
+      }
+
+      function bsqEnableLayerReorder() {
+        var container = document.querySelector("#bsq-layers-slot .leaflet-control-layers-overlays");
+        if (!container) return;
+        var rows = Array.prototype.slice.call(container.querySelectorAll(":scope > label"));
+        var dragged = null;
+
+        function applyDrawOrder() {
+          // Bottom-of-list rows are processed first so each subsequent
+          // (higher, more "front") row ends up with a higher z-index than
+          // everything below it.
+          var current = Array.prototype.slice.call(container.querySelectorAll(":scope > label")).reverse();
+          var zIndex = 401;
+          current.forEach(function (row) {
+            var span = row.querySelector("span:last-child");
+            var name = span ? span.textContent.trim() : null;
+            var pane = name ? bsqLayerPanes[name] : null;
+            if (!pane) return;
+            try { pane.style.zIndex = zIndex; } catch (e) {}
+            zIndex += 1;
+          });
+        }
+
+        rows.forEach(function (row) {
+          row.setAttribute("draggable", "true");
+
+          row.addEventListener("dragstart", function (e) {
+            dragged = row;
+            row.classList.add("bsq-dragging");
+            e.dataTransfer.effectAllowed = "move";
+          });
+
+          row.addEventListener("dragend", function () {
+            row.classList.remove("bsq-dragging");
+            rows.forEach(function (r) { r.classList.remove("bsq-drag-over-top", "bsq-drag-over-bottom"); });
+          });
+
+          row.addEventListener("dragover", function (e) {
+            e.preventDefault();
+            if (!dragged || dragged === row) return;
+            var rect = row.getBoundingClientRect();
+            var before = (e.clientY - rect.top) < rect.height / 2;
+            row.classList.toggle("bsq-drag-over-top", before);
+            row.classList.toggle("bsq-drag-over-bottom", !before);
+          });
+
+          row.addEventListener("dragleave", function () {
+            row.classList.remove("bsq-drag-over-top", "bsq-drag-over-bottom");
+          });
+
+          row.addEventListener("drop", function (e) {
+            e.preventDefault();
+            row.classList.remove("bsq-drag-over-top", "bsq-drag-over-bottom");
+            if (!dragged || dragged === row) return;
+            var rect = row.getBoundingClientRect();
+            var before = (e.clientY - rect.top) < rect.height / 2;
+            container.insertBefore(dragged, before ? row : row.nextSibling);
+            applyDrawOrder();
+          });
+        });
+      }
+
+      document.addEventListener("DOMContentLoaded", function () {
+        // The sidebar takes up part of the viewport width, so re-fit the
+        // view to the actual data bounds afterwards (rather than relying
+        // on the original fixed zoom_start) to keep the coastline and
+        // bathymetry contours fully in view instead of being cropped.
+        try {
+          map_21c2ddea183fb2d441145c2e9e078577.invalidateSize();
+          map_21c2ddea183fb2d441145c2e9e078577.fitBounds([[-28.3, 152.99999999999997], [-25.999999999999996, 154.49999999999997]]);
+        } catch (e) {}
+
+        // Reparent the native Leaflet layer-control and colour legend from
+        // their floating map corners into the sidebar, so nothing sits on
+        // top of the map -- everything lives in one coherent side panel.
+        var layersCtrl = document.querySelector(".leaflet-control-layers");
+        if (layersCtrl) { document.getElementById("bsq-layers-slot").appendChild(layersCtrl); }
+        var legendCtrl = document.querySelector(".legend.leaflet-control");
+        if (legendCtrl) { document.getElementById("bsq-legend-slot").appendChild(legendCtrl); }
+
+        bsqInitLayerPanes();
+        bsqInsertLayerGroupHeaders();
+        bsqEnableLayerReorder();
+        bsqEnhanceLayerRows();
+
+        document.getElementById("bsq-info-popover-close").addEventListener("click", bsqHideInfoPopover);
+        document.addEventListener("click", function (e) {
+          var pop = document.getElementById("bsq-info-popover");
+          if (!pop || pop.style.display !== "block") return;
+          if (pop.contains(e.target) || e.target.classList.contains("bsq-info-icon")) return;
+          bsqHideInfoPopover();
+        });
+        document.addEventListener("keydown", function (e) {
+          if (e.key === "Escape") { bsqHideInfoPopover(); }
+        });
+
+        document.getElementById("bsq-recenter").addEventListener("click", function () {
+          try { map_21c2ddea183fb2d441145c2e9e078577.fitBounds([[-28.3, 152.99999999999997], [-25.999999999999996, 154.49999999999997]]); } catch (e) {}
+        });
+
+        document.getElementById("bsq-history-toggle").addEventListener("click", function () {
+          var opening = !document.getElementById("bsq-history-body").classList.contains("open");
+          document.getElementById("bsq-history-body").classList.toggle("open", opening);
+          this.classList.toggle("open", opening);
+        });
+
+        document.getElementById("bsq-methodology-toggle").addEventListener("click", function () {
+          var opening = !document.getElementById("bsq-methodology-body").classList.contains("open");
+          document.getElementById("bsq-methodology-body").classList.toggle("open", opening);
+          this.classList.toggle("open", opening);
+        });
+
+        document.getElementById("bsq-mld-toggle").addEventListener("click", function () {
+          var opening = !document.getElementById("bsq-mld-body").classList.contains("open");
+          document.getElementById("bsq-mld-body").classList.toggle("open", opening);
+          this.classList.toggle("open", opening);
+        });
+
+        document.getElementById("bsq-fsle-toggle").addEventListener("click", function () {
+          var opening = !document.getElementById("bsq-fsle-body").classList.contains("open");
+          document.getElementById("bsq-fsle-body").classList.toggle("open", opening);
+          this.classList.toggle("open", opening);
+        });
+
+        document.getElementById("bsq-lidar-toggle").addEventListener("click", function () {
+          var opening = !document.getElementById("bsq-lidar-body").classList.contains("open");
+          document.getElementById("bsq-lidar-body").classList.toggle("open", opening);
+          this.classList.toggle("open", opening);
+        });
+
+        document.getElementById("bsq-relief-toggle").addEventListener("click", function () {
+          var opening = !document.getElementById("bsq-relief-body").classList.contains("open");
+          document.getElementById("bsq-relief-body").classList.toggle("open", opening);
+          this.classList.toggle("open", opening);
+        });
+
+        document.getElementById("bsq-mbgfc-toggle").addEventListener("click", function () {
+          var opening = !document.getElementById("bsq-mbgfc-body").classList.contains("open");
+          document.getElementById("bsq-mbgfc-body").classList.toggle("open", opening);
+          this.classList.toggle("open", opening);
+        });
+
+        // These layers carry no data of their own on this page -- fetch
+        // them from the dashboard server the first time each is switched
+        // on in the layer list, so they stay available on every date's
+        // map without ever needing that date regenerated.
+        map_21c2ddea183fb2d441145c2e9e078577.on("overlayadd", function (e) {
+          if (e.name === "MBGFC fishing chart (georeferenced)" || e.name === "MBGFC FADs, SFADs & wave buoys") {
+            bsqLoadMbgfc();
+          } else if (e.name === "Factor: Depth-suitability score") {
+            bsqLoadRasterLayer("depth_suitability", image_overlay_162fcee225e51678514ebe6aa029cb40);
+          } else if (e.name === "Sunshine Coast LiDAR bathymetry (high-res, 2011 survey)") {
+            bsqLoadRasterLayer("lidar", image_overlay_986c7660890c02707b0f832cf6625d6e);
+          } else if (e.name === "Moreton Bay Approaches bathymetry (high-res, 2023 survey)") {
+            bsqLoadRasterLayer("moreton_bay_approaches", image_overlay_6fc6085d281c8edc8a6fa52901f08881);
+          } else if (e.name === "Mudjimba Island bathymetry (high-res, 2024 survey)") {
+            bsqLoadRasterLayer("mudjimba_island", image_overlay_22a23de0729350fb6ed19678c0dc8585);
+          } else if (e.name === "Bathymetry relief map") {
+            bsqLoadRasterLayer("relief_map", image_overlay_03e890fd6c3773858db2ddba3fe0884d);
+          } else if (e.name === "Bathymetry contours (depth reference)") {
+            bsqLoadContours();
+          } else if (e.name === "Land outline") {
+            bsqLoadLandOutline();
+          } else if (bsqDateLayerByName[e.name]) {
+            var entry = bsqDateLayerByName[e.name];
+            bsqLoadDateLayer(entry.key, entry.layer, entry.key === "bite_score");
+          }
+        });
+
+        bsqInitDateLayers();
+        bsqLoadContours();
+        bsqLoadLandOutline();
+        bsqResolveDateAndLoad();
+        bsqLoadHistory();
+      });
+
+      // Which date this page should show: parsed directly from the URL
+      // path for an archived day (/history/<date>), resolved from
+      // `/api/latest-date` otherwise (the "/" root route). Known
+      // synchronously wherever possible (bsqDateFromPath) so the
+      // Historical Data list below can mark the current entry without
+      // waiting on a network round-trip.
+      var bsqDateFromPathMatch = location.pathname.match(/^\/history\/([^/]+)\/?$/);
+      var bsqDateFromPath = bsqDateFromPathMatch ? decodeURIComponent(bsqDateFromPathMatch[1]) : null;
+      var bsqCurrentDate = null;
+
+      async function bsqResolveDateAndLoad() {
+        var date = bsqDateFromPath;
+        if (!date) {
+          try {
+            var resp = await fetch("/api/latest-date", {cache: "no-store"});
+            var data = await resp.json();
+            date = data.date;
+          } catch (e) {}
+        }
+        bsqCurrentDate = date;
+
+        var labelEl = document.getElementById("bsq-date-label");
+        var dateInput = document.getElementById("bsq-date");
+        if (labelEl) { labelEl.textContent = date || "no data yet"; }
+        if (dateInput && date) { dateInput.value = date; }
+
+        if (!date) {
+          document.getElementById("bsq-status").textContent = "No processed data yet -- pick a date and click Update Data.";
+          return;
+        }
+
+        // The heatmap (and legacy heatmap/factors/FSLE, once toggled on)
+        // fetch from /api/date-layer/<date>/<key>/* -- see
+        // bsqLoadDateLayer() below. The heatmap itself is shown by
+        // default, so it's loaded directly here rather than waiting for
+        // an "overlayadd" event.
+        bsqLoadDateLayer("bite_score", image_overlay_7c1cda5e7e0f57437f9b3e116fc28bf2, true);
+        bsqLoadMoonPhase();
+        bsqCheckV2Availability();
+        bsqCheckLenigasAvailability();
+      }
+
+      // Generic loader for the per-date layers (Bite Score heatmap,
+      // legacy heatmap, the four contributing factors, FSLE, and v2
+      // "Beta"'s heatmap + 7 contributing factors): each is cached
+      // server-side per date (see date_layers.py) but still fetched
+      // lazily here rather than embedded into this page, so the exact
+      // same template works for every date. `updateStats` additionally
+      // refreshes the "Score range" sidebar stat from the fetched meta
+      // (only meaningful for the main heatmap). A "v2/"-prefixed key
+      // (e.g. "v2/bite_score_v2", see `_date_layer_by_name` in
+      // build_folium_map()) routes to the SEPARATE `/api/date-layer-v2/`
+      // endpoint instead of v1's `/api/date-layer/` -- v1 keys (no
+      // prefix) behave EXACTLY as before, so this is purely additive.
+      // Same treatment for a "lenigas/"-prefixed key, routing to the
+      // SEPARATE `/api/date-layer-lenigas/` endpoint instead.
+      var bsqLoadedDateLayers = {};
+      function bsqLoadDateLayer(key, layerVar, updateStats) {
+        if (!bsqCurrentDate) return;
+        var cacheKey = key + "@" + bsqCurrentDate;
+        if (bsqLoadedDateLayers[cacheKey]) return;
+        bsqLoadedDateLayers[cacheKey] = true;
+        var isV2 = key.indexOf("v2/") === 0;
+        var isLenigas = key.indexOf("lenigas/") === 0;
+        var apiKey = isV2 ? key.slice(3) : (isLenigas ? key.slice(8) : key);
+        var base = (isV2 ? "/api/date-layer-v2/" : (isLenigas ? "/api/date-layer-lenigas/" : "/api/date-layer/")) + bsqCurrentDate + "/" + apiKey;
+        fetch(base + "/meta", {cache: "no-store"})
+          .then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
+          .then(function (meta) {
+            layerVar.setUrl(base + "/chart.png");
+            layerVar.setBounds(meta.bounds);
+            if (updateStats && meta.min !== null && meta.max !== null && meta.min !== undefined) {
+              var el = document.getElementById("bsq-score-range");
+              if (el) { el.textContent = Math.round(meta.min) + "\u2013" + Math.round(meta.max); }
+            }
+            bsqUpdateLegendRange(bsqKeyToLabel[key], meta.min, meta.max);
+          })
+          .catch(function (e) {
+            console.warn("Date layer '" + key + "' unavailable for " + bsqCurrentDate, e);
+            // Toggling on a v2/Lenigas layer for a date it hasn't been run
+            // for is expected (not every date has a v2/Lenigas run yet,
+            // since both are experimental) -- surface it in that model's
+            // sidebar status text too, rather than only a console warning,
+            // so it's obvious in the UI why the layer just stayed blank
+            // instead of appearing.
+            if (isV2) { bsqSetV2Status(false); }
+            if (isLenigas) { bsqSetLenigasStatus(false); }
+          });
+      }
+
+      // v2 ("Beta") availability check for the CURRENTLY resolved date --
+      // runs independently of whether the user has toggled the v2
+      // heatmap/factor layers on, so the sidebar's "v2 Bite Score (Beta)"
+      // section always shows an accurate, honest "available" / "not
+      // available for this date" message up front (never a blank/broken
+      // layer with no explanation). Deliberately checks only the
+      // combined "bite_score_v2" key (not every factor) -- Ripley's v2
+      // pipeline always writes that file first, so its presence/absence
+      // is a reliable proxy for "was v2 run for this date at all".
+      function bsqSetV2Status(available) {
+        var statusEl = document.getElementById("bsq-v2-status");
+        if (!statusEl || !bsqCurrentDate) return;
+        if (available) {
+          statusEl.textContent = "v2 (Beta) data is available for " + bsqCurrentDate + " -- toggle \u201cBite Score heatmap v2 (Beta - structure/eddy model)\u201d on in the Layers list above to view it.";
+          statusEl.className = "bsq-v2-status bsq-v2-available";
+        } else {
+          statusEl.textContent = "v2 (Beta) has not been run for " + bsqCurrentDate + " yet. This experimental model is only available for a handful of test dates so far -- v1's Bite Score heatmap above is unaffected and remains this date's validated result.";
+          statusEl.className = "bsq-v2-status bsq-v2-unavailable";
+        }
+      }
+      function bsqCheckV2Availability() {
+        var statusEl = document.getElementById("bsq-v2-status");
+        if (!bsqCurrentDate || !statusEl) return;
+        statusEl.textContent = "Checking v2 (Beta) availability for " + bsqCurrentDate + "...";
+        statusEl.className = "bsq-v2-status";
+        fetch("/api/date-layer-v2/" + bsqCurrentDate + "/bite_score_v2/meta", {cache: "no-store"})
+          .then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
+          .then(function () { bsqSetV2Status(true); })
+          .catch(function () { bsqSetV2Status(false); });
+      }
+
+      // Lenigas availability check for the CURRENTLY resolved date --
+      // exactly mirrors bsqCheckV2Availability() above, but for the
+      // SEPARATE, independent Lenigas model, so the sidebar's "Lenigas
+      // Bite Score" section always shows an accurate, honest "available"
+      // / "not available for this date" message up front (never a
+      // blank/broken layer with no explanation). Deliberately checks only
+      // the combined "bite_score_lenigas" key (not every factor) --
+      // Ripley's Lenigas pipeline always writes that file first, so its
+      // presence/absence is a reliable proxy for "was Lenigas run for
+      // this date at all". Always "Lenigas", never "v3".
+      function bsqSetLenigasStatus(available) {
+        var statusEl = document.getElementById("bsq-lenigas-status");
+        if (!statusEl || !bsqCurrentDate) return;
+        if (available) {
+          statusEl.textContent = "Lenigas data is available for " + bsqCurrentDate + " -- toggle \u201cBite Score heatmap Lenigas (SEQ fisherman model)\u201d on in the Layers list above to view it.";
+          statusEl.className = "bsq-lenigas-status bsq-lenigas-available";
+        } else {
+          statusEl.textContent = "Lenigas has not been run for " + bsqCurrentDate + " yet. This experimental model is only available for a handful of test dates so far -- v1's and v2's Bite Score heatmaps above are unaffected.";
+          statusEl.className = "bsq-lenigas-status bsq-lenigas-unavailable";
+        }
+      }
+      function bsqCheckLenigasAvailability() {
+        var statusEl = document.getElementById("bsq-lenigas-status");
+        if (!bsqCurrentDate || !statusEl) return;
+        statusEl.textContent = "Checking Lenigas availability for " + bsqCurrentDate + "...";
+        statusEl.className = "bsq-lenigas-status";
+        fetch("/api/date-layer-lenigas/" + bsqCurrentDate + "/bite_score_lenigas/meta", {cache: "no-store"})
+          .then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
+          .then(function () { bsqSetLenigasStatus(true); })
+          .catch(function () { bsqSetLenigasStatus(false); });
+      }
+
+      // Day-level (non-spatial) moon illumination readout -- unlike every
+      // other per-date layer above, moon phase is a single scalar with no
+      // spatial variation, so there's no image/bounds to load, just a
+      // small JSON side-file (see main.py's `moon_phase.json` write and
+      // webapp.py's /api/moon-phase/<date> route). The multiplier shown
+      // here is recomputed client-side from the raw illumination_fraction
+      // using the EXACT SAME formula as overlay.py::apply_moon_phase_multiplier
+      // (multiplier = MOON_MULTIPLIER_MAX - illum * (MOON_MULTIPLIER_MAX - MOON_MULTIPLIER_MIN),
+      // currently 1.2 - illum * 0.4) -- if that formula or the 0.8/1.2
+      // bounds ever change in overlay.py/config.py, this literal must be
+      // updated to match or the displayed multiplier will silently drift
+      // out of sync with the real scoring.
+      function bsqLoadMoonPhase() {
+        var statEl = document.getElementById("bsq-moon-stat");
+        var valueEl = document.getElementById("bsq-moon-value");
+        if (!bsqCurrentDate || !statEl || !valueEl) return;
+        // Links to Lambert's standalone "Moon & Tides" detail page
+        // (/moon/<date>, see moon_tide_page.py/webapp.py) for the same
+        // date currently shown on this map -- set eagerly (not inside the
+        // fetch .then below) so the link target is correct even if the
+        // fetch itself fails; the stat box just stays hidden in that case.
+        statEl.href = "/moon/" + bsqCurrentDate;
+        fetch("/api/moon-phase/" + bsqCurrentDate, {cache: "no-store"})
+          .then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
+          .then(function (data) {
+            var illum = data.illumination_fraction;
+            if (typeof illum !== "number") throw new Error("missing illumination_fraction");
+            var multiplier = 1.2 - illum * 0.4;
+            valueEl.textContent = Math.round(illum * 100) + "% (bite score \u00d7" + multiplier.toFixed(2) + ")";
+            statEl.style.display = "";
+          })
+          .catch(function (e) {
+            // Graceful degradation: historical dates archived before this
+            // feature existed (or any date the pipeline hasn't processed)
+            // simply have no moon_phase.json -- omit the readout entirely
+            // rather than showing a broken/fabricated value, matching the
+            // "not available for this date" convention used elsewhere
+            // (e.g. FSLE/MLD sidebar sections) in this dashboard.
+            console.warn("Moon phase unavailable for " + bsqCurrentDate, e);
+            statEl.style.display = "none";
+          });
+      }
+
+      // Land/coastline outline: static vector data (derived from the
+      // bathymetry grid's own nodata mask), shown by default, so loaded
+      // directly at page load rather than waiting for an overlayadd event.
+      var bsqLandOutlineLoaded = false;
+      function bsqLoadLandOutline() {
+        if (bsqLandOutlineLoaded) return;
+        bsqLandOutlineLoaded = true;
+        fetch("/api/bathymetry/land-outline", {cache: "no-store"})
+          .then(function (r) { return r.json(); })
+          .then(function (geojson) {
+            L.geoJSON(geojson, {
+              style: function () { return {fillColor: "none", fillOpacity: 0, color: "#20232a", weight: 1.6}; },
+              pane: "bsqPane2",
+            }).addTo(feature_group_eda950dd3dbd083af25383c52df43f6c);
+          })
+          .catch(function (e) { console.warn("Land outline unavailable (is python -m bite_score.webapp running?)", e); });
+      }
+
+      async function bsqLoadHistory() {
+        var listEl = document.getElementById("bsq-history-list");
+        try {
+          var resp = await fetch("/api/history", {cache: "no-store"});
+          var data = await resp.json();
+          var dates = data.dates || [];
+          listEl.innerHTML = "";
+
+          var latestItem = document.createElement("div");
+          latestItem.className = "bsq-history-item" + (!bsqDateFromPath ? " current" : "");
+          latestItem.innerHTML = '<span class="material-symbols-outlined">bolt</span><span>Latest (most recent run)</span>';
+          latestItem.addEventListener("click", function () { window.location.href = "/"; });
+          listEl.appendChild(latestItem);
+
+          if (dates.length === 0) {
+            var empty = document.createElement("div");
+            empty.className = "bsq-history-empty";
+            empty.textContent = "No archived dates found yet.";
+            listEl.appendChild(empty);
+          }
+
+          dates.forEach(function (d) {
+            var item = document.createElement("div");
+            item.className = "bsq-history-item" + (d === bsqDateFromPath ? " current" : "");
+            item.innerHTML = '<span class="material-symbols-outlined">calendar_month</span><span>' + d + '</span>';
+            item.addEventListener("click", function () { window.location.href = "/history/" + d; });
+            listEl.appendChild(item);
+          });
+
+          // Auto-expand the history section when viewing an archived date,
+          // so it's immediately obvious which day is showing and how to
+          // get back to "Latest".
+          if (bsqDateFromPath) {
+            document.getElementById("bsq-history-body").classList.add("open");
+            document.getElementById("bsq-history-toggle").classList.add("open");
+          }
+        } catch (e) {
+          // No dashboard server running (e.g. this HTML was opened directly
+          // as a file) -- explain why the list can't be populated.
+          listEl.innerHTML = '<div class="bsq-history-empty">Can\'t reach history server. Run: python -m bite_score.webapp</div>';
+        }
+      }
+
+      // Fetches the MBGFC chart image/bounds and FAD/SFAD/wave-buoy marker
+      // list from the dashboard server the first time either layer is
+      // switched on (see the "overlayadd" listener above), rather than on
+      // every page load -- keeps this static-file page lightweight and
+      // avoids a network request when the user never looks at this layer.
+      var bsqMbgfcLoaded = false;
+      function bsqLoadMbgfc() {
+        if (bsqMbgfcLoaded) return;
+        bsqMbgfcLoaded = true;
+
+        fetch("/api/mbgfc/meta", {cache: "no-store"})
+          .then(function (r) { return r.json(); })
+          .then(function (meta) {
+            image_overlay_f5ec6090cab77651ec640ab87fc5bd9d.setUrl("/api/mbgfc/chart.png");
+            image_overlay_f5ec6090cab77651ec640ab87fc5bd9d.setBounds(meta.bounds);
+          })
+          .catch(function (e) { console.warn("MBGFC chart unavailable (is python -m bite_score.webapp running?)", e); });
+
+        var categoryStyle = {
+          wave_buoy: {color: "#1f6feb", label: "Wave Buoy"},
+          fad: {color: "#f0883e", label: "FAD"},
+          sfad: {color: "#8957e5", label: "SFAD (shelf)"},
+          other: {color: "#8e9198", label: "Location"},
+        };
+        fetch("/api/mbgfc/locations", {cache: "no-store"})
+          .then(function (r) { return r.json(); })
+          .then(function (data) {
+            (data.locations || []).forEach(function (loc) {
+              var style = categoryStyle[loc.category] || categoryStyle.other;
+              var depthTxt = (loc.depth_m === null || loc.depth_m === undefined) ? "unknown" : (Math.round(loc.depth_m) + " m");
+              var marker = L.circleMarker([loc.lat, loc.lon], {
+                radius: 5, color: style.color, fillColor: style.color, fillOpacity: 0.9, weight: 1.5,
+                pane: "bsqPane1",
+              });
+              marker.bindTooltip(loc.name);
+              marker.bindPopup(
+                "<b>" + loc.name + "</b><br>" + style.label + "<br>" +
+                loc.lat.toFixed(4) + ", " + loc.lon.toFixed(4) + "<br>Depth: " + depthTxt
+              );
+              marker.addTo(feature_group_39f06423010008fbde6b40df373ae884);
+            });
+          })
+          .catch(function (e) { console.warn("MBGFC locations unavailable (is python -m bite_score.webapp running?)", e); });
+      }
+
+      // Generic loader for the shared/static raster layers (Depth-
+      // suitability factor, LiDAR, Moreton Bay Approaches, Mudjimba
+      // Island): each is built once by the dashboard server and cached
+      // to disk, so fetching it here (rather than embedding it into this
+      // page) means every date's map reuses the exact same PNG instead of
+      // re-rendering and re-storing an identical image per date.
+      var bsqLoadedRasterLayers = {};
+      function bsqLoadRasterLayer(key, layerVar) {
+        if (bsqLoadedRasterLayers[key]) return;
+        bsqLoadedRasterLayers[key] = true;
+        fetch("/api/static-layer/" + key + "/meta", {cache: "no-store"})
+          .then(function (r) { return r.json(); })
+          .then(function (meta) {
+            layerVar.setUrl("/api/static-layer/" + key + "/chart.png");
+            layerVar.setBounds(meta.bounds);
+            bsqUpdateLegendRange(bsqStaticKeyToLabel[key], meta.min, meta.max);
+          })
+          .catch(function (e) { console.warn("Static layer '" + key + "' unavailable (is python -m bite_score.webapp running?)", e); });
+      }
+
+      // Bathymetry contours are vector data (isobath lines + depth
+      // labels), not an image, so they get their own loader that fills in
+      // the placeholder FeatureGroup created above rather than swapping
+      // an ImageOverlay's URL/bounds.
+      var bsqContoursLoaded = false;
+      function bsqLoadContours() {
+        if (bsqContoursLoaded) return;
+        bsqContoursLoaded = true;
+        fetch("/api/bathymetry/contours", {cache: "no-store"})
+          .then(function (r) { return r.json(); })
+          .then(function (data) {
+            L.geoJSON(data.geojson, {
+              style: function () { return {color: "#0b5394", weight: 1, opacity: 0.6, dashArray: "4,3"}; },
+              pane: "bsqPane3",
+              onEachFeature: function (feature, layer) {
+                if (feature.properties && feature.properties.depth_m !== undefined) {
+                  layer.bindTooltip("Depth (m): " + feature.properties.depth_m);
+                }
+              },
+            }).addTo(feature_group_2af48184af4a35be7422c3e0354a5442);
+
+            (data.labels || []).forEach(function (label) {
+              L.marker([label.lat, label.lon], {
+                icon: L.divIcon({
+                  iconSize: [0, 0],
+                  iconAnchor: [0, 0],
+                  html: '<div class="bsq-depth-label">' + Math.round(label.depth_m) + ' m</div>',
+                }),
+                interactive: false,
+              }).addTo(feature_group_2af48184af4a35be7422c3e0354a5442);
+            });
+          })
+          .catch(function (e) { console.warn("Bathymetry contours unavailable (is python -m bite_score.webapp running?)", e); });
+      }
+
+      async function bsqPollStatus() {
+        var statusEl = document.getElementById("bsq-status");
+        var btn = document.getElementById("bsq-update-btn");
+        try {
+          var resp = await fetch("/api/status", {cache: "no-store"});
+          var data = await resp.json();
+          if (data.state === "running") {
+            statusEl.textContent = data.message || "Updating...";
+            setTimeout(bsqPollStatus, 2000);
+          } else if (data.state === "done") {
+            statusEl.textContent = "Done! Reloading map...";
+            setTimeout(function () { window.location.reload(); }, 1200);
+          } else if (data.state === "error") {
+            statusEl.textContent = "Update failed: " + (data.message || "unknown error");
+            btn.disabled = false;
+          } else {
+            btn.disabled = false;
+          }
+        } catch (e) {
+          setTimeout(bsqPollStatus, 3000);
+        }
+      }
+
+      async function bsqUpdateData() {
+        var dateVal = document.getElementById("bsq-date").value;
+        var btn = document.getElementById("bsq-update-btn");
+        var statusEl = document.getElementById("bsq-status");
+        btn.disabled = true;
+        statusEl.textContent = "Starting update...";
+        try {
+          var resp = await fetch("/api/update", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({date: dateVal})
+          });
+          if (!resp.ok) {
+            var body = await resp.json().catch(function () { return {}; });
+            throw new Error(body.message || ("Server returned " + resp.status));
+          }
+          bsqPollStatus();
+        } catch (e) {
+          statusEl.textContent = "Can't reach update server. Run: python -m bite_score.webapp";
+          btn.disabled = false;
+        }
+      }
+    </script>
+    
+    
+            <div class="folium-map" id="map_21c2ddea183fb2d441145c2e9e078577" ></div>
+        
+</body>
+<script>
+    
+    
+            var map_21c2ddea183fb2d441145c2e9e078577 = L.map(
+                "map_21c2ddea183fb2d441145c2e9e078577",
+                {
+                    center: [-26.85, 153.35],
+                    crs: L.CRS.EPSG3857,
+                    ...{
+  "zoom": 9,
+  "zoomControl": true,
+  "preferCanvas": false,
+}
+
+                }
+            );
+            L.control.scale().addTo(map_21c2ddea183fb2d441145c2e9e078577);
+
+            
+
+        
+    
+            var tile_layer_96a8b5f65fa6f360c01e28a2e1d03349 = L.tileLayer(
+                "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
+                {
+  "minZoom": 0,
+  "maxZoom": 20,
+  "maxNativeZoom": 20,
+  "noWrap": false,
+  "attribution": "\u0026copy; \u003ca href=\"https://www.openstreetmap.org/copyright\"\u003eOpenStreetMap\u003c/a\u003e contributors \u0026copy; \u003ca href=\"https://carto.com/attributions\"\u003eCARTO\u003c/a\u003e",
+  "subdomains": "abcd",
+  "detectRetina": false,
+  "tms": false,
+  "opacity": 1,
+}
+
+            );
+        
+    
+            tile_layer_96a8b5f65fa6f360c01e28a2e1d03349.addTo(map_21c2ddea183fb2d441145c2e9e078577);
+        
+    
+            var tile_layer_d6301c907d596afbfaeb326195ecb6d7 = L.tileLayer(
+                "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+                {
+  "minZoom": 0,
+  "maxZoom": 19,
+  "maxNativeZoom": 19,
+  "noWrap": false,
+  "attribution": "\u0026copy; \u003ca href=\"https://www.openstreetmap.org/copyright\"\u003eOpenStreetMap\u003c/a\u003e contributors",
+  "subdomains": "abc",
+  "detectRetina": false,
+  "tms": false,
+  "opacity": 1,
+}
+
+            );
+        
+    
+            var tile_layer_a74557e01ca5389d9e06d04da4ac3683 = L.tileLayer(
+                "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+                {
+  "minZoom": 0,
+  "maxZoom": 18,
+  "maxNativeZoom": 18,
+  "noWrap": false,
+  "attribution": "Tiles \u0026copy; Esri \u0026mdash; Esri, Maxar, Earthstar Geographics",
+  "subdomains": "abc",
+  "detectRetina": false,
+  "tms": false,
+  "opacity": 1,
+}
+
+            );
+        
+    
+            var pane_16528315d77ca3d56468b8f17161d3ca = map_21c2ddea183fb2d441145c2e9e078577.createPane(
+                "bsqPane0");
+            pane_16528315d77ca3d56468b8f17161d3ca.style.zIndex = 500;
+            
+        
+    
+            var image_overlay_f5ec6090cab77651ec640ab87fc5bd9d = L.imageOverlay(
+                "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR42mNgAAIAAAUAAen63NgAAAAASUVORK5CYII=",
+                [[-28.3, 152.99999999999997], [-25.999999999999996, 154.49999999999997]],
+                {
+  "opacity": 0.85,
+  "interactive": true,
+  "crossOrigin": false,
+  "pane": "bsqPane0",
+}
+            );
+        
+    
+            var pane_9f7bec0486dade20ab233504bd71116e = map_21c2ddea183fb2d441145c2e9e078577.createPane(
+                "bsqPane1");
+            pane_9f7bec0486dade20ab233504bd71116e.style.zIndex = 499;
+            
+        
+    
+            var feature_group_39f06423010008fbde6b40df373ae884 = L.featureGroup(
+                {
+}
+            );
+        
+    
+            var pane_27efd5d7b8a031208f4eb5b7565dc7da = map_21c2ddea183fb2d441145c2e9e078577.createPane(
+                "bsqPane2");
+            pane_27efd5d7b8a031208f4eb5b7565dc7da.style.zIndex = 498;
+            
+        
+    
+            var feature_group_eda950dd3dbd083af25383c52df43f6c = L.featureGroup(
+                {
+}
+            );
+        
+    
+            feature_group_eda950dd3dbd083af25383c52df43f6c.addTo(map_21c2ddea183fb2d441145c2e9e078577);
+        
+    
+            var pane_9d0ed15456306c53934e4cbe236d6e33 = map_21c2ddea183fb2d441145c2e9e078577.createPane(
+                "bsqPane3");
+            pane_9d0ed15456306c53934e4cbe236d6e33.style.zIndex = 497;
+            
+        
+    
+            var feature_group_2af48184af4a35be7422c3e0354a5442 = L.featureGroup(
+                {
+}
+            );
+        
+    
+            feature_group_2af48184af4a35be7422c3e0354a5442.addTo(map_21c2ddea183fb2d441145c2e9e078577);
+        
+    
+            var pane_3e4a86862543edcffe5eb5775ab7008d = map_21c2ddea183fb2d441145c2e9e078577.createPane(
+                "bsqPane4");
+            pane_3e4a86862543edcffe5eb5775ab7008d.style.zIndex = 496;
+            
+        
+    
+            var image_overlay_e46798223344a4200a2c772e6eb4c7b5 = L.imageOverlay(
+                "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR42mNgAAIAAAUAAen63NgAAAAASUVORK5CYII=",
+                [[-28.3, 152.99999999999997], [-25.999999999999996, 154.49999999999997]],
+                {
+  "opacity": 0.9,
+  "interactive": true,
+  "crossOrigin": false,
+  "pane": "bsqPane4",
+}
+            );
+        
+    
+            var pane_de5a8aab87402a74fd178c19e150d6b0 = map_21c2ddea183fb2d441145c2e9e078577.createPane(
+                "bsqPane5");
+            pane_de5a8aab87402a74fd178c19e150d6b0.style.zIndex = 495;
+            
+        
+    
+            var image_overlay_7c1cda5e7e0f57437f9b3e116fc28bf2 = L.imageOverlay(
+                "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR42mNgAAIAAAUAAen63NgAAAAASUVORK5CYII=",
+                [[-28.3, 152.99999999999997], [-25.999999999999996, 154.49999999999997]],
+                {
+  "opacity": 0.78,
+  "interactive": true,
+  "crossOrigin": false,
+  "pane": "bsqPane5",
+}
+            );
+        
+    
+            image_overlay_7c1cda5e7e0f57437f9b3e116fc28bf2.addTo(map_21c2ddea183fb2d441145c2e9e078577);
+        
+    
+            var pane_372cd5165eadbad4f394d3f3bbc0b52b = map_21c2ddea183fb2d441145c2e9e078577.createPane(
+                "bsqPane6");
+            pane_372cd5165eadbad4f394d3f3bbc0b52b.style.zIndex = 494;
+            
+        
+    
+            var image_overlay_98705d596d85509ca42fa030f3a1ef1b = L.imageOverlay(
+                "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR42mNgAAIAAAUAAen63NgAAAAASUVORK5CYII=",
+                [[-28.3, 152.99999999999997], [-25.999999999999996, 154.49999999999997]],
+                {
+  "opacity": 0.78,
+  "interactive": true,
+  "crossOrigin": false,
+  "pane": "bsqPane6",
+}
+            );
+        
+    
+            var pane_ec76bd02b4e9025359efcf46d582a318 = map_21c2ddea183fb2d441145c2e9e078577.createPane(
+                "bsqPane7");
+            pane_ec76bd02b4e9025359efcf46d582a318.style.zIndex = 493;
+            
+        
+    
+            var image_overlay_6d4b56e14a6cd92b5ecab17bc065a7b4 = L.imageOverlay(
+                "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR42mNgAAIAAAUAAen63NgAAAAASUVORK5CYII=",
+                [[-28.3, 152.99999999999997], [-25.999999999999996, 154.49999999999997]],
+                {
+  "opacity": 0.78,
+  "interactive": true,
+  "crossOrigin": false,
+  "pane": "bsqPane7",
+}
+            );
+        
+    
+            var pane_3a38a750e0a32b59135cc07906051cf2 = map_21c2ddea183fb2d441145c2e9e078577.createPane(
+                "bsqPane8");
+            pane_3a38a750e0a32b59135cc07906051cf2.style.zIndex = 492;
+            
+        
+    
+            var image_overlay_fc7619df1a22e9dd8cc42776a6081971 = L.imageOverlay(
+                "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR42mNgAAIAAAUAAen63NgAAAAASUVORK5CYII=",
+                [[-28.3, 152.99999999999997], [-25.999999999999996, 154.49999999999997]],
+                {
+  "opacity": 0.78,
+  "interactive": true,
+  "crossOrigin": false,
+  "pane": "bsqPane8",
+}
+            );
+        
+    
+            var pane_4f481fb0fdc8b910c675819738bda673 = map_21c2ddea183fb2d441145c2e9e078577.createPane(
+                "bsqPane9");
+            pane_4f481fb0fdc8b910c675819738bda673.style.zIndex = 491;
+            
+        
+    
+            var image_overlay_123ac46f52dc4ac8a4dab39165bbec10 = L.imageOverlay(
+                "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR42mNgAAIAAAUAAen63NgAAAAASUVORK5CYII=",
+                [[-28.3, 152.99999999999997], [-25.999999999999996, 154.49999999999997]],
+                {
+  "opacity": 0.78,
+  "interactive": true,
+  "crossOrigin": false,
+  "pane": "bsqPane9",
+}
+            );
+        
+    
+            var pane_3dd94b1cf7eb08c6950b96cca964c6b8 = map_21c2ddea183fb2d441145c2e9e078577.createPane(
+                "bsqPane10");
+            pane_3dd94b1cf7eb08c6950b96cca964c6b8.style.zIndex = 490;
+            
+        
+    
+            var image_overlay_43973fa5ada1cd89478d1453a1dab91f = L.imageOverlay(
+                "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR42mNgAAIAAAUAAen63NgAAAAASUVORK5CYII=",
+                [[-28.3, 152.99999999999997], [-25.999999999999996, 154.49999999999997]],
+                {
+  "opacity": 0.78,
+  "interactive": true,
+  "crossOrigin": false,
+  "pane": "bsqPane10",
+}
+            );
+        
+    
+            var pane_af3d7bfe473c3bc71fff44ee8aa1f03e = map_21c2ddea183fb2d441145c2e9e078577.createPane(
+                "bsqPane11");
+            pane_af3d7bfe473c3bc71fff44ee8aa1f03e.style.zIndex = 489;
+            
+        
+    
+            var image_overlay_942d307ba2387a8aba178b011cb70a51 = L.imageOverlay(
+                "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR42mNgAAIAAAUAAen63NgAAAAASUVORK5CYII=",
+                [[-28.3, 152.99999999999997], [-25.999999999999996, 154.49999999999997]],
+                {
+  "opacity": 0.78,
+  "interactive": true,
+  "crossOrigin": false,
+  "pane": "bsqPane11",
+}
+            );
+        
+    
+            var pane_4245a39c9f327033835f84639a6cd724 = map_21c2ddea183fb2d441145c2e9e078577.createPane(
+                "bsqPane12");
+            pane_4245a39c9f327033835f84639a6cd724.style.zIndex = 488;
+            
+        
+    
+            var image_overlay_162fcee225e51678514ebe6aa029cb40 = L.imageOverlay(
+                "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR42mNgAAIAAAUAAen63NgAAAAASUVORK5CYII=",
+                [[-28.3, 152.99999999999997], [-25.999999999999996, 154.49999999999997]],
+                {
+  "opacity": 0.78,
+  "interactive": true,
+  "crossOrigin": false,
+  "pane": "bsqPane12",
+}
+            );
+        
+    
+            var pane_6047d3e02e4a1afbeb5a6c7d40a67022 = map_21c2ddea183fb2d441145c2e9e078577.createPane(
+                "bsqPane13");
+            pane_6047d3e02e4a1afbeb5a6c7d40a67022.style.zIndex = 487;
+            
+        
+    
+            var image_overlay_30f2d917e97e5a9f8878e340eb89f14f = L.imageOverlay(
+                "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR42mNgAAIAAAUAAen63NgAAAAASUVORK5CYII=",
+                [[-28.3, 152.99999999999997], [-25.999999999999996, 154.49999999999997]],
+                {
+  "opacity": 0.78,
+  "interactive": true,
+  "crossOrigin": false,
+  "pane": "bsqPane13",
+}
+            );
+        
+    
+            var pane_337a707a4636167fb7d17d3678a15ea7 = map_21c2ddea183fb2d441145c2e9e078577.createPane(
+                "bsqPane14");
+            pane_337a707a4636167fb7d17d3678a15ea7.style.zIndex = 486;
+            
+        
+    
+            var image_overlay_db627c43987845373bfc8ca4daa41cd9 = L.imageOverlay(
+                "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR42mNgAAIAAAUAAen63NgAAAAASUVORK5CYII=",
+                [[-28.3, 152.99999999999997], [-25.999999999999996, 154.49999999999997]],
+                {
+  "opacity": 0.78,
+  "interactive": true,
+  "crossOrigin": false,
+  "pane": "bsqPane14",
+}
+            );
+        
+    
+            var pane_ccc3a602ef12086d3271404fc4880858 = map_21c2ddea183fb2d441145c2e9e078577.createPane(
+                "bsqPane15");
+            pane_ccc3a602ef12086d3271404fc4880858.style.zIndex = 485;
+            
+        
+    
+            var image_overlay_6107c3689bf157debf2274d46d4f3d58 = L.imageOverlay(
+                "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR42mNgAAIAAAUAAen63NgAAAAASUVORK5CYII=",
+                [[-28.3, 152.99999999999997], [-25.999999999999996, 154.49999999999997]],
+                {
+  "opacity": 0.78,
+  "interactive": true,
+  "crossOrigin": false,
+  "pane": "bsqPane15",
+}
+            );
+        
+    
+            var pane_d604ab744053b83b9820b40991c37926 = map_21c2ddea183fb2d441145c2e9e078577.createPane(
+                "bsqPane16");
+            pane_d604ab744053b83b9820b40991c37926.style.zIndex = 484;
+            
+        
+    
+            var image_overlay_a53dd6d6702d4a6f62f007d76d89e420 = L.imageOverlay(
+                "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR42mNgAAIAAAUAAen63NgAAAAASUVORK5CYII=",
+                [[-28.3, 152.99999999999997], [-25.999999999999996, 154.49999999999997]],
+                {
+  "opacity": 0.78,
+  "interactive": true,
+  "crossOrigin": false,
+  "pane": "bsqPane16",
+}
+            );
+        
+    
+            var pane_4167a410a14790e55d75c0d57dabed43 = map_21c2ddea183fb2d441145c2e9e078577.createPane(
+                "bsqPane17");
+            pane_4167a410a14790e55d75c0d57dabed43.style.zIndex = 483;
+            
+        
+    
+            var image_overlay_c4fcba789605b9415db30334b9c8a915 = L.imageOverlay(
+                "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR42mNgAAIAAAUAAen63NgAAAAASUVORK5CYII=",
+                [[-28.3, 152.99999999999997], [-25.999999999999996, 154.49999999999997]],
+                {
+  "opacity": 0.78,
+  "interactive": true,
+  "crossOrigin": false,
+  "pane": "bsqPane17",
+}
+            );
+        
+    
+            var pane_40999725d7002270d76cd790d1dc9e81 = map_21c2ddea183fb2d441145c2e9e078577.createPane(
+                "bsqPane18");
+            pane_40999725d7002270d76cd790d1dc9e81.style.zIndex = 482;
+            
+        
+    
+            var image_overlay_2cc484682a81e9e53ede9a56d10e83df = L.imageOverlay(
+                "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR42mNgAAIAAAUAAen63NgAAAAASUVORK5CYII=",
+                [[-28.3, 152.99999999999997], [-25.999999999999996, 154.49999999999997]],
+                {
+  "opacity": 0.78,
+  "interactive": true,
+  "crossOrigin": false,
+  "pane": "bsqPane18",
+}
+            );
+        
+    
+            var pane_09c5b6ccacc70262d734dffd95382674 = map_21c2ddea183fb2d441145c2e9e078577.createPane(
+                "bsqPane19");
+            pane_09c5b6ccacc70262d734dffd95382674.style.zIndex = 481;
+            
+        
+    
+            var image_overlay_221913ce664f971ae3e5b1ac733651c9 = L.imageOverlay(
+                "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR42mNgAAIAAAUAAen63NgAAAAASUVORK5CYII=",
+                [[-28.3, 152.99999999999997], [-25.999999999999996, 154.49999999999997]],
+                {
+  "opacity": 0.78,
+  "interactive": true,
+  "crossOrigin": false,
+  "pane": "bsqPane19",
+}
+            );
+        
+    
+            var pane_326af5eb383ee389c783d203f243bbde = map_21c2ddea183fb2d441145c2e9e078577.createPane(
+                "bsqPane20");
+            pane_326af5eb383ee389c783d203f243bbde.style.zIndex = 480;
+            
+        
+    
+            var image_overlay_d5fabdd42041bcaf44ac5cb3fb6e99ed = L.imageOverlay(
+                "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR42mNgAAIAAAUAAen63NgAAAAASUVORK5CYII=",
+                [[-28.3, 152.99999999999997], [-25.999999999999996, 154.49999999999997]],
+                {
+  "opacity": 0.78,
+  "interactive": true,
+  "crossOrigin": false,
+  "pane": "bsqPane20",
+}
+            );
+        
+    
+            var pane_7d9eba24943cf20e6d02fcaefe9aeece = map_21c2ddea183fb2d441145c2e9e078577.createPane(
+                "bsqPane21");
+            pane_7d9eba24943cf20e6d02fcaefe9aeece.style.zIndex = 479;
+            
+        
+    
+            var image_overlay_1ae48da2e230288e97d60a3e8562c522 = L.imageOverlay(
+                "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR42mNgAAIAAAUAAen63NgAAAAASUVORK5CYII=",
+                [[-28.3, 152.99999999999997], [-25.999999999999996, 154.49999999999997]],
+                {
+  "opacity": 0.78,
+  "interactive": true,
+  "crossOrigin": false,
+  "pane": "bsqPane21",
+}
+            );
+        
+    
+            var pane_7c7d6f8459e353d84716b498def27e06 = map_21c2ddea183fb2d441145c2e9e078577.createPane(
+                "bsqPane22");
+            pane_7c7d6f8459e353d84716b498def27e06.style.zIndex = 478;
+            
+        
+    
+            var image_overlay_7ddaddd88b1fa202a976d9ff337888fe = L.imageOverlay(
+                "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR42mNgAAIAAAUAAen63NgAAAAASUVORK5CYII=",
+                [[-28.3, 152.99999999999997], [-25.999999999999996, 154.49999999999997]],
+                {
+  "opacity": 0.78,
+  "interactive": true,
+  "crossOrigin": false,
+  "pane": "bsqPane22",
+}
+            );
+        
+    
+            var pane_b5399065eec147bd7e921b24fb12c49a = map_21c2ddea183fb2d441145c2e9e078577.createPane(
+                "bsqPane23");
+            pane_b5399065eec147bd7e921b24fb12c49a.style.zIndex = 477;
+            
+        
+    
+            var image_overlay_f76ef11e283d5fcaa054762c2168d8df = L.imageOverlay(
+                "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR42mNgAAIAAAUAAen63NgAAAAASUVORK5CYII=",
+                [[-28.3, 152.99999999999997], [-25.999999999999996, 154.49999999999997]],
+                {
+  "opacity": 0.78,
+  "interactive": true,
+  "crossOrigin": false,
+  "pane": "bsqPane23",
+}
+            );
+        
+    
+            var pane_5e2e5f5e1e402a9cb332d466f7a98a21 = map_21c2ddea183fb2d441145c2e9e078577.createPane(
+                "bsqPane24");
+            pane_5e2e5f5e1e402a9cb332d466f7a98a21.style.zIndex = 476;
+            
+        
+    
+            var image_overlay_1aeb7c4ddcb2e4a1baa7716af2323233 = L.imageOverlay(
+                "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR42mNgAAIAAAUAAen63NgAAAAASUVORK5CYII=",
+                [[-28.3, 152.99999999999997], [-25.999999999999996, 154.49999999999997]],
+                {
+  "opacity": 0.78,
+  "interactive": true,
+  "crossOrigin": false,
+  "pane": "bsqPane24",
+}
+            );
+        
+    
+            var pane_26dcad963a2224815d4b8369ab349fa8 = map_21c2ddea183fb2d441145c2e9e078577.createPane(
+                "bsqPane25");
+            pane_26dcad963a2224815d4b8369ab349fa8.style.zIndex = 475;
+            
+        
+    
+            var image_overlay_59553b54ca470c7f293439978c7147e6 = L.imageOverlay(
+                "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR42mNgAAIAAAUAAen63NgAAAAASUVORK5CYII=",
+                [[-28.3, 152.99999999999997], [-25.999999999999996, 154.49999999999997]],
+                {
+  "opacity": 0.78,
+  "interactive": true,
+  "crossOrigin": false,
+  "pane": "bsqPane25",
+}
+            );
+        
+    
+            var pane_a879d70a3a2e15f36640c570150a1546 = map_21c2ddea183fb2d441145c2e9e078577.createPane(
+                "bsqPane26");
+            pane_a879d70a3a2e15f36640c570150a1546.style.zIndex = 474;
+            
+        
+    
+            var image_overlay_0ee20dc47814157545fa5fd0902b3e9f = L.imageOverlay(
+                "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR42mNgAAIAAAUAAen63NgAAAAASUVORK5CYII=",
+                [[-28.3, 152.99999999999997], [-25.999999999999996, 154.49999999999997]],
+                {
+  "opacity": 0.78,
+  "interactive": true,
+  "crossOrigin": false,
+  "pane": "bsqPane26",
+}
+            );
+        
+    
+            var pane_1629d08b3f87ed0ffed3ffc6a6999098 = map_21c2ddea183fb2d441145c2e9e078577.createPane(
+                "bsqPane27");
+            pane_1629d08b3f87ed0ffed3ffc6a6999098.style.zIndex = 473;
+            
+        
+    
+            var image_overlay_8e675f18c01c8ca1350905176438a7c3 = L.imageOverlay(
+                "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR42mNgAAIAAAUAAen63NgAAAAASUVORK5CYII=",
+                [[-28.3, 152.99999999999997], [-25.999999999999996, 154.49999999999997]],
+                {
+  "opacity": 0.78,
+  "interactive": true,
+  "crossOrigin": false,
+  "pane": "bsqPane27",
+}
+            );
+        
+    
+            var pane_cc1ba2c50d1e5e5f03d4017cc700158c = map_21c2ddea183fb2d441145c2e9e078577.createPane(
+                "bsqPane28");
+            pane_cc1ba2c50d1e5e5f03d4017cc700158c.style.zIndex = 472;
+            
+        
+    
+            var image_overlay_85636d97fb6d1da65f644577af538741 = L.imageOverlay(
+                "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR42mNgAAIAAAUAAen63NgAAAAASUVORK5CYII=",
+                [[-28.3, 152.99999999999997], [-25.999999999999996, 154.49999999999997]],
+                {
+  "opacity": 0.78,
+  "interactive": true,
+  "crossOrigin": false,
+  "pane": "bsqPane28",
+}
+            );
+        
+    
+            var pane_35ed7d8d906f67935ff72ec09ac07050 = map_21c2ddea183fb2d441145c2e9e078577.createPane(
+                "bsqPane29");
+            pane_35ed7d8d906f67935ff72ec09ac07050.style.zIndex = 471;
+            
+        
+    
+            var image_overlay_7a26b9ce4bf88d2e20b7713258ec61f7 = L.imageOverlay(
+                "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR42mNgAAIAAAUAAen63NgAAAAASUVORK5CYII=",
+                [[-28.3, 152.99999999999997], [-25.999999999999996, 154.49999999999997]],
+                {
+  "opacity": 0.78,
+  "interactive": true,
+  "crossOrigin": false,
+  "pane": "bsqPane29",
+}
+            );
+        
+    
+            var pane_bb03b35688ac913bcba47e1f75a739ac = map_21c2ddea183fb2d441145c2e9e078577.createPane(
+                "bsqPane30");
+            pane_bb03b35688ac913bcba47e1f75a739ac.style.zIndex = 470;
+            
+        
+    
+            var image_overlay_986c7660890c02707b0f832cf6625d6e = L.imageOverlay(
+                "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR42mNgAAIAAAUAAen63NgAAAAASUVORK5CYII=",
+                [[-28.3, 152.99999999999997], [-25.999999999999996, 154.49999999999997]],
+                {
+  "opacity": 0.9,
+  "interactive": true,
+  "crossOrigin": false,
+  "pane": "bsqPane30",
+}
+            );
+        
+    
+            var pane_6f870551ed97f8bdeea6cb1e144a5695 = map_21c2ddea183fb2d441145c2e9e078577.createPane(
+                "bsqPane31");
+            pane_6f870551ed97f8bdeea6cb1e144a5695.style.zIndex = 469;
+            
+        
+    
+            var image_overlay_6fc6085d281c8edc8a6fa52901f08881 = L.imageOverlay(
+                "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR42mNgAAIAAAUAAen63NgAAAAASUVORK5CYII=",
+                [[-28.3, 152.99999999999997], [-25.999999999999996, 154.49999999999997]],
+                {
+  "opacity": 0.9,
+  "interactive": true,
+  "crossOrigin": false,
+  "pane": "bsqPane31",
+}
+            );
+        
+    
+            var pane_9e64eb3471c6e6add3f73ec744aec740 = map_21c2ddea183fb2d441145c2e9e078577.createPane(
+                "bsqPane32");
+            pane_9e64eb3471c6e6add3f73ec744aec740.style.zIndex = 468;
+            
+        
+    
+            var image_overlay_22a23de0729350fb6ed19678c0dc8585 = L.imageOverlay(
+                "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR42mNgAAIAAAUAAen63NgAAAAASUVORK5CYII=",
+                [[-28.3, 152.99999999999997], [-25.999999999999996, 154.49999999999997]],
+                {
+  "opacity": 0.9,
+  "interactive": true,
+  "crossOrigin": false,
+  "pane": "bsqPane32",
+}
+            );
+        
+    
+            var pane_239dfbea7060af23fb7f066b342df5a9 = map_21c2ddea183fb2d441145c2e9e078577.createPane(
+                "bsqPane33");
+            pane_239dfbea7060af23fb7f066b342df5a9.style.zIndex = 467;
+            
+        
+    
+            var image_overlay_03e890fd6c3773858db2ddba3fe0884d = L.imageOverlay(
+                "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR42mNgAAIAAAUAAen63NgAAAAASUVORK5CYII=",
+                [[-28.3, 152.99999999999997], [-25.999999999999996, 154.49999999999997]],
+                {
+  "opacity": 0.9,
+  "interactive": true,
+  "crossOrigin": false,
+  "pane": "bsqPane33",
+}
+            );
+        
+    
+    var color_map_48deb57d4548272b32fdb155db3d43e3 = {};
+
+    
+    color_map_48deb57d4548272b32fdb155db3d43e3.color = d3.scale.threshold()
+              .domain([0.0, 0.20040080160320642, 0.40080160320641284, 0.6012024048096193, 0.8016032064128257, 1.002004008016032, 1.2024048096192386, 1.402805611222445, 1.6032064128256514, 1.8036072144288577, 2.004008016032064, 2.2044088176352705, 2.404809619238477, 2.6052104208416833, 2.80561122244489, 3.006012024048096, 3.2064128256513027, 3.406813627254509, 3.6072144288577155, 3.8076152304609217, 4.008016032064128, 4.208416833667335, 4.408817635270541, 4.609218436873747, 4.809619238476954, 5.01002004008016, 5.210420841683367, 5.410821643286573, 5.61122244488978, 5.811623246492986, 6.012024048096192, 6.212424849699399, 6.412825651302605, 6.613226452905812, 6.813627254509018, 7.014028056112225, 7.214428857715431, 7.414829659318637, 7.615230460921843, 7.81563126252505, 8.016032064128256, 8.216432865731463, 8.41683366733467, 8.617234468937875, 8.817635270541082, 9.01803607214429, 9.218436873747494, 9.418837675350701, 9.619238476953909, 9.819639278557114, 10.02004008016032, 10.220440881763528, 10.420841683366733, 10.62124248496994, 10.821643286573146, 11.022044088176353, 11.22244488977956, 11.422845691382765, 11.623246492985972, 11.823647294589179, 12.024048096192384, 12.224448897795591, 12.424849699398798, 12.625250501002004, 12.82565130260521, 13.026052104208416, 13.226452905811623, 13.42685370741483, 13.627254509018035, 13.827655310621243, 14.02805611222445, 14.228456913827655, 14.428857715430862, 14.629258517034069, 14.829659318637274, 15.030060120240481, 15.230460921843687, 15.430861723446894, 15.6312625250501, 15.831663326653306, 16.03206412825651, 16.23246492985972, 16.432865731462925, 16.63326653306613, 16.83366733466934, 17.034068136272545, 17.23446893787575, 17.43486973947896, 17.635270541082164, 17.83567134268537, 18.03607214428858, 18.236472945891784, 18.43687374749499, 18.637274549098198, 18.837675350701403, 19.03807615230461, 19.238476953907817, 19.438877755511022, 19.639278557114228, 19.839679358717436, 20.04008016032064, 20.240480961923847, 20.440881763527056, 20.64128256513026, 20.841683366733466, 21.04208416833667, 21.24248496993988, 21.442885771543086, 21.64328657314629, 21.8436873747495, 22.044088176352705, 22.24448897795591, 22.44488977955912, 22.645290581162325, 22.84569138276553, 23.04609218436874, 23.246492985971944, 23.44689378757515, 23.647294589178358, 23.847695390781563, 24.04809619238477, 24.248496993987978, 24.448897795591183, 24.649298597194388, 24.849699398797597, 25.050100200400802, 25.250501002004007, 25.450901803607213, 25.65130260521042, 25.851703406813627, 26.052104208416832, 26.25250501002004, 26.452905811623246, 26.65330661322645, 26.85370741482966, 27.054108216432866, 27.25450901803607, 27.45490981963928, 27.655310621242485, 27.85571142284569, 28.0561122244489, 28.256513026052104, 28.45691382765531, 28.65731462925852, 28.857715430861724, 29.05811623246493, 29.258517034068138, 29.458917835671343, 29.65931863727455, 29.859719438877754, 30.060120240480963, 30.260521042084168, 30.460921843687373, 30.661322645290582, 30.861723446893787, 31.062124248496993, 31.2625250501002, 31.462925851703407, 31.663326653306612, 31.86372745490982, 32.06412825651302, 32.26452905811623, 32.46492985971944, 32.66533066132264, 32.86573146292585, 33.06613226452906, 33.26653306613226, 33.46693386773547, 33.66733466933868, 33.86773547094188, 34.06813627254509, 34.2685370741483, 34.4689378757515, 34.66933867735471, 34.86973947895792, 35.07014028056112, 35.27054108216433, 35.47094188376754, 35.67134268537074, 35.87174348697395, 36.07214428857716, 36.27254509018036, 36.47294589178357, 36.673346693386776, 36.87374749498998, 37.07414829659319, 37.274549098196395, 37.4749498997996, 37.675350701402806, 37.875751503006015, 38.07615230460922, 38.276553106212425, 38.476953907815634, 38.677354709418836, 38.877755511022045, 39.078156312625254, 39.278557114228455, 39.478957915831664, 39.67935871743487, 39.879759519038075, 40.08016032064128, 40.28056112224449, 40.480961923847694, 40.6813627254509, 40.88176352705411, 41.08216432865731, 41.28256513026052, 41.482965931863724, 41.68336673346693, 41.88376753507014, 42.08416833667334, 42.28456913827655, 42.48496993987976, 42.68537074148296, 42.88577154308617, 43.08617234468938, 43.28657314629258, 43.48697394789579, 43.687374749499, 43.8877755511022, 44.08817635270541, 44.28857715430862, 44.48897795591182, 44.68937875751503, 44.88977955911824, 45.09018036072144, 45.29058116232465, 45.49098196392786, 45.69138276553106, 45.89178356713427, 46.09218436873748, 46.29258517034068, 46.49298597194389, 46.6933867735471, 46.8937875751503, 47.09418837675351, 47.294589178356716, 47.49498997995992, 47.69539078156313, 47.895791583166336, 48.09619238476954, 48.296593186372746, 48.496993987975955, 48.69739478957916, 48.897795591182366, 49.098196392785574, 49.298597194388776, 49.498997995991985, 49.699398797595194, 49.899799599198396, 50.100200400801604, 50.300601202404806, 50.501002004008015, 50.701402805611224, 50.901803607214426, 51.102204408817634, 51.30260521042084, 51.503006012024045, 51.703406813627254, 51.90380761523046, 52.104208416833664, 52.30460921843687, 52.50501002004008, 52.705410821643284, 52.90581162324649, 53.1062124248497, 53.3066132264529, 53.50701402805611, 53.70741482965932, 53.90781563126252, 54.10821643286573, 54.30861723446894, 54.50901803607214, 54.70941883767535, 54.90981963927856, 55.11022044088176, 55.31062124248497, 55.51102204408818, 55.71142284569138, 55.91182364729459, 56.1122244488978, 56.312625250501, 56.51302605210421, 56.71342685370742, 56.91382765531062, 57.11422845691383, 57.31462925851704, 57.51503006012024, 57.71543086172345, 57.91583166332666, 58.11623246492986, 58.31663326653307, 58.517034068136276, 58.71743486973948, 58.91783567134269, 59.11823647294589, 59.3186372745491, 59.519038076152306, 59.71943887775551, 59.91983967935872, 60.120240480961925, 60.32064128256513, 60.521042084168336, 60.721442885771545, 60.921843687374746, 61.122244488977955, 61.322645290581164, 61.523046092184366, 61.723446893787575, 61.92384769539078, 62.124248496993985, 62.324649298597194, 62.5250501002004, 62.725450901803605, 62.92585170340681, 63.12625250501002, 63.326653306613224, 63.52705410821643, 63.72745490981964, 63.92785571142284, 64.12825651302605, 64.32865731462925, 64.52905811623246, 64.72945891783567, 64.92985971943888, 65.13026052104209, 65.33066132264528, 65.53106212424849, 65.7314629258517, 65.93186372745491, 66.13226452905812, 66.33266533066133, 66.53306613226452, 66.73346693386773, 66.93386773547094, 67.13426853707415, 67.33466933867736, 67.53507014028057, 67.73547094188376, 67.93587174348697, 68.13627254509018, 68.33667334669339, 68.5370741482966, 68.7374749498998, 68.937875751503, 69.13827655310621, 69.33867735470942, 69.53907815631263, 69.73947895791584, 69.93987975951904, 70.14028056112224, 70.34068136272545, 70.54108216432866, 70.74148296593187, 70.94188376753507, 71.14228456913828, 71.34268537074148, 71.54308617234469, 71.7434869739479, 71.9438877755511, 72.14428857715431, 72.34468937875752, 72.54509018036072, 72.74549098196393, 72.94589178356713, 73.14629258517034, 73.34669338677355, 73.54709418837675, 73.74749498997996, 73.94789579158316, 74.14829659318637, 74.34869739478958, 74.54909819639279, 74.74949899799599, 74.9498997995992, 75.1503006012024, 75.35070140280561, 75.55110220440882, 75.75150300601203, 75.95190380761522, 76.15230460921843, 76.35270541082164, 76.55310621242485, 76.75350701402806, 76.95390781563127, 77.15430861723446, 77.35470941883767, 77.55511022044088, 77.75551102204409, 77.9559118236473, 78.15631262525051, 78.3567134268537, 78.55711422845691, 78.75751503006012, 78.95791583166333, 79.15831663326654, 79.35871743486975, 79.55911823647294, 79.75951903807615, 79.95991983967936, 80.16032064128257, 80.36072144288578, 80.56112224448898, 80.76152304609218, 80.96192384769539, 81.1623246492986, 81.3627254509018, 81.56312625250501, 81.76352705410822, 81.96392785571142, 82.16432865731463, 82.36472945891784, 82.56513026052104, 82.76553106212425, 82.96593186372745, 83.16633266533066, 83.36673346693387, 83.56713426853707, 83.76753507014028, 83.96793587174349, 84.16833667334669, 84.3687374749499, 84.5691382765531, 84.76953907815631, 84.96993987975952, 85.17034068136273, 85.37074148296593, 85.57114228456913, 85.77154308617234, 85.97194388777555, 86.17234468937876, 86.37274549098197, 86.57314629258516, 86.77354709418837, 86.97394789579158, 87.17434869739479, 87.374749498998, 87.57515030060121, 87.7755511022044, 87.97595190380761, 88.17635270541082, 88.37675350701403, 88.57715430861724, 88.77755511022045, 88.97795591182364, 89.17835671342685, 89.37875751503006, 89.57915831663327, 89.77955911823648, 89.97995991983969, 90.18036072144288, 90.38076152304609, 90.5811623246493, 90.78156312625251, 90.98196392785572, 91.18236472945891, 91.38276553106212, 91.58316633266533, 91.78356713426854, 91.98396793587175, 92.18436873747495, 92.38476953907815, 92.58517034068136, 92.78557114228457, 92.98597194388778, 93.18637274549098, 93.3867735470942, 93.58717434869739, 93.7875751503006, 93.9879759519038, 94.18837675350701, 94.38877755511022, 94.58917835671343, 94.78957915831663, 94.98997995991984, 95.19038076152304, 95.39078156312625, 95.59118236472946, 95.79158316633267, 95.99198396793587, 96.19238476953907, 96.39278557114228, 96.59318637274549, 96.7935871743487, 96.99398797595191, 97.1943887775551, 97.39478957915831, 97.59519038076152, 97.79559118236473, 97.99599198396794, 98.19639278557115, 98.39679358717434, 98.59719438877755, 98.79759519038076, 98.99799599198397, 99.19839679358718, 99.39879759519039, 99.59919839679358, 99.79959919839679, 100.0])
+              .range(['#30123bff', '#30133eff', '#311441ff', '#311644ff', '#321747ff', '#32194bff', '#331a4eff', '#331c51ff', '#341d54ff', '#341e57ff', '#34205aff', '#35215dff', '#352361ff', '#362464ff', '#362667ff', '#37276aff', '#37296dff', '#382a70ff', '#382b74ff', '#392d77ff', '#392e7aff', '#3a307dff', '#3a3180ff', '#3b3383ff', '#3b3486ff', '#3c358aff', '#3c378dff', '#3d3890ff', '#3d3a93ff', '#3e3b96ff', '#3e3d99ff', '#3f3e9dff', '#3f40a0ff', '#3f41a3ff', '#4042a6ff', '#4044a9ff', '#4145acff', '#4147aeff', '#4148b0ff', '#4149b1ff', '#414bb3ff', '#424cb5ff', '#424db7ff', '#424fb9ff', '#4250bbff', '#4251bdff', '#4253beff', '#4254c0ff', '#4255c2ff', '#4357c4ff', '#4358c6ff', '#435ac8ff', '#435bcaff', '#435ccbff', '#435ecdff', '#435fcfff', '#4460d1ff', '#4462d3ff', '#4463d5ff', '#4464d7ff', '#4466d8ff', '#4467daff', '#4468dcff', '#456adeff', '#456be0ff', '#456ce2ff', '#456ee4ff', '#456fe5ff', '#4571e7ff', '#4572e9ff', '#4673ebff', '#4675edff', '#4676eeff', '#4577eeff', '#4578efff', '#447aefff', '#447befff', '#447cf0ff', '#437df0ff', '#437ff1ff', '#4380f1ff', '#4281f2ff', '#4283f2ff', '#4184f2ff', '#4185f3ff', '#4186f3ff', '#4088f4ff', '#4089f4ff', '#408af4ff', '#3f8bf5ff', '#3f8df5ff', '#3f8ef6ff', '#3e8ff6ff', '#3e90f7ff', '#3d92f7ff', '#3d93f7ff', '#3d94f8ff', '#3c96f8ff', '#3c97f9ff', '#3c98f9ff', '#3b99faff', '#3b9bfaff', '#3b9cfaff', '#3a9dfbff', '#3a9efbff', '#39a0fcff', '#39a1fcff', '#39a2fcff', '#38a3fbff', '#37a5faff', '#36a6f9ff', '#35a7f8ff', '#34a9f7ff', '#34aaf6ff', '#33abf5ff', '#32acf3ff', '#31aef2ff', '#30aff1ff', '#2fb0f0ff', '#2fb1efff', '#2eb3eeff', '#2db4edff', '#2cb5ecff', '#2bb7eaff', '#2ab8e9ff', '#29b9e8ff', '#29bae7ff', '#28bce6ff', '#27bde5ff', '#26bee4ff', '#25bfe2ff', '#24c1e1ff', '#24c2e0ff', '#23c3dfff', '#22c4deff', '#21c6ddff', '#20c7dcff', '#1fc8dbff', '#1ecad9ff', '#1ecbd8ff', '#1dccd7ff', '#1ccdd6ff', '#1bcfd5ff', '#1bd0d4ff', '#1bd0d2ff', '#1bd1d1ff', '#1bd2d0ff', '#1cd3cfff', '#1cd4cdff', '#1cd5ccff', '#1cd5cbff', '#1dd6c9ff', '#1dd7c8ff', '#1dd8c7ff', '#1ed9c6ff', '#1ed9c4ff', '#1edac3ff', '#1edbc2ff', '#1fdcc0ff', '#1fddbfff', '#1fdebeff', '#1fdebcff', '#20dfbbff', '#20e0baff', '#20e1b9ff', '#20e2b7ff', '#21e2b6ff', '#21e3b5ff', '#21e4b3ff', '#21e5b2ff', '#22e6b1ff', '#22e7afff', '#22e7aeff', '#22e8adff', '#23e9acff', '#23eaaaff', '#23eba9ff', '#23eba8ff', '#24eca6ff', '#25eda5ff', '#27eda3ff', '#28eea2ff', '#2aeea0ff', '#2cef9eff', '#2eef9dff', '#2fef9bff', '#31f099ff', '#33f098ff', '#34f196ff', '#36f195ff', '#38f293ff', '#3af291ff', '#3bf390ff', '#3df38eff', '#3ff48cff', '#40f48bff', '#42f489ff', '#44f587ff', '#46f586ff', '#47f684ff', '#49f683ff', '#4bf781ff', '#4df77fff', '#4ef87eff', '#50f87cff', '#52f87aff', '#53f979ff', '#55f977ff', '#57fa75ff', '#59fa74ff', '#5afb72ff', '#5cfb71ff', '#5efc6fff', '#5ffc6dff', '#61fc6cff', '#63fc6aff', '#65fc69ff', '#67fc68ff', '#69fc66ff', '#6bfc65ff', '#6cfc63ff', '#6efc62ff', '#70fc61ff', '#72fc5fff', '#74fc5eff', '#76fc5dff', '#78fc5bff', '#7afc5aff', '#7cfc58ff', '#7dfc57ff', '#7ffc56ff', '#81fc54ff', '#83fc53ff', '#85fc52ff', '#87fc50ff', '#89fc4fff', '#8bfc4dff', '#8dfc4cff', '#8efc4bff', '#90fc49ff', '#92fc48ff', '#94fc46ff', '#96fc45ff', '#98fc44ff', '#9afc42ff', '#9cfc41ff', '#9efc40ff', '#9ffc3eff', '#a1fc3dff', '#a3fc3bff', '#a5fc3bff', '#a6fc3aff', '#a7fb3aff', '#a9fb3aff', '#aafa3aff', '#abf93aff', '#acf939ff', '#aef839ff', '#aff839ff', '#b0f739ff', '#b1f739ff', '#b3f638ff', '#b4f538ff', '#b5f538ff', '#b7f438ff', '#b8f438ff', '#b9f337ff', '#baf337ff', '#bcf237ff', '#bdf237ff', '#bef137ff', '#bff036ff', '#c1f036ff', '#c2ef36ff', '#c3ef36ff', '#c4ee36ff', '#c6ee36ff', '#c7ed35ff', '#c8ec35ff', '#caec35ff', '#cbeb35ff', '#cceb35ff', '#cdea34ff', '#cfea34ff', '#d0e934ff', '#d1e834ff', '#d2e834ff', '#d3e734ff', '#d4e634ff', '#d5e534ff', '#d6e435ff', '#d7e335ff', '#d8e235ff', '#d9e135ff', '#dae035ff', '#dbdf35ff', '#dcde36ff', '#dddd36ff', '#dedc36ff', '#dfdb36ff', '#e0da36ff', '#e1d936ff', '#e1d837ff', '#e2d737ff', '#e3d637ff', '#e4d537ff', '#e5d437ff', '#e6d337ff', '#e7d338ff', '#e8d238ff', '#e9d138ff', '#ead038ff', '#ebcf38ff', '#ecce38ff', '#edcd39ff', '#eecc39ff', '#efcb39ff', '#f0ca39ff', '#f1c939ff', '#f2c839ff', '#f3c73aff', '#f4c63aff', '#f4c539ff', '#f4c439ff', '#f4c239ff', '#f5c138ff', '#f5c038ff', '#f5bf37ff', '#f6be37ff', '#f6bc37ff', '#f6bb36ff', '#f7ba36ff', '#f7b936ff', '#f7b735ff', '#f8b635ff', '#f8b535ff', '#f8b434ff', '#f8b334ff', '#f9b133ff', '#f9b033ff', '#f9af33ff', '#faae32ff', '#faad32ff', '#faab32ff', '#fbaa31ff', '#fba931ff', '#fba830ff', '#fca730ff', '#fca530ff', '#fca42fff', '#fda32fff', '#fda22fff', '#fda02eff', '#fd9f2eff', '#fe9e2eff', '#fe9d2dff', '#fe9c2dff', '#fe9a2cff', '#fe992cff', '#fe972bff', '#fd952aff', '#fd942aff', '#fd9229ff', '#fc9128ff', '#fc8f28ff', '#fc8e27ff', '#fc8c26ff', '#fb8a26ff', '#fb8925ff', '#fb8724ff', '#fa8624ff', '#fa8423ff', '#fa8322ff', '#f98121ff', '#f97f21ff', '#f97e20ff', '#f87c1fff', '#f87b1fff', '#f8791eff', '#f8781dff', '#f7761dff', '#f7741cff', '#f7731bff', '#f6711bff', '#f6701aff', '#f66e19ff', '#f56c19ff', '#f56b18ff', '#f56917ff', '#f46817ff', '#f46616ff', '#f46515ff', '#f36315ff', '#f36214ff', '#f26114ff', '#f15f13ff', '#f15e13ff', '#f05d13ff', '#ef5c12ff', '#ee5a12ff', '#ee5911ff', '#ed5811ff', '#ec5711ff', '#eb5610ff', '#eb5410ff', '#ea530fff', '#e9520fff', '#e9510fff', '#e8500eff', '#e74e0eff', '#e64d0eff', '#e64c0dff', '#e54b0dff', '#e44a0cff', '#e3480cff', '#e3470cff', '#e2460bff', '#e1450bff', '#e0430aff', '#e0420aff', '#df410aff', '#de4009ff', '#de3f09ff', '#dd3d08ff', '#dc3c08ff', '#db3b08ff', '#db3a07ff', '#da3907ff', '#d93706ff', '#d83706ff', '#d73606ff', '#d63506ff', '#d53406ff', '#d33306ff', '#d23205ff', '#d13105ff', '#d03005ff', '#cf3005ff', '#ce2f05ff', '#cd2e05ff', '#cc2d04ff', '#ca2c04ff', '#c92b04ff', '#c82a04ff', '#c72904ff', '#c62904ff', '#c52803ff', '#c42703ff', '#c22603ff', '#c12503ff', '#c02403ff', '#bf2303ff', '#be2302ff', '#bd2202ff', '#bc2102ff', '#bb2002ff', '#b91f02ff', '#b81e02ff', '#b71d01ff', '#b61c01ff', '#b51c01ff', '#b41b01ff', '#b31a01ff', '#b21901ff', '#b01801ff', '#af1801ff', '#ad1701ff', '#ac1601ff', '#aa1601ff', '#a81501ff', '#a71501ff', '#a51401ff', '#a41301ff', '#a21301ff', '#a11201ff', '#9f1201ff', '#9e1101ff', '#9c1101ff', '#9b1001ff', '#990f01ff', '#970f01ff', '#960e01ff', '#940e02ff', '#930d02ff', '#910c02ff', '#900c02ff', '#8e0b02ff', '#8d0b02ff', '#8b0a02ff', '#890902ff', '#880902ff', '#860802ff', '#850802ff', '#830702ff', '#820602ff', '#800602ff', '#7f0502ff', '#7d0502ff', '#7c0402ff', '#7a0403ff']);
+    
+
+    color_map_48deb57d4548272b32fdb155db3d43e3.x = d3.scale.linear()
+              .domain([0.0, 100.0])
+              .range([0, 450 - 50]);
+
+    color_map_48deb57d4548272b32fdb155db3d43e3.legend = L.control({position: 'topright'});
+    color_map_48deb57d4548272b32fdb155db3d43e3.legend.onAdd = function (map) {var div = L.DomUtil.create('div', 'legend'); return div};
+    color_map_48deb57d4548272b32fdb155db3d43e3.legend.addTo(map_21c2ddea183fb2d441145c2e9e078577);
+
+    color_map_48deb57d4548272b32fdb155db3d43e3.xAxis = d3.svg.axis()
+        .scale(color_map_48deb57d4548272b32fdb155db3d43e3.x)
+        .orient("top")
+        .tickSize(1)
+        .tickValues([0.0, '', 14.285714285714286, '', 28.571428571428573, '', 42.857142857142854, '', 57.142857142857146, '', 71.42857142857143, '', 85.71428571428571, '', 100.0, '']);
+
+    color_map_48deb57d4548272b32fdb155db3d43e3.svg = d3.select(".legend.leaflet-control").append("svg")
+        .attr("id", 'legend')
+        .attr("width", 450)
+        .attr("height", 40);
+
+    color_map_48deb57d4548272b32fdb155db3d43e3.g = color_map_48deb57d4548272b32fdb155db3d43e3.svg.append("g")
+        .attr("class", "key")
+        .attr("fill", "#c4c6cf")
+        .attr("transform", "translate(25,16)");
+
+    color_map_48deb57d4548272b32fdb155db3d43e3.g.selectAll("rect")
+        .data(color_map_48deb57d4548272b32fdb155db3d43e3.color.range().map(function(d, i) {
+          return {
+            x0: i ? color_map_48deb57d4548272b32fdb155db3d43e3.x(color_map_48deb57d4548272b32fdb155db3d43e3.color.domain()[i - 1]) : color_map_48deb57d4548272b32fdb155db3d43e3.x.range()[0],
+            x1: i < color_map_48deb57d4548272b32fdb155db3d43e3.color.domain().length ? color_map_48deb57d4548272b32fdb155db3d43e3.x(color_map_48deb57d4548272b32fdb155db3d43e3.color.domain()[i]) : color_map_48deb57d4548272b32fdb155db3d43e3.x.range()[1],
+            z: d
+          };
+        }))
+      .enter().append("rect")
+        .attr("height", 40 - 30)
+        .attr("x", function(d) { return d.x0; })
+        .attr("width", function(d) { return d.x1 - d.x0; })
+        .style("fill", function(d) { return d.z; });
+
+    color_map_48deb57d4548272b32fdb155db3d43e3.g.call(color_map_48deb57d4548272b32fdb155db3d43e3.xAxis).append("text")
+        .attr("class", "caption")
+        .attr("y", 21)
+        .attr("fill", "#c4c6cf")
+        .text("Yellowfin Tuna Bite Score (0-100)");
+    
+            var layer_control_c6f839a34dc228acc4d2c502e5361302_layers = {
+                base_layers : {
+                    "Light basemap" : tile_layer_96a8b5f65fa6f360c01e28a2e1d03349,
+                    "Streets basemap" : tile_layer_d6301c907d596afbfaeb326195ecb6d7,
+                    "Satellite basemap" : tile_layer_a74557e01ca5389d9e06d04da4ac3683,
+                },
+                overlays :  {
+                    "MBGFC fishing chart (georeferenced)" : image_overlay_f5ec6090cab77651ec640ab87fc5bd9d,
+                    "MBGFC FADs, SFADs \u0026 wave buoys" : feature_group_39f06423010008fbde6b40df373ae884,
+                    "Land outline" : feature_group_eda950dd3dbd083af25383c52df43f6c,
+                    "Bathymetry contours (depth reference)" : feature_group_2af48184af4a35be7422c3e0354a5442,
+                    "Ocean fronts (FSLE)" : image_overlay_e46798223344a4200a2c772e6eb4c7b5,
+                    "Bite Score heatmap (current, high-res)" : image_overlay_7c1cda5e7e0f57437f9b3e116fc28bf2,
+                    "Bite Score heatmap (legacy, coarse - for comparison)" : image_overlay_98705d596d85509ca42fa030f3a1ef1b,
+                    "Factor: SST thermal-front score" : image_overlay_6d4b56e14a6cd92b5ecab17bc065a7b4,
+                    "Factor: Chlorophyll-front score" : image_overlay_fc7619df1a22e9dd8cc42776a6081971,
+                    "Factor: Current-edge score" : image_overlay_123ac46f52dc4ac8a4dab39165bbec10,
+                    "Factor: SSHA / eddy-front score" : image_overlay_43973fa5ada1cd89478d1453a1dab91f,
+                    "Factor: MLD front score" : image_overlay_942d307ba2387a8aba178b011cb70a51,
+                    "Factor: Depth-suitability score" : image_overlay_162fcee225e51678514ebe6aa029cb40,
+                    "Bite Score heatmap v2 (Beta - structure/eddy model)" : image_overlay_30f2d917e97e5a9f8878e340eb89f14f,
+                    "Factor (v2 Beta): SST bell-curve score" : image_overlay_db627c43987845373bfc8ca4daa41cd9,
+                    "Factor (v2 Beta): Chlorophyll optimal-band score" : image_overlay_6107c3689bf157debf2274d46d4f3d58,
+                    "Factor (v2 Beta): Current-edge score (v2 recomputed)" : image_overlay_a53dd6d6702d4a6f62f007d76d89e420,
+                    "Factor (v2 Beta): Depth-suitability score (v2 recomputed)" : image_overlay_c4fcba789605b9415db30334b9c8a915,
+                    "Factor (v2 Beta): MLD gradient score (v2)" : image_overlay_2cc484682a81e9e53ede9a56d10e83df,
+                    "Factor (v2 Beta): Structure proximity score" : image_overlay_221913ce664f971ae3e5b1ac733651c9,
+                    "Factor (v2 Beta): Eddy detection score" : image_overlay_d5fabdd42041bcaf44ac5cb3fb6e99ed,
+                    "Bite Score heatmap Lenigas (SEQ fisherman model)" : image_overlay_1ae48da2e230288e97d60a3e8562c522,
+                    "Factor (Lenigas): EAC axis-position score" : image_overlay_7ddaddd88b1fa202a976d9ff337888fe,
+                    "Factor (Lenigas): EAC convergence-point score" : image_overlay_f76ef11e283d5fcaa054762c2168d8df,
+                    "Factor (Lenigas): Depth-suitability score (Lenigas)" : image_overlay_1aeb7c4ddcb2e4a1baa7716af2323233,
+                    "Factor (Lenigas): Upwelling/downwelling score" : image_overlay_59553b54ca470c7f293439978c7147e6,
+                    "Factor (Lenigas): SST bell-curve score (Lenigas)" : image_overlay_0ee20dc47814157545fa5fd0902b3e9f,
+                    "Factor (Lenigas): Distance-offshore score" : image_overlay_8e675f18c01c8ca1350905176438a7c3,
+                    "Factor (Lenigas): SSHA hotspot score (Lenigas)" : image_overlay_85636d97fb6d1da65f644577af538741,
+                    "Factor (Lenigas): Wind speed" : image_overlay_7a26b9ce4bf88d2e20b7713258ec61f7,
+                    "Sunshine Coast LiDAR bathymetry (high-res, 2011 survey)" : image_overlay_986c7660890c02707b0f832cf6625d6e,
+                    "Moreton Bay Approaches bathymetry (high-res, 2023 survey)" : image_overlay_6fc6085d281c8edc8a6fa52901f08881,
+                    "Mudjimba Island bathymetry (high-res, 2024 survey)" : image_overlay_22a23de0729350fb6ed19678c0dc8585,
+                    "Bathymetry relief map" : image_overlay_03e890fd6c3773858db2ddba3fe0884d,
+                },
+            };
+            let layer_control_c6f839a34dc228acc4d2c502e5361302 = L.control.layers(
+                layer_control_c6f839a34dc228acc4d2c502e5361302_layers.base_layers,
+                layer_control_c6f839a34dc228acc4d2c502e5361302_layers.overlays,
+                {
+  "position": "topright",
+  "collapsed": false,
+  "autoZIndex": true,
+}
+            ).addTo(map_21c2ddea183fb2d441145c2e9e078577);
+
+        
+</script>
+</html>
