@@ -24,7 +24,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 from . import config
 from .data_ingestion import fetch_tide_data
-from .main import run_pipeline
+from .main import run_pipeline, run_pipeline_v2, run_pipeline_lenigas
 from .mbgfc_chart import build_mbgfc_chart_png, load_mbgfc_locations
 from .date_layers import (
     DATE_LAYER_SPECS,
@@ -33,6 +33,7 @@ from .date_layers import (
     build_date_layer_assets,
     build_date_layer_assets_v2,
     build_date_layer_assets_lenigas,
+    build_sla_contours_json,
     validate_date_key,
 )
 from .moon_tide_page import build_moon_tide_page_html
@@ -122,11 +123,49 @@ def _latest_date() -> str:
     return dates[0] if dates else None
 
 
+def _clear_date_layer_cache(target_date: str) -> None:
+    """
+    Delete all cached layer render files for `target_date` so they are
+    regenerated from the freshly-written TIFs on the next browser request.
+
+    Removes ``chart_*.png``, ``meta_*.json``, and ``sla_contours.json``
+    from the date directory root and from every recognised sub-pipeline
+    subfolder (``v2/``, ``lenigas/``).  Only the render cache is cleared;
+    the TIFs themselves (which the pipelines just wrote) are preserved.
+    """
+    date_dir = os.path.join(config.HISTORY_DIR, target_date)
+    subdirs = [date_dir]
+    for sub in ("v2", config.LENIGAS_OUTPUT_SUBDIR):
+        p = os.path.join(date_dir, sub)
+        if os.path.isdir(p):
+            subdirs.append(p)
+
+    removed = 0
+    for d in subdirs:
+        for fname in os.listdir(d):
+            if fname.startswith("chart_") or fname.startswith("meta_") or fname == "sla_contours.json":
+                try:
+                    os.remove(os.path.join(d, fname))
+                    removed += 1
+                except OSError:
+                    pass
+    logger.info("Cleared %d cached layer file(s) for %s", removed, target_date)
+
+
 def _run_update_job(target_date: str) -> None:
     with _state_lock:
         _state.update(state="running", message=f"Fetching ocean data for {target_date}...", date=target_date)
     try:
         run_pipeline(target_date)
+        with _state_lock:
+            _state.update(state="running", message=f"Running v2 (Beta) pipeline for {target_date}...", date=target_date)
+        run_pipeline_v2(target_date)
+        with _state_lock:
+            _state.update(state="running", message=f"Running Lenigas pipeline for {target_date}...", date=target_date)
+        run_pipeline_lenigas(target_date)
+        with _state_lock:
+            _state.update(state="running", message=f"Refreshing layer cache for {target_date}...", date=target_date)
+        _clear_date_layer_cache(target_date)
         with _state_lock:
             _state.update(state="done", message=f"Updated for {target_date}", date=target_date)
     except Exception as exc:
@@ -206,11 +245,26 @@ class BiteScoreRequestHandler(BaseHTTPRequestHandler):
                 self._send_json({"message": str(exc)}, status=404)
                 return
             self._send_json({"locations": locations})
+        elif self.path == "/api/waypoints":
+            waypoints_path = os.path.join(
+                os.path.dirname(__file__), "..", "data", "processed", "fishing_waypoints.json"
+            )
+            waypoints_path = os.path.normpath(waypoints_path)
+            try:
+                with open(waypoints_path, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+            except Exception as exc:
+                logger.warning("Fishing waypoints unavailable", exc_info=True)
+                self._send_json({"message": str(exc)}, status=404)
+                return
+            self._send_json(data)
         elif self.path.startswith("/api/static-layer/") and self.path.endswith("/chart.png"):
             # Shared bathymetry/relief-shading raster layers (depth-
-            # suitability, LiDAR, Moreton Bay Approaches, Mudjimba Island):
-            # identical on every date, so built lazily once on first
-            # request and cached -- see static_layers.py.
+            # suitability, and the 4 stacked images -- base plus 3 native-
+            # resolution local survey insets -- behind the single unified
+            # "Bathymetry relief map" toggle): identical on every date, so
+            # built lazily once on first request and cached -- see
+            # static_layers.py.
             key = self.path[len("/api/static-layer/"):-len("/chart.png")]
             if key not in RASTER_LAYERS:
                 self._send_json({"message": f"Unknown layer: {key}"}, status=404)
@@ -256,6 +310,28 @@ class BiteScoreRequestHandler(BaseHTTPRequestHandler):
             with open(contours_path, "r", encoding="utf-8") as f:
                 contours = json.load(f)
             self._send_json(contours)
+        elif self.path.startswith("/api/date-layer/") and self.path.endswith("/sla_contours/contours.json"):
+            # Per-date SLA contour lines (GeoJSON) -- derived from each
+            # date's layer_sla.tif by sla_contour_geojson() in raster_utils.py,
+            # cached as sla_contours.json under output/history/<date>/.
+            date_str = self.path[len("/api/date-layer/"):-len("/sla_contours/contours.json")]
+            try:
+                validate_date_key(date_str)
+            except ValueError as exc:
+                self._send_json({"message": str(exc)}, status=400)
+                return
+            try:
+                sla_contours_path = build_sla_contours_json(date_str)
+            except FileNotFoundError as exc:
+                self._send_json({"message": str(exc)}, status=404)
+                return
+            except Exception as exc:
+                logger.warning("SLA contours unavailable for %s", date_str, exc_info=True)
+                self._send_json({"message": str(exc)}, status=404)
+                return
+            with open(sla_contours_path, "r", encoding="utf-8") as f:
+                sla_contours_data = json.load(f)
+            self._send_json(sla_contours_data)
         elif self.path == "/api/bathymetry/land-outline":
             # Coastline outline traced from the static bathymetry grid's
             # own nodata mask -- also identical every date, cached the

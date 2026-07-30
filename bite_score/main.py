@@ -17,6 +17,7 @@ from .bathymetry_composite import build_composite_bathymetry
 from .data_ingestion import (
     fetch_daily_ocean_data,
     fetch_daily_ocean_data_v2,
+    fetch_chl_composite,
     fetch_mld,
     fetch_mld_v2,
     load_bathymetry_v2,
@@ -64,8 +65,12 @@ def run_pipeline(target_date: str = config.DEFAULT_TARGET_DATE) -> str:
     # SST and chlorophyll are sourced from NOAA satellite products (MUR SST
     # ~1km, VIIRS chlorophyll ~4km) instead of the coarser Copernicus model
     # fields, since they resolve thermal/chlorophyll fronts far more sharply.
-    # Falls back to the Copernicus fields if the satellite product is
-    # unavailable for the requested date (e.g. processing latency).
+    # Chlorophyll fallback chain (highest→lowest accuracy):
+    #   1. IMOS SRS OC NOAA-20 (0.0075°/833m, AUS regional atm. correction) — 2023-present
+    #   2. VIIRS SNPP NRT (nesdisVHNchlaDaily)      — 4km, ~14-day rolling window
+    #   3. VIIRS SNPP Science Quality (nesdisVHNSQchlaDaily) — 4km, 2012-present archive
+    #   4. MODIS Aqua R2022SQ (erdMH1chla1day_R2022SQ)      — 4km, 2003-2022 archive
+    #   5. Copernicus BGC model (cmems_mod_glo_bgc-pft_anfc_0.25deg_P1D-m) — 27km, last resort
     copernicus_sst = physics["thetao"].isel(time=0)
     if "depth" in copernicus_sst.dims:
         copernicus_sst = copernicus_sst.isel(depth=0)  # surface level only
@@ -83,13 +88,38 @@ def run_pipeline(target_date: str = config.DEFAULT_TARGET_DATE) -> str:
         sst = copernicus_sst
 
     try:
-        chl = load_erddap_layer("chl", target_date)
+        chl = fetch_chl_composite(target_date)
+        logger.info("Using IMOS SRS OC NOAA-20 chlorophyll composite (833m) for %s", target_date)
     except Exception:
         logger.warning(
-            "NOAA VIIRS chlorophyll unavailable for %s, falling back to Copernicus chlorophyll",
+            "IMOS OC chlorophyll unavailable for %s, trying VIIRS NRT...",
             target_date, exc_info=True,
         )
-        chl = copernicus_chl
+        try:
+            chl = load_erddap_layer("chl", target_date)
+        except Exception:
+            logger.warning(
+                "VIIRS NRT chlorophyll unavailable for %s, trying VIIRS Science Quality...",
+                target_date, exc_info=True,
+            )
+            try:
+                chl = load_erddap_layer("chl_sq", target_date)
+                logger.info("Using VIIRS Science Quality chlorophyll for %s", target_date)
+            except Exception:
+                logger.warning(
+                    "VIIRS SQ chlorophyll unavailable for %s, trying MODIS Aqua R2022SQ...",
+                    target_date, exc_info=True,
+                )
+                try:
+                    chl = load_erddap_layer("chl_modis", target_date)
+                    logger.info("Using MODIS Aqua R2022SQ chlorophyll for %s", target_date)
+                except Exception:
+                    logger.warning(
+                        "All satellite chlorophyll sources unavailable for %s, "
+                        "falling back to Copernicus BGC model (27km)",
+                        target_date, exc_info=True,
+                    )
+                    chl = copernicus_chl
 
     uo = physics["uo"].isel(time=0)
     vo = physics["vo"].isel(time=0)
@@ -194,6 +224,23 @@ def run_pipeline(target_date: str = config.DEFAULT_TARGET_DATE) -> str:
     except Exception:
         logger.warning("FSLE computation unavailable for %s; skipping this layer", target_date, exc_info=True)
 
+    # Satellite altimetry Sea Level Anomaly (SLA): an independent visual
+    # reference layer (not a WLC factor) that reveals warm-core / cold-core
+    # eddies and EAC meander structure. Sourced from NOAA CoastWatch ERDDAP
+    # (nesdisSSH1day, multi-satellite RADS merged product, 0.25deg daily,
+    # 2017-present). Degrades gracefully -- if the dataset is unavailable or
+    # has no coverage for this date, the layer is simply absent on the map.
+    sla_geotiff_path = None
+    try:
+        sla_obs = load_erddap_layer("sla", target_date)
+        sla_geotiff_path = export_geotiff(sla_obs, output_path=os.path.join(date_dir, "layer_sla.tif"))
+        logger.info("Satellite altimetry SLA exported for %s", target_date)
+    except Exception:
+        logger.warning(
+            "Satellite altimetry SLA (nesdisSSH1day) unavailable for %s; skipping this layer",
+            target_date, exc_info=True,
+        )
+
     # Mixed layer depth (mlotst) raw raster: also exported on its own scale
     # (metres, not the 0-100 gradient/front score used internally by
     # weighted_overlay() above) for the dashboard's raw "MLD front" map
@@ -288,13 +335,38 @@ def run_pipeline_v2(target_date: str = config.DEFAULT_TARGET_DATE) -> str:
         sst = copernicus_sst
 
     try:
-        chl = load_erddap_layer_v2("chl", target_date)
+        chl = fetch_chl_composite(target_date, aoi=config.AOI_V2, cache_suffix="_v2")
+        logger.info("Using IMOS SRS OC NOAA-20 chlorophyll (833m) for %s (v2)", target_date)
     except Exception:
         logger.warning(
-            "NOAA VIIRS chlorophyll unavailable for %s (v2), falling back to Copernicus chlorophyll",
+            "IMOS OC chlorophyll unavailable for %s (v2), trying VIIRS NRT...",
             target_date, exc_info=True,
         )
-        chl = copernicus_chl
+        try:
+            chl = load_erddap_layer_v2("chl", target_date)
+        except Exception:
+            logger.warning(
+                "VIIRS NRT chlorophyll unavailable for %s (v2), trying VIIRS Science Quality...",
+                target_date, exc_info=True,
+            )
+            try:
+                chl = load_erddap_layer_v2("chl_sq", target_date)
+                logger.info("Using VIIRS Science Quality chlorophyll for %s (v2)", target_date)
+            except Exception:
+                logger.warning(
+                    "VIIRS SQ chlorophyll unavailable for %s (v2), trying MODIS Aqua R2022SQ...",
+                    target_date, exc_info=True,
+                )
+                try:
+                    chl = load_erddap_layer_v2("chl_modis", target_date)
+                    logger.info("Using MODIS Aqua R2022SQ chlorophyll for %s (v2)", target_date)
+                except Exception:
+                    logger.warning(
+                        "All satellite chlorophyll sources unavailable for %s (v2), "
+                        "falling back to Copernicus BGC model (27km)",
+                        target_date, exc_info=True,
+                    )
+                    chl = copernicus_chl
 
     uo = physics["uo"].isel(time=0)
     vo = physics["vo"].isel(time=0)

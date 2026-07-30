@@ -22,7 +22,7 @@ import numpy as np
 from PIL import Image
 
 from . import config
-from .raster_utils import fsle_to_rgba, mld_to_rgba, open_score_raster, raster_to_rgba
+from .raster_utils import fsle_to_rgba, mld_to_rgba, open_score_raster, raster_to_rgba, sla_contour_geojson, sla_to_rgba
 
 logger = logging.getLogger(__name__)
 
@@ -48,6 +48,11 @@ DATE_LAYER_SPECS = {
     # Ripley owns turning this into a real WLC gradient/front factor.
     "mld": {"filename": "layer_mld.tif", "rgba_fn": mld_to_rgba},
     "fsle": {"filename": "layer_fsle.tif", "rgba_fn": fsle_to_rgba},
+    # Satellite altimetry Sea Level Anomaly: diverging blue/white/red,
+    # positive = warm-core eddy, negative = cold-core / upwelling zone.
+    # Fetched from NOAA CoastWatch ERDDAP (nesdisSSH1day, no auth).
+    # Not available for every date (2017-present archive, ~3-day NRT lag).
+    "sla": {"filename": "layer_sla.tif", "rgba_fn": sla_to_rgba},
 }
 
 
@@ -238,3 +243,32 @@ def build_date_layer_assets_lenigas(date: str, key: str, force_rebuild: bool = F
 
     logger.info("Cached Lenigas %s layer for %s to %s / %s", key, date, png_path, meta_path)
     return png_path, meta_path
+
+
+def build_sla_contours_json(date: str, force_rebuild: bool = False) -> str:
+    """
+    Build (if not already cached) and return the path to the per-date SLA
+    contour GeoJSON file (``sla_contours.json`` under
+    ``output/history/<date>/``).
+
+    Raises ``FileNotFoundError`` if ``layer_sla.tif`` hasn't been computed
+    for this date (webapp.py turns that into a 404).  Contour levels are
+    ±0.3, ±0.2, ±0.1 and 0.0 m -- chosen to bracket typical EAC eddy
+    amplitudes in SE Queensland waters.
+    """
+    validate_date_key(date)
+    date_dir = os.path.join(config.HISTORY_DIR, date)
+    sla_tif_path = os.path.join(date_dir, "layer_sla.tif")
+    if not os.path.isfile(sla_tif_path):
+        raise FileNotFoundError(f"No SLA layer for {date!r} -- layer_sla.tif not found")
+
+    out_path = os.path.join(date_dir, "sla_contours.json")
+    if os.path.isfile(out_path) and not force_rebuild:
+        return out_path
+
+    geojson, labels = sla_contour_geojson(sla_tif_path)
+    payload = {"geojson": geojson, "labels": labels}
+    with open(out_path, "w", encoding="utf-8") as f:
+        json.dump(payload, f, separators=(",", ":"))
+    logger.info("SLA contours cached for %s → %s", date, out_path)
+    return out_path

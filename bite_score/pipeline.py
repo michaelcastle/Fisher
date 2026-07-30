@@ -63,7 +63,19 @@ def compute_bite_score(
 
     # 3. Normalization (0.0 - 1.0)
     sst_score = normalize_sst_gradient(sst_gradient)
-    chl_score = normalize_chl_gradient(chl_gradient)
+    # Chlorophyll gradient can be all-NaN when the final fallback dataset
+    # (MODIS Aqua R2022SQ "most recent" granule) has full cloud/QC masking
+    # over the AOI for a given date. Degrade gracefully -- drop the chl
+    # factor and proportionally reweight the remaining layers, exactly as
+    # `overlay.py::weighted_overlay` already does for absent MLD.
+    try:
+        chl_score = normalize_chl_gradient(chl_gradient)
+    except ValueError:
+        logger.warning(
+            "Chlorophyll gradient has no finite values -- omitting chl factor "
+            "from WLC and proportionally reweighting remaining layers"
+        )
+        chl_score = None
     current_score = normalize_current_edges(current_edges)
     ssha_score = normalize_ssha_gradient(ssha_gradient)
     depth_score = normalize_depth(depth)

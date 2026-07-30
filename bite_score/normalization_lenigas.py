@@ -28,7 +28,7 @@ import xarray as xr
 from scipy.stats import rankdata
 
 from . import config
-from .normalization import _trapezoidal_membership
+from .normalization import _trapezoidal_membership, normalize_sst_gradient
 from .normalization_v2 import normalize_sst_bell
 
 logger = logging.getLogger(__name__)
@@ -36,32 +36,51 @@ logger = logging.getLogger(__name__)
 
 def normalize_sst_bell_lenigas(
     sst: xr.DataArray,
+    sst_gradient: xr.DataArray = None,
     peak_c: float = config.SST_BELL_PEAK_C_LENIGAS,
     sigma_c: float = config.SST_BELL_SIGMA_C_LENIGAS,
+    bell_weight: float = config.SST_BELL_COMPONENT_WEIGHT,
+    gradient_weight: float = config.SST_GRADIENT_COMPONENT_WEIGHT,
 ) -> xr.DataArray:
     """
-    SST bell-curve suitability for the Lenigas model: peaks at 1.0 exactly
-    at 24.5C (the midpoint of the notes' stated 23-26C band), sigma=1.3C
-    (see config.SST_BELL_SIGMA_C_LENIGAS's docstring for the FWHM
-    derivation).
+    SST suitability for the Lenigas model: a 50/50 weighted average of
+    the absolute-temperature bell curve (peaks at 1.0 at 24.5C, the
+    midpoint of the notes' stated 23-26C band, sigma=1.3C) and the
+    thermal-front / gradient-strength score (sharpest SST breaks -> 1.0).
 
-    Reuses `normalization_v2.py::normalize_sst_bell` directly (already
-    generically parameterized by peak/sigma) rather than duplicating its
-    Gaussian formula -- only the constants differ from v2's 22C/1.7C
-    curve.
+    The gradient component captures the fisherman's own instruction --
+    "look for the SST breaks" / "best if it's a break on the eastern side
+    of the EAC" -- which is a FRONT signal, not an absolute temperature
+    signal. The bell curve captures "best temp 26-23C" (absolute
+    suitability). Blending both as a weighted average (not a product)
+    matches the same Kane-approved pattern used by v2's
+    `normalize_sst_bell_v2`: a textbook-optimal temperature reading with
+    only an average gradient still scores reasonably, not zeroed out.
 
-    Deliberately does NOT blend in the SST gradient/front score (unlike
-    v2's `normalize_sst_bell_v2`) -- a documented, deliberate scope
-    simplification for this first Lenigas build (Kane's spec explicitly
-    left this blending decision to Ripley's judgment): SST is already the
-    lowest-weighted Lenigas factor (0.15, per the notes' own explicit
-    de-emphasis of exact temperature), so a single clear absolute-
-    temperature signal was chosen over adding another 50/50-blended
-    sub-component for a factor the notes treat as secondary anyway.
+    `sst_gradient` is OPTIONAL (default None) -- when absent the function
+    falls back to bell-only behaviour, which keeps existing tests valid
+    and allows callers that don't have a pre-computed gradient to degrade
+    gracefully. The pipeline (`pipeline_lenigas.py`) always passes a
+    real gradient.
     """
-    result = normalize_sst_bell(sst, peak_c=peak_c, sigma_c=sigma_c)
-    result.name = "sst_bell_lenigas_score"
-    return result
+    bell_score = normalize_sst_bell(sst, peak_c=peak_c, sigma_c=sigma_c)
+
+    if sst_gradient is None:
+        bell_score.name = "sst_bell_lenigas_score"
+        return bell_score
+
+    gradient_score = normalize_sst_gradient(sst_gradient)
+    bell_aligned, gradient_aligned = xr.align(bell_score, gradient_score, join="inner")
+
+    total_weight = bell_weight + gradient_weight
+    combined = (
+        bell_weight * bell_aligned.fillna(0) + gradient_weight * gradient_aligned.fillna(0)
+    ) / total_weight
+
+    nan_mask = bell_aligned.isnull() & gradient_aligned.isnull()
+    combined = combined.where(~nan_mask)
+    combined.name = "sst_bell_lenigas_score"
+    return combined
 
 
 def normalize_depth_suitability_lenigas(

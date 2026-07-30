@@ -9,7 +9,7 @@ being duplicated into every date's page).
 import numpy as np
 import rasterio.features
 import rioxarray  # noqa: F401  (registers the .rio accessor)
-from matplotlib.colors import LightSource, TwoSlopeNorm
+from matplotlib.colors import BoundaryNorm, LightSource, ListedColormap
 from matplotlib.figure import Figure
 
 import matplotlib
@@ -80,6 +80,31 @@ def fsle_to_rgba(values: np.ndarray, cmap_name: str = "inferno") -> np.ndarray:
     return rgba
 
 
+def sla_to_rgba(values: np.ndarray) -> np.ndarray:
+    """
+    Convert a satellite altimetry Sea Level Anomaly (SLA) field (metres,
+    NaN over land/no-data) into an RGBA image using a diverging
+    blue-white-red colormap, centred at 0:
+
+        blue  = negative SLA (cold-core eddy, upwelling zone)
+        white = neutral (near-average sea level)
+        red   = positive SLA (warm-core eddy / EAC spin-off)
+
+    The colour scale is clipped at ±0.4 m -- typical EAC eddy anomalies
+    in SE Queensland range from about -0.5 to +0.5 m, so this keeps the
+    full dynamic range visible without being blown out by extreme outliers.
+    Fully transparent over land / missing data.
+    """
+    import matplotlib.colors as mcolors
+    vmax = 0.40  # metres -- typical EAC eddy amplitude in this AOI
+    norm = mcolors.TwoSlopeNorm(vcenter=0.0, vmin=-vmax, vmax=vmax)
+    colormap = matplotlib.colormaps["RdBu_r"]  # red=positive/warm, blue=negative/cold
+    normed = norm(np.where(np.isfinite(values), values, 0.0))
+    rgba = colormap(normed).astype(np.float32)
+    rgba[..., 3] = np.where(np.isfinite(values), 0.80, 0.0)
+    return rgba
+
+
 def mld_to_rgba(values: np.ndarray, cmap_name: str = "viridis") -> np.ndarray:
     """
     Convert a raw mixed layer depth field (metres, NaN over land/nodata)
@@ -110,52 +135,95 @@ def mld_to_rgba(values: np.ndarray, cmap_name: str = "viridis") -> np.ndarray:
     return rgba
 
 
+# Fixed, real-unit (metre) elevation bands for bathymetry_hillshade_to_rgba()
+# below -- ascending order, water (negative elevation = depth) first, land
+# (positive elevation) last, sharing the single boundary at 0m. Water bands
+# are deliberately much finer near the surface (2m steps out to 20m, where
+# most nearshore structure/fish-holding depth changes actually happen) and
+# progressively coarser at depth, since beyond a few hundred metres further
+# depth changes stop being practically meaningful for this app. The first
+# and last edges are set far beyond any real elevation in this AOI so every
+# real value always falls inside the banded range (BoundaryNorm clips).
+_WATER_BREAKS_M = [-100_000, -3000, -2000, -1500, -1000, -700, -500, -300, -200, -150,
+                    -100, -75, -50, -35, -20, -10, -5, -2, 0]
+_LAND_BREAKS_M = [0, 5, 15, 30, 60, 120, 250, 500, 1000, 2500, 100_000]
+_BATHY_TOPO_BOUNDARIES = _WATER_BREAKS_M + _LAND_BREAKS_M[1:]
+
+# Deepest band -> darkest navy, shallowest (just below 0m) -> medium-light
+# blue. Starting at Blues(0.25) rather than near-white (0.05) gives the
+# hillshade enough base colour to actually show shadow/highlight contrast
+# in shallow water -- a base of near-white leaves no room for darkening.
+_WATER_COLORS = matplotlib.colormaps["Blues"](
+    np.linspace(1.0, 0.25, len(_WATER_BREAKS_M) - 1)
+)
+# Land: low-lying coastal land (light green) rising to inland high ground
+# (dark brown), sampled from the upper (land) half of the "terrain" cmap.
+_LAND_COLORS = matplotlib.colormaps["terrain"](
+    np.linspace(0.28, 0.95, len(_LAND_BREAKS_M) - 1)
+)
+_BATHY_TOPO_CMAP = ListedColormap(np.vstack([_WATER_COLORS, _LAND_COLORS]))
+_BATHY_TOPO_NORM = BoundaryNorm(_BATHY_TOPO_BOUNDARIES, _BATHY_TOPO_CMAP.N, clip=True)
+
+
 def bathymetry_hillshade_to_rgba(values: np.ndarray, resolution_m: float) -> np.ndarray:
     """
     Convert a high-resolution bathymetry/elevation grid (stored as
     positive-down depth in metres, NaN outside the surveyed area) into an
-    RGBA image using a diverging terrain colormap centred on sea level, so
-    both the underwater portion (blues) and any surveyed land above sea
-    level (greens/browns) are visible at a glance. Unlike the Bite Score
-    layers, this is a literal elevation/depth map, not a 0-100 score.
+    RGBA image using a *banded* bathymetric colour scale -- fixed, real-
+    unit (metre) depth bands, light near the surface shading to dark navy
+    in deep water (the same convention used on nautical charts), rather
+    than a single smooth gradient. A smooth gradient compresses almost the
+    entire visually-important shelf/reef depth range (0-200m, where fish
+    and structure are) into a narrow sliver of one colour once the grid
+    also spans genuinely deep water (this AOI's composite now reaches
+    several thousand metres at the shelf edge) -- discrete bands with
+    finer steps in shallow water keep those depth *changes* visible at a
+    glance, which plain continuous shading does not. Any surveyed land
+    above sea level gets its own, separate green/brown elevation bands.
 
     A hillshade (relief shading), computed directly from this same
     full-resolution grid (no downsampling) at its native `resolution_m`
-    pixel spacing, is blended in on top of the colormap so banks, channels
-    and (where present) dune ridges are visible as shaded relief rather
-    than flat colour fills. Shared by all of this pipeline's high-res
-    supplementary bathymetry layers (Sunshine Coast LiDAR, and the
-    AusSeabed Moreton Bay Approaches / Mudjimba Island surveys), which
-    differ only in their native grid resolution.
+    pixel spacing, is blended in on top of the banded colours so banks,
+    channels and reef structure still read as shaded relief rather than
+    flat colour fills.
     """
     elevation = -values  # back to AHD elevation: positive = land, negative = underwater
     finite = np.isfinite(elevation)
     if not finite.any():
         return np.zeros(elevation.shape + (4,))
 
-    # TwoSlopeNorm requires vmin < vcenter(0) < vmax -- guard degenerate
-    # all-land or all-underwater tiles from breaking that constraint.
-    vmin = min(float(np.nanmin(elevation)), -0.1)
-    vmax = max(float(np.nanmax(elevation)), 0.1)
-    norm = TwoSlopeNorm(vmin=vmin, vcenter=0.0, vmax=vmax)
-    colormap = matplotlib.colormaps["terrain"]
     elevation_filled = np.where(finite, elevation, 0.0)
 
-    # `dx`/`dy` in real metres (the native grid spacing) so slopes are
-    # computed at true scale; `vert_exag` then artificially exaggerates
-    # relief on top of that so subtle nearshore bars/dunes read clearly at
-    # map zoom levels, without needing to resample/blur the source grid.
-    light = LightSource(azdeg=315, altdeg=45)
-    rgb = light.shade(
+    # Step 1 -- base colours from the banded depth/topo scale, using the
+    # true (linear) elevation so every depth band stays at the right colour.
+    base_rgb = _BATHY_TOPO_CMAP(_BATHY_TOPO_NORM(elevation_filled))[:, :, :3]
+
+    # Step 2 -- hillshade elevation transform: take the cube root of water
+    # depth so that small near-surface relief (bommies, ledges, sand banks
+    # at 2-20m) generates slopes as prominent in the shading calculation as
+    # deep-water canyon walls, making shallow structure genuinely visible.
+    # Gradient amplification vs. linear: ~13× at 2m, ~5× at 10m, ~2× at
+    # 50m, ~0.1× compression at 2000m -- exactly what we want for a
+    # fishing map where the shelf break and shallow reef are what matters.
+    # Land stays on the linear scale; no transform needed above sea level.
+    _CBRT_SCALE = 100.0  # reference metres -- keeps hillshade numerics stable
+    hs_elev = np.where(
+        elevation_filled < 0,
+        -np.cbrt(np.abs(elevation_filled)) * (_CBRT_SCALE ** (2.0 / 3.0)),
         elevation_filled,
-        cmap=colormap,
-        norm=norm,
-        blend_mode="soft",
-        vert_exag=3.0,
+    )
+
+    light = LightSource(azdeg=315, altdeg=45)
+    shaded_rgb = light.shade_rgb(
+        base_rgb,
+        hs_elev,
+        vert_exag=12.0,
         dx=resolution_m,
         dy=resolution_m,
+        blend_mode="overlay",
     )
-    rgba = np.asarray(rgb, dtype=np.float64).copy()
+    rgba = np.zeros(elevation.shape + (4,), dtype=np.float64)
+    rgba[..., :3] = np.clip(shaded_rgb, 0.0, 1.0)
     rgba[..., 3] = np.where(finite, 0.9, 0.0)
     return rgba
 
@@ -246,5 +314,62 @@ def bathymetry_contour_geojson(
         for seg in longest_segs:
             mid = seg[len(seg) // 2]
             labels.append({"lon": float(mid[0]), "lat": float(mid[1]), "depth_m": float(level)})
+
+    return {"type": "FeatureCollection", "features": features}, labels
+
+
+def sla_contour_geojson(
+    sla_geotiff_path: str,
+    levels=(-0.3, -0.2, -0.1, 0.0, 0.1, 0.2, 0.3),
+    max_labels_per_level=3,
+):
+    """
+    Derive Sea Level Anomaly (SLA) contour lines from an SLA GeoTIFF
+    (metres, NaN over land/no-data).
+
+    Returns ``(geojson, labels)`` where each feature has a ``sla_m``
+    property (signed metres) and a ``kind`` property of ``"positive"``,
+    ``"negative"`` or ``"zero"`` for client-side styling.  Labels are
+    placed at the midpoint of the longest few segments per level so the
+    map isn't cluttered with a value on every small loop.
+    """
+    import numpy.ma as ma
+
+    sla_da = rioxarray.open_rasterio(sla_geotiff_path, masked=True).squeeze()
+    y_dim, x_dim = sla_da.dims[-2], sla_da.dims[-1]
+    lon = sla_da[x_dim].values
+    lat = sla_da[y_dim].values
+    values = ma.masked_invalid(sla_da.values)
+
+    fig = Figure()
+    ax = fig.add_subplot(111)
+    cs = ax.contour(lon, lat, values, levels=list(levels))
+
+    features = []
+    labels = []
+    for level, segs in zip(cs.levels, cs.allsegs):
+        if level > 0.001:
+            kind = "positive"
+        elif level < -0.001:
+            kind = "negative"
+        else:
+            kind = "zero"
+        for seg in segs:
+            if len(seg) < 2:
+                continue
+            features.append(
+                {
+                    "type": "Feature",
+                    "geometry": {"type": "LineString", "coordinates": seg.tolist()},
+                    "properties": {"sla_m": float(level), "kind": kind},
+                }
+            )
+
+        longest_segs = sorted(
+            (seg for seg in segs if len(seg) >= 2), key=_segment_length, reverse=True
+        )[:max_labels_per_level]
+        for seg in longest_segs:
+            mid = seg[len(seg) // 2]
+            labels.append({"lon": float(mid[0]), "lat": float(mid[1]), "sla_m": float(level)})
 
     return {"type": "FeatureCollection", "features": features}, labels

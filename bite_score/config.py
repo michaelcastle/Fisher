@@ -101,9 +101,43 @@ ERDDAP_DATASETS = {
     },
     "chl": {
         # NOAA S-NPP VIIRS chlorophyll-a, Near Real-Time, Global 4km, Level 3, daily.
+        # Rolling NRT window (~14 days). Falls back to chl_sq below for older dates.
         "dataset_id": "nesdisVHNchlaDaily",
         "variable": "chlor_a",
         "has_altitude": True,
+    },
+    "chl_sq": {
+        # NOAA S-NPP VIIRS chlorophyll-a, Science Quality, Global 4km, Level 3, 2012-present.
+        # Same sensor/resolution as chl (NRT) above but with full archive back to 2012 and
+        # better reprocessing quality. Used as the first fallback when the NRT rolling window
+        # has expired for the requested date (e.g. any historical analysis > ~14 days old).
+        # Maintains 4km resolution for the entire 2012-present archive, avoiding the
+        # resolution cliff-drop to the 27km Copernicus BGC model fallback.
+        "dataset_id": "nesdisVHNSQchlaDaily",
+        "variable": "chlor_a",
+        "has_altitude": True,
+    },
+    "chl_modis": {
+        # NASA MODIS Aqua chlorophyll-a, R2022 Science Quality, Global 4km, 2003-2022.
+        # Second fallback for historical dates before the VIIRS SNPP archive (pre-2012).
+        # MODIS Aqua was operational 2002-2023; the R2022 reprocessing covers 2003-present
+        # (though 2023 onward has no data after Aqua decommissioning).
+        # No altitude dimension (unlike VIIRS products above).
+        "dataset_id": "erdMH1chla1day_R2022SQ",
+        "variable": "chlor_a",
+        "has_altitude": False,
+    },
+    "sla": {
+        # NOAA CoastWatch satellite altimetry: Sea Level Anomaly (SLA), 0.25deg daily.
+        # Source: RADS multi-satellite merged product (Jason-2/3, Sentinel-3A, CryoSat-2,
+        # SARAL/AltiKa). 2017-present. No authentication required.
+        # Positive SLA = warm-core eddy (EAC spin-off, fish aggregation zone).
+        # Negative SLA = cold-core eddy / upwelling zone.
+        # EXPERIMENTAL: ~3-day latency, may have coverage gaps on any given day.
+        # Used only as a visual reference layer (not a WLC scoring factor).
+        "dataset_id": "nesdisSSH1day",
+        "variable": "sla",
+        "has_altitude": False,
     },
 }
 
@@ -208,6 +242,20 @@ MUDJIMBA_ISLAND_META_JSON_PATH = os.environ.get("MUDJIMBA_ISLAND_META_JSON_PATH"
     os.path.dirname(__file__), "..", "data", "processed", "mudjimba_island_bathymetry_meta.json"
 )
 
+# Geoscience Australia's AusBathyTopo (Australia) 2024 250m national-scale
+# depth model (public, no-auth, CC BY 4.0) -- compiled specifically for the
+# Australian shelf from real multibeam/single-beam/LiDAR/ENC-chart/
+# satellite-derived sources, at ~250m, finer and generally more accurate
+# than raw GEBCO (~450m, which falls back to generic global satellite-
+# altimetry-predicted depth in uncharted areas). The source zip is a
+# ~2.6GB whole-of-Australia grid; only a small AOI-sized clip is kept on
+# disk long-term (see aus_bathytopo.py::build_aus_bathytopo_geotiff()).
+# Merged into build_composite_bathymetry() as the coarsest supplementary
+# survey (before the 3 existing finer local patch surveys).
+AUS_BATHYTOPO_TIF_PATH = os.environ.get("AUS_BATHYTOPO_TIF_PATH") or os.path.join(
+    os.path.dirname(__file__), "..", "data", "processed", "aus_bathytopo_250m_seq.tif"
+)
+
 # --- Static bathymetry (GEBCO) + its derived depth-suitability factor -----
 # The bathymetry grid loaded by data_ingestion.load_bathymetry() is a
 # static local file (data/gebco_seq.nc, see BATHYMETRY_NC_PATH above) --
@@ -227,11 +275,20 @@ DEPTH_SUITABILITY_PNG_PATH = os.environ.get("DEPTH_SUITABILITY_PNG_PATH") or os.
 DEPTH_SUITABILITY_META_JSON_PATH = os.environ.get("DEPTH_SUITABILITY_META_JSON_PATH") or os.path.join(
     os.path.dirname(__file__), "..", "data", "processed", "depth_suitability_meta.json"
 )
-# Whole-domain shaded-relief view of the same composite bathymetry grid
-# above (see bathymetry_composite.py) -- a literal elevation/depth map
-# (not a 0-100 score, unlike depth_suitability), rendered with the same
-# hillshade helper already used for the 3 small high-res survey patches
-# (raster_utils.bathymetry_hillshade_to_rgba), but spanning the entire AOI.
+# Whole-domain shaded-relief view -- a literal elevation/depth map (not a
+# 0-100 score, unlike depth_suitability), rendered with a graduated
+# bathymetric colour scale + hillshade (see
+# raster_utils.bathymetry_hillshade_to_rgba). This is now the SINGLE
+# unified bathymetry visual layer (previously 4 separate toggles: this
+# relief map plus 3 standalone high-res survey patches) -- it merges every
+# real source (AusBathyTopo 2024 250m, AusSeabed Moreton Bay Approaches
+# 30m, Sunshine Coast LiDAR 10m, Mudjimba Island 0.5m, GEBCO ~450m
+# fallback) onto one fine ~30m grid spanning the whole AOI, rather than
+# each source only being visible on its own separate small-patch layer.
+# See bathymetry_composite.py::build_visual_bathymetry_mosaic().
+VISUAL_BATHYMETRY_MOSAIC_TIF_PATH = os.environ.get("VISUAL_BATHYMETRY_MOSAIC_TIF_PATH") or os.path.join(
+    os.path.dirname(__file__), "..", "data", "processed", "visual_bathymetry_mosaic.tif"
+)
 RELIEF_MAP_PNG_PATH = os.environ.get("RELIEF_MAP_PNG_PATH") or os.path.join(
     os.path.dirname(__file__), "..", "data", "processed", "relief_map.png"
 )

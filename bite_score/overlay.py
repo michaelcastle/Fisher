@@ -129,26 +129,40 @@ def weighted_overlay(
     if not np.isclose(total_weight, 1.0):
         raise ValueError(f"Layer weights must sum to 1.0, got {total_weight}")
 
+    # Build the list of optional layers to align, handling both chl and mld
+    # being independently absent. align_to_reference accepts *others so any
+    # combination works without duplicating the reprojection logic.
+    optional_layers = []
+    if chl_score is not None:
+        optional_layers.append(chl_score)
     if mld_score is not None:
-        ref, (sst_aligned, chl_aligned, current_aligned, ssha_aligned, mld_aligned) = align_to_reference(
-            depth_score, sst_score, chl_score, current_score, ssha_score, mld_score
-        )
-    else:
-        ref, (sst_aligned, chl_aligned, current_aligned, ssha_aligned) = align_to_reference(
-            depth_score, sst_score, chl_score, current_score, ssha_score
-        )
-        mld_aligned = None
+        optional_layers.append(mld_score)
 
-    # Graceful degradation: if MLD wasn't supplied, drop its weight from
-    # the denominator and rescale the remaining weights back up to sum to
-    # 1.0, preserving their relative balance (see docstring above).
+    ref, aligned_all = align_to_reference(
+        depth_score, sst_score, current_score, ssha_score, *optional_layers
+    )
+    sst_aligned, current_aligned, ssha_aligned = aligned_all[0], aligned_all[1], aligned_all[2]
+    idx = 3
+    if chl_score is not None:
+        chl_aligned = aligned_all[idx]; idx += 1
+    else:
+        chl_aligned = None
+    mld_aligned = aligned_all[idx] if mld_score is not None else None
+
+    # Graceful degradation: drop the weight of any absent factor and rescale
+    # the remaining weights proportionally so the score still spans 0-100.
+    chl_weight = weights.get("chl_gradient", 0.0)
     mld_weight = weights.get("mld_gradient", 0.0)
-    active_weight = total_weight if mld_aligned is not None else (total_weight - mld_weight)
+    absent_weight = (
+        (chl_weight if chl_aligned is None else 0.0)
+        + (mld_weight if mld_aligned is None else 0.0)
+    )
+    active_weight = total_weight - absent_weight
     rescale = 1.0 / active_weight if active_weight > 0 else 1.0
 
     combined = (
         weights["sst_gradient"] * sst_aligned.fillna(0)
-        + weights["chl_gradient"] * chl_aligned.fillna(0)
+        + (weights["chl_gradient"] * chl_aligned.fillna(0) if chl_aligned is not None else 0.0)
         + weights["current_velocity"] * current_aligned.fillna(0)
         + weights["ssha_gradient"] * ssha_aligned.fillna(0)
         + weights["bathymetry"] * ref.fillna(0)
@@ -174,11 +188,12 @@ def weighted_overlay(
 
     layer_scores = {
         "sst": _scaled(sst_aligned, "sst_score"),
-        "chl": _scaled(chl_aligned, "chl_score"),
         "current": _scaled(current_aligned, "current_score"),
         "ssha": _scaled(ssha_aligned, "ssha_score"),
         "bathymetry": _scaled(ref, "bathymetry_score"),
     }
+    if chl_aligned is not None:
+        layer_scores["chl"] = _scaled(chl_aligned, "chl_score")
     if mld_aligned is not None:
         layer_scores["mld"] = _scaled(mld_aligned, "mld_score")
 

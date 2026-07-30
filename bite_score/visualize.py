@@ -337,9 +337,10 @@ def build_folium_map(output_html: str = "bite_score_map.html") -> folium.Map:
         "How FSLE Is Calculated" explanation (not available for every
         date -- requires several days of forecast current data).
       - a handful of *shared, static* layers that never change across dates
-        (depth-contour isobaths, the Depth-suitability factor, a whole-
-        domain bathymetry relief map, the Sunshine Coast LiDAR survey, and
-        the AusSeabed Moreton Bay Approaches / Mudjimba Island surveys),
+        (depth-contour isobaths, the Depth-suitability factor, and a
+        single unified high-resolution bathymetry relief map merging
+        AusBathyTopo, the Sunshine Coast LiDAR survey, and the AusSeabed
+        Moreton Bay Approaches / Mudjimba Island surveys onto one grid),
         plus the land/coastline outline -- fetched from the dashboard
         server's static `/api/static-layer/*`, `/api/bathymetry/contours`
         and `/api/bathymetry/land-outline` endpoints, built once and
@@ -430,8 +431,22 @@ def build_folium_map(output_html: str = "bite_score_map.html") -> folium.Map:
     # `bsqLoadMbgfc()` JS below). That decouples this layer entirely from
     # the per-date pipeline: it's always available on every date's map,
     # past or future, without ever needing that date's HTML rebuilt.
-    # Added first (before the heatmap and everything else below) so it's
-    # the top entry in the Layers list by default.
+    # FADs/buoys and waypoints are created first (highest z-index) so they
+    # always render in front of the chart image and relief map even when
+    # those raster layers are enabled underneath them.
+    mbgfc_locations_pane = _add_pane("MBGFC FADs, SFADs & wave buoys")
+    mbgfc_locations_layer = folium.FeatureGroup(name="MBGFC FADs, SFADs & wave buoys", show=False)
+    mbgfc_locations_layer.add_to(fmap)
+
+    # Fishing waypoints: Light Tackle Grounds and Heavy Tackle Marks
+    # supplied by the user. Loaded lazily from /api/waypoints on first
+    # toggle, same decoupled pattern as the MBGFC locations layer above.
+    waypoints_pane = _add_pane("Fishing waypoints (Light & Heavy Tackle)")
+    waypoints_layer = folium.FeatureGroup(name="Fishing waypoints (Light & Heavy Tackle)", show=False)
+    waypoints_layer.add_to(fmap)
+
+    # MBGFC chart image: below the dots/waypoints so markers stay visible
+    # even when the chart scan is enabled.
     mbgfc_chart_pane = _add_pane("MBGFC fishing chart (georeferenced)")
     mbgfc_chart_layer = folium.raster_layers.ImageOverlay(
         image=np.zeros((1, 1, 4)),
@@ -444,10 +459,6 @@ def build_folium_map(output_html: str = "bite_score_map.html") -> folium.Map:
         pane=mbgfc_chart_pane,
     )
     mbgfc_chart_layer.add_to(fmap)
-
-    mbgfc_locations_pane = _add_pane("MBGFC FADs, SFADs & wave buoys")
-    mbgfc_locations_layer = folium.FeatureGroup(name="MBGFC FADs, SFADs & wave buoys", show=False)
-    mbgfc_locations_layer.add_to(fmap)
 
     # Land/coastline outline: like the bathymetry contours below, this is
     # derived purely from the static bathymetry grid (identical every
@@ -487,6 +498,33 @@ def build_folium_map(output_html: str = "bite_score_map.html") -> folium.Map:
         pane=fsle_pane,
     )
     fsle_layer.add_to(fmap)
+
+    # Satellite altimetry Sea Level Anomaly (SLA): independent visual
+    # reference layer revealing warm-core / cold-core eddies and EAC
+    # meander structure. Diverging blue/white/red colormap, centred at 0.
+    # Sourced from NOAA CoastWatch ERDDAP (nesdisSSH1day, 0.25deg daily).
+    # Not available for every date -- same graceful-degradation pattern
+    # as FSLE (a console warning if toggled on for a missing date).
+    sla_pane = _add_pane("Sea level anomaly (altimetry)")
+    sla_layer = folium.raster_layers.ImageOverlay(
+        image=np.zeros((1, 1, 4)),
+        bounds=[[bounds[1], bounds[0]], [bounds[3], bounds[2]]],
+        opacity=0.85,
+        name="Sea level anomaly (altimetry)",
+        interactive=True,
+        cross_origin=False,
+        show=False,
+        pane=sla_pane,
+    )
+    sla_layer.add_to(fmap)
+
+    # SLA contour lines (per-date GeoJSON): isolines at ±0.1/0.2/0.3 m
+    # and the zero line, coloured red for warm-core eddies (positive SLA)
+    # and blue for cold-core / upwelling (negative SLA).  Loaded lazily
+    # via /api/date-layer/<date>/sla_contours/contours.json on overlayadd.
+    sla_contour_pane = _add_pane("Sea level anomaly contours")
+    sla_contour_group = folium.FeatureGroup(name="Sea level anomaly contours", show=False)
+    sla_contour_group.add_to(fmap)
 
     # The Bite Score heatmap itself: shown by default, so it's loaded
     # directly at page load (see `bsqResolveDateAndLoad()` JS below) rather
@@ -684,71 +722,77 @@ def build_folium_map(output_html: str = "bite_score_map.html") -> folium.Map:
         factor_layer_lenigas.add_to(fmap)
         factor_vars_lenigas[meta["key"]] = (factor_name_lenigas, factor_layer_lenigas)
 
-    # The remaining layers below never change across dates (they're
-    # derived purely from the static GEBCO/composite bathymetry grid, the
-    # locally-supplied 2011 LiDAR survey, or the AusSeabed multibeam
-    # surveys -- none of which depend on any daily ocean data). Rather than
-    # re-rendering and re-embedding an identical image into every date's
-    # page, each is a lightweight placeholder ImageOverlay whose actual
-    # pixels/bounds are fetched on demand from `/api/static-layer/<key>/*`
-    # the first time it's switched on (see `bsqLoadRasterLayer()` JS
-    # below) -- built once, cached, and reused by every date's map.
-    lidar_pane = _add_pane("Sunshine Coast LiDAR bathymetry (high-res, 2011 survey)")
-    lidar_layer = folium.raster_layers.ImageOverlay(
-        image=np.zeros((1, 1, 4)),
-        bounds=[[bounds[1], bounds[0]], [bounds[3], bounds[2]]],
-        opacity=0.9,
-        name="Sunshine Coast LiDAR bathymetry (high-res, 2011 survey)",
-        interactive=True,
-        cross_origin=False,
-        show=False,
-        pane=lidar_pane,
-    )
-    lidar_layer.add_to(fmap)
-
-    mba_pane = _add_pane("Moreton Bay Approaches bathymetry (high-res, 2023 survey)")
-    mba_layer = folium.raster_layers.ImageOverlay(
-        image=np.zeros((1, 1, 4)),
-        bounds=[[bounds[1], bounds[0]], [bounds[3], bounds[2]]],
-        opacity=0.9,
-        name="Moreton Bay Approaches bathymetry (high-res, 2023 survey)",
-        interactive=True,
-        cross_origin=False,
-        show=False,
-        pane=mba_pane,
-    )
-    mba_layer.add_to(fmap)
-
-    mudjimba_pane = _add_pane("Mudjimba Island bathymetry (high-res, 2024 survey)")
-    mudjimba_layer = folium.raster_layers.ImageOverlay(
-        image=np.zeros((1, 1, 4)),
-        bounds=[[bounds[1], bounds[0]], [bounds[3], bounds[2]]],
-        opacity=0.9,
-        name="Mudjimba Island bathymetry (high-res, 2024 survey)",
-        interactive=True,
-        cross_origin=False,
-        show=False,
-        pane=mudjimba_pane,
-    )
-    mudjimba_layer.add_to(fmap)
-
-    # Whole-domain shaded-relief view of the same composite bathymetry grid
-    # that now backs the depth-suitability factor above (GEBCO + the 3
-    # high-res surveys merged in nearshore -- see bathymetry_composite.py),
-    # rendered as literal terrain rather than a 0-100 score. Same lazy-load
-    # static-layer pattern as the 3 layers above.
+    # The remaining layer never changes across dates (it's derived purely
+    # from the static GEBCO/composite bathymetry grid plus the local
+    # LiDAR/AusSeabed/AusBathyTopo surveys -- none of which depend on any
+    # daily ocean data). Rather than re-rendering and re-embedding
+    # identical images into every date's page, these are lightweight
+    # placeholder ImageOverlays whose actual pixels/bounds are fetched on
+    # demand from `/api/static-layer/<key>/*` the first time this group is
+    # switched on (see `bsqLoadRasterLayer()` JS below) -- built once,
+    # cached, and reused by every date's map.
+    #
+    # This single "Bathymetry relief map" toggle is a FeatureGroup (like
+    # "Land outline"/"Bathymetry contours" below) bundling 4 image layers
+    # instead of one: a whole-AOI AusBathyTopo-based base at its own
+    # native ~250m resolution, plus the 3 real local surveys (Moreton Bay
+    # Approaches 30m, Sunshine Coast LiDAR 10m, Mudjimba Island 0.5m)
+    # stacked on top, each rendered at ITS OWN native resolution rather
+    # than being downsampled onto one common grid (an earlier version of
+    # this consolidation did that, at a fixed ~30m, which threw away the
+    # LiDAR/Mudjimba surveys' real finer detail and made the AusBathyTopo
+    # base look artificially flat everywhere it was upsampled -- see
+    # bathymetry_composite.py::build_visual_bathymetry_mosaic()). Panes
+    # are created finest-survey-first so they get the highest z-index and
+    # so draw on top of the coarser layers below them wherever they
+    # overlap.
+    relief_map_mudjimba_pane = _add_pane("Bathymetry relief map (Mudjimba Island inset)")
+    relief_map_lidar_pane = _add_pane("Bathymetry relief map (LiDAR inset)")
+    relief_map_mba_pane = _add_pane("Bathymetry relief map (Moreton Bay Approaches inset)")
     relief_map_pane = _add_pane("Bathymetry relief map")
+    relief_map_group = folium.FeatureGroup(name="Bathymetry relief map", show=False)
+    relief_map_group.add_to(fmap)
+
     relief_map_layer = folium.raster_layers.ImageOverlay(
         image=np.zeros((1, 1, 4)),
         bounds=[[bounds[1], bounds[0]], [bounds[3], bounds[2]]],
         opacity=0.9,
-        name="Bathymetry relief map",
         interactive=True,
         cross_origin=False,
-        show=False,
         pane=relief_map_pane,
     )
-    relief_map_layer.add_to(fmap)
+    relief_map_layer.add_to(relief_map_group)
+
+    relief_map_mba_layer = folium.raster_layers.ImageOverlay(
+        image=np.zeros((1, 1, 4)),
+        bounds=[[bounds[1], bounds[0]], [bounds[3], bounds[2]]],
+        opacity=0.9,
+        interactive=True,
+        cross_origin=False,
+        pane=relief_map_mba_pane,
+    )
+    relief_map_mba_layer.add_to(relief_map_group)
+
+    relief_map_lidar_layer = folium.raster_layers.ImageOverlay(
+        image=np.zeros((1, 1, 4)),
+        bounds=[[bounds[1], bounds[0]], [bounds[3], bounds[2]]],
+        opacity=0.9,
+        interactive=True,
+        cross_origin=False,
+        pane=relief_map_lidar_pane,
+    )
+    relief_map_lidar_layer.add_to(relief_map_group)
+
+    relief_map_mudjimba_layer = folium.raster_layers.ImageOverlay(
+        image=np.zeros((1, 1, 4)),
+        bounds=[[bounds[1], bounds[0]], [bounds[3], bounds[2]]],
+        opacity=0.9,
+        interactive=True,
+        cross_origin=False,
+        pane=relief_map_mudjimba_pane,
+    )
+    relief_map_mudjimba_layer.add_to(relief_map_group)
+
 
     legend = LinearColormap(
         colors=_LEGEND_COLORS,
@@ -769,14 +813,17 @@ def build_folium_map(output_html: str = "bite_score_map.html") -> folium.Map:
     legacy_var = legacy_layer.get_name()
     mbgfc_chart_var = mbgfc_chart_layer.get_name()
     mbgfc_locations_var = mbgfc_locations_layer.get_name()
+    waypoints_var = waypoints_layer.get_name()
     land_outline_group_var = land_outline_group.get_name()
     contour_group_var = contour_group.get_name()
     depth_suitability_var = depth_suitability_layer.get_name()
-    lidar_var = lidar_layer.get_name()
-    mba_var = mba_layer.get_name()
-    mudjimba_var = mudjimba_layer.get_name()
     relief_map_var = relief_map_layer.get_name()
+    relief_map_mba_var = relief_map_mba_layer.get_name()
+    relief_map_lidar_var = relief_map_lidar_layer.get_name()
+    relief_map_mudjimba_var = relief_map_mudjimba_layer.get_name()
     fsle_var = fsle_layer.get_name()
+    sla_var = sla_layer.get_name()
+    sla_contour_group_var = sla_contour_group.get_name()
     v2_heatmap_var = v2_heatmap_layer.get_name()
     lenigas_heatmap_var = lenigas_heatmap_layer.get_name()
     light_var = light_layer.get_name()
@@ -801,6 +848,7 @@ def build_folium_map(output_html: str = "bite_score_map.html") -> folium.Map:
         "Bite Score heatmap (current, high-res)": ("bite_score", heatmap_var),
         "Bite Score heatmap (legacy, coarse - for comparison)": ("legacy", legacy_var),
         "Ocean fronts (FSLE)": ("fsle", fsle_var),
+        "Sea level anomaly (altimetry)": ("sla", sla_var),
         "Bite Score heatmap v2 (Beta - structure/eddy model)": ("v2/bite_score_v2", v2_heatmap_var),
         "Bite Score heatmap Lenigas (SEQ fisherman model)": ("lenigas/bite_score_lenigas", lenigas_heatmap_var),
     }
@@ -904,6 +952,28 @@ def build_folium_map(output_html: str = "bite_score_map.html") -> folium.Map:
         ),
         "legend": {"kind": "diagnostic", "unit": "1/day"},
     }
+    _layer_ui["Sea level anomaly (altimetry)"] = {
+        "info": (
+            "Satellite altimetry Sea Level Anomaly (SLA) from multi-mission "
+            "radar altimeters (Jason-3, Sentinel-3, CryoSat-2 and others). "
+            "Red = positive SLA (warm-core EAC eddy, elevated sea surface), "
+            "blue = negative SLA (cold-core eddy or upwelling zone). "
+            "An independent reference layer -- not a Bite Score factor. "
+            "Not available for every date (2017-present archive, ~3-day latency)."
+        ),
+        "legend": {"kind": "diverging_sla", "unit": "m"},
+    }
+    _layer_ui["Sea level anomaly contours"] = {
+        "info": (
+            "Contour lines of the Sea Level Anomaly field at ±0.1, ±0.2 and "
+            "±0.3 m, plus the zero-crossing (grey dashed). "
+            "Red lines = positive SLA (warm-core EAC eddies / ridge structures); "
+            "blue lines = negative SLA (cold-core eddies or upwelling zones). "
+            "Thicker lines indicate stronger anomalies. "
+            "Helps trace eddy boundaries that can be hard to read from the heatmap alone. "
+            "Not available for dates without an SLA layer."
+        ),
+    }
     _layer_ui["Bite Score heatmap v2 (Beta - structure/eddy model)"] = {
         "info": (
             "A separate, experimental scoring model -- seafloor-structure "
@@ -927,40 +997,22 @@ def build_folium_map(output_html: str = "bite_score_map.html") -> folium.Map:
         "legend": {"kind": "score"},
         "role": "composite",
     }
-    _layer_ui["Sunshine Coast LiDAR bathymetry (high-res, 2011 survey)"] = {
-        "info": (
-            "A much higher-resolution alternative (10m) to the ~450m "
-            "GEBCO grid used everywhere else on this map, from a 2011 "
-            "airborne LiDAR survey -- limited to a narrow nearshore strip "
-            "of the Sunshine Coast. Legend shows raw depth in metres "
-            "(negative values = surveyed land above sea level)."
-        ),
-        "legend": {"kind": "diverging", "unit": "m"},
-    }
-    _layer_ui["Moreton Bay Approaches bathymetry (high-res, 2023 survey)"] = {
-        "info": (
-            "A 30m-resolution AusSeabed multibeam survey covering the "
-            "offshore approaches between the Sunshine Coast and the "
-            "Moreton Bay entrance -- real soundings, not GEBCO's "
-            "satellite-derived estimate. Legend shows raw depth in metres."
-        ),
-        "legend": {"kind": "diverging", "unit": "m"},
-    }
-    _layer_ui["Mudjimba Island bathymetry (high-res, 2024 survey)"] = {
-        "info": (
-            "The finest-resolution layer on this map (0.5m), from a 2024 "
-            "AusSeabed multibeam survey -- limited to a tiny ~1.5km patch "
-            "around Mudjimba Island. Legend shows raw depth in metres."
-        ),
-        "legend": {"kind": "diverging", "unit": "m"},
-    }
     _layer_ui["Bathymetry relief map"] = {
         "info": (
-            "A whole-domain shaded-relief view of the same composite "
-            "bathymetry grid used for the Depth-suitability factor -- "
-            "GEBCO (~450m) with the 3 high-res surveys above merged in "
-            "nearshore wherever they cover a cell. Legend shows raw depth "
-            "in metres (negative values = land)."
+            "A single, unified shaded-relief view of every real bathymetry "
+            "source this project has. A whole-of-AOI base is Geoscience "
+            "Australia's AusBathyTopo 2024, kept at its own native ~250m "
+            "resolution (not upsampled -- that used to make the shelf look "
+            "artificially flat), with GEBCO (~450m) only as a last-resort "
+            "fallback. AusSeabed's Moreton Bay Approaches (30m) and "
+            "Mudjimba Island (0.5m) multibeam surveys, plus the Sunshine "
+            "Coast LiDAR survey (10m), are layered on top at THEIR own "
+            "native resolutions wherever they cover the AOI, so the "
+            "sharpest real detail is always shown, not averaged away onto "
+            "one common grid. Colour bands are fixed real-metre depth/"
+            "elevation steps (finer near the surface) rather than a smooth "
+            "gradient, so depth changes stay visible at a glance. Legend "
+            "shows raw depth in metres (negative values = land)."
         ),
         "legend": {"kind": "diverging", "unit": "m"},
     }
@@ -1009,10 +1061,10 @@ def build_folium_map(output_html: str = "bite_score_map.html") -> folium.Map:
     _key_to_label_json = json.dumps(_key_to_label)
     _static_key_to_label = {
         "depth_suitability": depth_suitability_name,
-        "lidar": "Sunshine Coast LiDAR bathymetry (high-res, 2011 survey)",
-        "moreton_bay_approaches": "Moreton Bay Approaches bathymetry (high-res, 2023 survey)",
-        "mudjimba_island": "Mudjimba Island bathymetry (high-res, 2024 survey)",
         "relief_map": "Bathymetry relief map",
+        "relief_map_moreton_bay_approaches": "Bathymetry relief map",
+        "relief_map_lidar": "Bathymetry relief map",
+        "relief_map_mudjimba_island": "Bathymetry relief map",
     }
     _static_key_to_label_json = json.dumps(_static_key_to_label)
 
@@ -1048,8 +1100,10 @@ def build_folium_map(output_html: str = "bite_score_map.html") -> folium.Map:
         f"      }}"
     )
     mbgfc_locations_pane_json = json.dumps(mbgfc_locations_pane)
+    waypoints_pane_json = json.dumps(waypoints_pane)
     land_outline_pane_json = json.dumps(land_outline_pane)
     contour_pane_json = json.dumps(contour_pane)
+    sla_contour_pane_json = json.dumps(sla_contour_pane)
     depth_suitability_name_json = json.dumps(depth_suitability_name)
 
     legacy_slider_html = """
@@ -1195,6 +1249,40 @@ def build_folium_map(output_html: str = "bite_score_map.html") -> folium.Map:
       </div>
     """
 
+    sla_section_html = """
+      <div class="bsq-section">
+        <div class="bsq-accordion-header" id="bsq-sla-toggle">
+          <h3><span class="material-symbols-outlined">water</span>Sea Level Anomaly (Altimetry)</h3>
+          <span class="material-symbols-outlined bsq-chevron">expand_more</span>
+        </div>
+        <div class="bsq-accordion-body" id="bsq-sla-body">
+          <p class="bsq-sub">Satellite radar altimetry measures the sea surface height relative to a long-term mean, revealing warm-core and cold-core eddies, EAC meanders, and upwelling zones -- features that concentrate baitfish and pelagic species.</p>
+          <div class="bsq-factor-row">
+            <div class="bsq-factor-head">
+              <span class="material-symbols-outlined">satellite_alt</span>
+              <span class="bsq-factor-label">Data source</span>
+            </div>
+            <p class="bsq-factor-desc">NOAA CoastWatch ERDDAP &mdash; <em>nesdisSSH1day</em>: multi-satellite merged altimetry product from the RADS database (Jason-3, Sentinel-3A, CryoSat-2, SARAL/AltiKa). 0.25&deg; daily global grid, archive from 2017 onward. Approx. 3-day near-real-time latency.</p>
+          </div>
+          <div class="bsq-factor-row">
+            <div class="bsq-factor-head">
+              <span class="material-symbols-outlined">palette</span>
+              <span class="bsq-factor-label">Colour scale</span>
+            </div>
+            <p class="bsq-factor-desc"><strong style="color:#d73027">Red</strong> = positive SLA (sea surface elevated above mean &mdash; warm-core EAC eddy or southward EAC jet). <strong style="color:#4575b4">Blue</strong> = negative SLA (sea surface below mean &mdash; cold-core eddy or coastal upwelling). Scale clipped at &plusmn;0.4 m to suit typical EAC anomaly amplitudes.</p>
+          </div>
+          <div class="bsq-factor-row">
+            <div class="bsq-factor-head">
+              <span class="material-symbols-outlined">info</span>
+              <span class="bsq-factor-label">How to use</span>
+            </div>
+            <p class="bsq-factor-desc">Strong positive SLA cells (red) indicate warm-core eddies that spin off the EAC and can concentrate juvenile tuna and baitfish at their edges. The sharpest edges and saddle-points between eddies of opposite sign are often the most productive fishing zones. Use this layer alongside the FSLE overlay to confirm which fronts are associated with real eddy structure.</p>
+          </div>
+          <p class="bsq-sub">Toggle on <strong>&ldquo;Sea level anomaly (altimetry)&rdquo;</strong> in the Layers list above. Not available for every date &mdash; archive begins 2017-02-13, and there may be gaps during satellite outages or processing delays.</p>
+        </div>
+      </div>
+    """
+
     # "v2 Bite Score (Beta)" explanation: a SEPARATE, EXPERIMENTAL scoring
     # model (structure proximity, real vorticity-based eddy detection,
     # bell-curve SST, optimal-band chlorophyll, seasonal multiplier -- see
@@ -1304,11 +1392,13 @@ def build_folium_map(output_html: str = "bite_score_map.html") -> folium.Map:
       </div>
     """
 
-    # "Bathymetry Relief Map" explanation: describes the new whole-domain
-    # shaded-relief layer, built from the same composite bathymetry grid
-    # that now backs the depth-suitability factor (GEBCO + the 3 high-res
-    # surveys below merged in nearshore) -- same load-on-demand treatment
-    # as the 3 patch-only survey layers, but covering the entire AOI.
+    # "Bathymetry Relief Map" explanation: describes the single unified
+    # shaded-relief toggle, which is really 4 stacked image layers -- a
+    # whole-AOI AusBathyTopo-based base at its own native ~250m
+    # resolution, plus the 3 real local surveys (Moreton Bay Approaches,
+    # Mudjimba Island, Sunshine Coast LiDAR) layered on top at THEIR OWN
+    # native resolutions -- bundled under one toggle instead of the 4
+    # separate top-level layers this used to be.
     relief_map_availability_html = (
         '<p class="bsq-sub">Toggle on <strong>&ldquo;Bathymetry relief '
         'map&rdquo;</strong> in the Layers list above. Loaded on demand from '
@@ -1323,164 +1413,29 @@ def build_folium_map(output_html: str = "bite_score_map.html") -> folium.Map:
           <span class="material-symbols-outlined bsq-chevron">expand_more</span>
         </div>
         <div class="bsq-accordion-body" id="bsq-relief-body">
-          <p class="bsq-sub">A shaded-relief (hillshade) view of the sea floor across the whole map area -- the same composite bathymetry grid used for the Depth-suitability factor above, not just the 3 small high-res patches below.</p>
+          <p class="bsq-sub">A single shaded-relief (hillshade) view of the sea floor across the whole map area -- one toggle, but really 4 image layers stacked together so every real survey shows at its own best resolution, not averaged down onto one common grid.</p>
           <div class="bsq-factor-row">
             <div class="bsq-factor-head">
               <span class="material-symbols-outlined">public</span>
               <span class="bsq-factor-label">Data source</span>
             </div>
-            <p class="bsq-factor-desc">GEBCO global grid (~450m) as the base, with the Sunshine Coast LiDAR, Moreton Bay Approaches and Mudjimba Island surveys below merged in wherever they cover a cell -- real soundings replacing GEBCO's satellite-derived estimate there.</p>
+            <p class="bsq-factor-desc">Geoscience Australia&rsquo;s AusBathyTopo 2024 grid (250m, whole-of-AOI) as the base, with the AusSeabed Moreton Bay Approaches (30m) and Mudjimba Island (0.5m) multibeam surveys and the Sunshine Coast LiDAR survey (10m) layered on top wherever each one covers the AOI -- GEBCO (~450m) is used only as a last-resort fallback outside all of those.</p>
           </div>
           <div class="bsq-factor-row">
             <div class="bsq-factor-head">
               <span class="material-symbols-outlined">grid_on</span>
               <span class="bsq-factor-label">Method</span>
             </div>
-            <p class="bsq-factor-desc">Each survey is area-averaged down onto GEBCO's own ~450m cell size (not simply overlaid), so the merge doesn&rsquo;t change the reference grid's resolution -- only its accuracy where real survey data exists.</p>
+            <p class="bsq-factor-desc">Each source is kept at ITS OWN native pixel resolution rather than being resampled onto one shared grid -- so the small local surveys never lose real detail, and the whole-AOI base isn&rsquo;t artificially smoothed by being upsampled onto a finer grid than it actually has data for. Rendered with fixed real-metre depth/elevation colour bands (finer near the surface) rather than a smooth gradient, so depth changes stay visible even across a range spanning land down to the deep continental slope.</p>
           </div>
           <div class="bsq-factor-row">
             <div class="bsq-factor-head">
               <span class="material-symbols-outlined">colorize</span>
               <span class="bsq-factor-label">Reading it</span>
             </div>
-            <p class="bsq-factor-desc">Blue shades are underwater depth; green/brown shades are land. Look for visibly sharper detail over the Sunshine Coast, Moreton Bay approaches and Mudjimba Island -- the areas backed by real survey data.</p>
+            <p class="bsq-factor-desc">Blue shades are underwater depth (darker = deeper); green/brown shades are land. Look for visibly sharper, crisper detail over the Sunshine Coast, Moreton Bay approaches and Mudjimba Island -- the areas backed by the finest real survey data, now shown at their true native resolution.</p>
           </div>
           {relief_map_availability_html}
-        </div>
-      </div>
-    """
-
-    # "Sunshine Coast LiDAR Bathymetry" explanation: describes the
-    # high-resolution, locally-supplied 2011 survey layer -- a static local
-    # dataset (unlike the FSLE/factor layers above), loaded on demand from
-    # the dashboard server the first time it's switched on (same pattern as
-    # the MBGFC chart), so it's available on every date's map without
-    # needing that date's HTML regenerated.
-    lidar_availability_html = (
-        '<p class="bsq-sub">Toggle on <strong>&ldquo;Sunshine Coast LiDAR '
-        'bathymetry&rdquo;</strong> in the Layers list above. Loaded on demand from '
-        'the local dashboard server (<code>python -m bite_score.webapp</code>) the '
-        'first time it&rsquo;s switched on.</p>'
-    )
-
-    lidar_section_html = f"""
-      <div class="bsq-section">
-        <div class="bsq-accordion-header" id="bsq-lidar-toggle">
-          <h3><span class="material-symbols-outlined">terrain</span>Sunshine Coast LiDAR Bathymetry</h3>
-          <span class="material-symbols-outlined bsq-chevron">expand_more</span>
-        </div>
-        <div class="bsq-accordion-body" id="bsq-lidar-body">
-          <p class="bsq-sub">A much higher-resolution alternative to the ~450m GEBCO grid used everywhere else on this map, but limited to a narrow nearshore strip of the Sunshine Coast rather than the whole map area.</p>
-          <div class="bsq-factor-row">
-            <div class="bsq-factor-head">
-              <span class="material-symbols-outlined">flight</span>
-              <span class="bsq-factor-label">Data source</span>
-            </div>
-            <p class="bsq-factor-desc">2011 airborne LiDAR bathymetry survey of the Sunshine Coast, supplied as raw XYZ point clouds (GDA94 / MGA Zone 56, AHD height).</p>
-          </div>
-          <div class="bsq-factor-row">
-            <div class="bsq-factor-head">
-              <span class="material-symbols-outlined">grid_on</span>
-              <span class="bsq-factor-label">Method</span>
-            </div>
-            <p class="bsq-factor-desc">Tens of millions of raw survey points are averaged onto a 10m grid, then reprojected to WGS84 for display -- roughly 45&times; finer than the GEBCO grid used for the rest of the map.</p>
-          </div>
-          <div class="bsq-factor-row">
-            <div class="bsq-factor-head">
-              <span class="material-symbols-outlined">colorize</span>
-              <span class="bsq-factor-label">Reading it</span>
-            </div>
-            <p class="bsq-factor-desc">Blue shades are underwater depth; green/brown shades are the surveyed beach and dune land above sea level.</p>
-          </div>
-          {lidar_availability_html}
-        </div>
-      </div>
-    """
-
-    # "Moreton Bay Approaches Bathymetry" / "Mudjimba Island Bathymetry"
-    # explanations: describe the two further real (not GEBCO-interpolated)
-    # AusSeabed multibeam survey layers -- same static-dataset, load-on-
-    # demand treatment as the LiDAR section above, just downloaded from
-    # Geoscience Australia's open data catalogue instead of supplied
-    # locally (see ausseabed_bathymetry.py).
-    moreton_bay_approaches_availability_html = (
-        '<p class="bsq-sub">Toggle on <strong>&ldquo;Moreton Bay Approaches '
-        'bathymetry&rdquo;</strong> in the Layers list above. Loaded on demand from '
-        'the local dashboard server (<code>python -m bite_score.webapp</code>) the '
-        'first time it&rsquo;s switched on.</p>'
-    )
-
-    moreton_bay_approaches_section_html = f"""
-      <div class="bsq-section">
-        <div class="bsq-accordion-header" id="bsq-mba-toggle">
-          <h3><span class="material-symbols-outlined">terrain</span>Moreton Bay Approaches Bathymetry</h3>
-          <span class="material-symbols-outlined bsq-chevron">expand_more</span>
-        </div>
-        <div class="bsq-accordion-body" id="bsq-mba-body">
-          <p class="bsq-sub">A much higher-resolution alternative to the ~450m GEBCO grid used everywhere else on this map, covering the offshore approaches between the Sunshine Coast and the Moreton Bay entrance.</p>
-          <div class="bsq-factor-row">
-            <div class="bsq-factor-head">
-              <span class="material-symbols-outlined">directions_boat</span>
-              <span class="bsq-factor-label">Data source</span>
-            </div>
-            <p class="bsq-factor-desc">Approaches to Moreton Bay (HIPP SI 1021) multibeam survey, 2023, published by Geoscience Australia&rsquo;s AusSeabed open data catalogue (CC BY 4.0).</p>
-          </div>
-          <div class="bsq-factor-row">
-            <div class="bsq-factor-head">
-              <span class="material-symbols-outlined">grid_on</span>
-              <span class="bsq-factor-label">Method</span>
-            </div>
-            <p class="bsq-factor-desc">Pre-gridded 30m depth raster, downloaded once and cached -- roughly 15&times; finer than the GEBCO grid used for the rest of the map.</p>
-          </div>
-          <div class="bsq-factor-row">
-            <div class="bsq-factor-head">
-              <span class="material-symbols-outlined">colorize</span>
-              <span class="bsq-factor-label">Reading it</span>
-            </div>
-            <p class="bsq-factor-desc">Shaded relief over water depth only -- this survey doesn&rsquo;t extend onto land.</p>
-          </div>
-          {moreton_bay_approaches_availability_html}
-        </div>
-      </div>
-    """
-
-    mudjimba_island_availability_html = (
-        '<p class="bsq-sub">Toggle on <strong>&ldquo;Mudjimba Island '
-        'bathymetry&rdquo;</strong> in the Layers list above. Loaded on demand from '
-        'the local dashboard server (<code>python -m bite_score.webapp</code>) the '
-        'first time it&rsquo;s switched on.</p>'
-    )
-
-    mudjimba_island_section_html = f"""
-      <div class="bsq-section">
-        <div class="bsq-accordion-header" id="bsq-mudjimba-toggle">
-          <h3><span class="material-symbols-outlined">terrain</span>Mudjimba Island Bathymetry</h3>
-          <span class="material-symbols-outlined bsq-chevron">expand_more</span>
-        </div>
-        <div class="bsq-accordion-body" id="bsq-mudjimba-body">
-          <p class="bsq-sub">The finest-resolution layer on this map by far, though limited to a tiny ~1.5km &times; 1.5km patch right around Mudjimba Island, Sunshine Coast.</p>
-          <div class="bsq-factor-row">
-            <div class="bsq-factor-head">
-              <span class="material-symbols-outlined">directions_boat</span>
-              <span class="bsq-factor-label">Data source</span>
-            </div>
-            <p class="bsq-factor-desc">Mudjimba Island multibeam survey, 2024, published by Geoscience Australia&rsquo;s AusSeabed open data catalogue (CC BY 4.0).</p>
-          </div>
-          <div class="bsq-factor-row">
-            <div class="bsq-factor-head">
-              <span class="material-symbols-outlined">grid_on</span>
-              <span class="bsq-factor-label">Method</span>
-            </div>
-            <p class="bsq-factor-desc">Pre-gridded 0.5m depth raster, downloaded once and cached -- roughly 900&times; finer than the GEBCO grid used for the rest of the map.</p>
-          </div>
-          <div class="bsq-factor-row">
-            <div class="bsq-factor-head">
-              <span class="material-symbols-outlined">colorize</span>
-              <span class="bsq-factor-label">Reading it</span>
-            </div>
-            <p class="bsq-factor-desc">Shaded relief over water depth only -- this survey doesn&rsquo;t extend onto land.</p>
-          </div>
-          {mudjimba_island_availability_html}
         </div>
       </div>
     """
@@ -1555,6 +1510,11 @@ def build_folium_map(output_html: str = "bite_score_map.html") -> folium.Map:
     _diagnostic_gradient_css = ", ".join(
         ["#000004", "#1b0c41", "#4a0c6b", "#781c6d", "#a52c60", "#cf4446", "#ed6925", "#fb9b06", "#f7d03c", "#fcffa4"]
     )
+    # Blue/white/red diverging gradient for the SLA layer, matching RdBu_r colormap
+    # (negative SLA = blue/cold, zero = white, positive SLA = red/warm).
+    _sla_gradient_css = ", ".join(
+        ["#4575b4", "#74add1", "#abd9e9", "#e0f3f8", "#ffffff", "#fee090", "#fdae61", "#f46d43", "#d73027"]
+    )
 
     control_html = f"""
     <style>
@@ -1574,10 +1534,85 @@ def build_folium_map(output_html: str = "bite_score_map.html") -> folium.Map:
         top: 0 !important;
         left: 320px !important;
         right: 0 !important;
-        bottom: 0 !important;
+        bottom: 54px !important;
         width: auto !important;
         height: auto !important;
       }}
+
+      /* ---- Date timeline bar ---- */
+      .bsq-timeline {{
+        position: fixed; bottom: 0; left: 320px; right: 0; height: 54px;
+        background: #0b1326; border-top: 1px solid rgba(142,145,152,0.18);
+        z-index: 999; display: flex; align-items: center;
+        padding: 0 20px 0 16px; box-sizing: border-box; user-select: none;
+      }}
+      .bsq-tl-track-wrap {{
+        position: relative; flex: 1; height: 100%; display: flex; align-items: center;
+      }}
+      .bsq-tl-track {{
+        position: absolute; left: 0; right: 0; top: 50%; height: 2px;
+        background: rgba(142,145,152,0.22); border-radius: 1px;
+        transform: translateY(-50%);
+      }}
+      .bsq-tl-year-tick {{
+        position: absolute; bottom: calc(50% + 4px);
+        width: 1px; height: 6px; background: rgba(142,145,152,0.35);
+      }}
+      .bsq-tl-year-label {{
+        position: absolute; bottom: calc(50% + 12px);
+        transform: translateX(-50%);
+        font-size: 9px; color: #8e9198; letter-spacing: 0.04em;
+        white-space: nowrap; pointer-events: none;
+      }}
+      .bsq-tl-dot {{
+        position: absolute; top: 50%; transform: translate(-50%, -50%);
+        width: 8px; height: 8px; border-radius: 50%;
+        background: rgba(99,247,255,0.35); border: 1.5px solid rgba(99,247,255,0.5);
+        cursor: pointer; transition: background 0.15s, transform 0.15s;
+        z-index: 1;
+      }}
+      .bsq-tl-dot:hover {{
+        background: rgba(99,247,255,0.7); transform: translate(-50%, -50%) scale(1.5);
+        z-index: 3;
+      }}
+      .bsq-tl-dot.current {{
+        background: #63f7ff; border-color: #63f7ff;
+        width: 12px; height: 12px; z-index: 2;
+        box-shadow: 0 0 8px rgba(99,247,255,0.6);
+      }}
+      .bsq-tl-dot.current:hover {{
+        transform: translate(-50%, -50%) scale(1.3);
+      }}
+      .bsq-tl-label-current {{
+        position: absolute; top: calc(50% + 9px);
+        transform: translateX(-50%);
+        font-size: 9px; font-weight: 700; color: #63f7ff;
+        white-space: nowrap; pointer-events: none; letter-spacing: 0.03em;
+      }}
+      .bsq-tl-tooltip {{
+        position: fixed; padding: 4px 8px; background: #1a2440;
+        border: 1px solid rgba(99,247,255,0.4); border-radius: 5px;
+        font-size: 11px; color: #dae2fd; pointer-events: none;
+        white-space: nowrap; z-index: 2000; display: none;
+      }}
+      .bsq-tl-latest-btn {{
+        flex-shrink: 0; margin-left: 10px;
+        display: flex; align-items: center; gap: 4px;
+        font-size: 11px; color: #63f7ff; cursor: pointer; opacity: 0.75;
+        border: 1px solid rgba(99,247,255,0.3); border-radius: 5px;
+        padding: 3px 8px; background: transparent; transition: opacity 0.15s;
+        white-space: nowrap;
+      }}
+      .bsq-tl-latest-btn:hover {{ opacity: 1; }}
+      .bsq-tl-latest-btn .material-symbols-outlined {{ font-size: 13px; }}
+      .bsq-tl-zoom-label {{
+        flex-shrink: 0; font-size: 10px; color: #8e9198; margin-right: 8px;
+        white-space: nowrap; cursor: pointer; display: none; transition: color 0.15s;
+      }}
+      .bsq-tl-zoom-label.visible {{ display: block; }}
+      .bsq-tl-zoom-label:hover {{ color: #63f7ff; }}
+      .bsq-tl-track-wrap {{ cursor: ew-resize; }}
+      .bsq-tl-track-wrap.dragging {{ cursor: grabbing; }}
 
       .bsq-sidebar {{
         position: fixed; top: 0; left: 0; bottom: 0; width: 320px;
@@ -1707,6 +1742,7 @@ def build_folium_map(output_html: str = "bite_score_map.html") -> folium.Map:
       .bsq-legend-raw .bsq-legend-bar {{ background: linear-gradient(to right, {_raw_gradient_css}); }}
       .bsq-legend-diverging .bsq-legend-bar {{ background: linear-gradient(to right, {_diverging_gradient_css}); }}
       .bsq-legend-diagnostic .bsq-legend-bar {{ background: linear-gradient(to right, {_diagnostic_gradient_css}); }}
+      .bsq-legend-diverging_sla .bsq-legend-bar {{ background: linear-gradient(to right, {_sla_gradient_css}); }}
       .bsq-legend-range {{ white-space: nowrap; }}
 
       /* Composite-vs-factor visual hierarchy within each Bite Score group
@@ -1891,6 +1927,45 @@ def build_folium_map(output_html: str = "bite_score_map.html") -> folium.Map:
           1px 1px 2px rgba(255,255,255,0.9);
       }}
 
+      /* SLA contour value labels -- styled like depth labels but with
+         red/blue colouring to match the contour line colour. */
+      .bsq-sla-label {{
+        position: absolute;
+        left: 0; top: 0;
+        width: max-content;
+        transform: translate(-50%, -50%);
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 10.5px;
+        font-weight: 700;
+        white-space: nowrap;
+        pointer-events: none;
+        text-shadow:
+          -1px -1px 2px rgba(255,255,255,0.9),
+           1px -1px 2px rgba(255,255,255,0.9),
+          -1px  1px 2px rgba(255,255,255,0.9),
+           1px  1px 2px rgba(255,255,255,0.9);
+      }}
+      .bsq-sla-label--pos {{ color: #c0392b; }}
+      .bsq-sla-label--neg {{ color: #1a5276; }}
+      .bsq-sla-label--zero {{ color: #666666; }}
+
+      .bsq-waypoint-label {{
+        position: absolute;
+        left: 8px; top: -5px;
+        width: max-content;
+        color: #1a1a2e;
+        font-family: 'Inter', sans-serif;
+        font-size: 10px;
+        font-weight: 600;
+        white-space: nowrap;
+        pointer-events: none;
+        text-shadow:
+          -1px -1px 2px rgba(255,255,255,0.95),
+          1px -1px 2px rgba(255,255,255,0.95),
+          -1px 1px 2px rgba(255,255,255,0.95),
+          1px 1px 2px rgba(255,255,255,0.95);
+      }}
+
       /* The zoom control and attribution stay on the map itself -- small
          and unobtrusive, standard Leaflet UX -- but restyled dark to match. */
       .leaflet-control-zoom a, .leaflet-control-attribution {{
@@ -1931,9 +2006,21 @@ def build_folium_map(output_html: str = "bite_score_map.html") -> folium.Map:
 
       @media (max-width: 820px) {{
         .bsq-sidebar {{ width: 100%; height: 42vh; bottom: auto; border-right: none; border-bottom: 1px solid rgba(142,145,152,0.15); }}
-        #{map_var} {{ left: 0 !important; top: 42vh !important; }}
+        #{map_var} {{ left: 0 !important; top: 42vh !important; bottom: 54px !important; }}
+        .bsq-timeline {{ left: 0; }}
       }}
     </style>
+
+    <div class="bsq-timeline" id="bsq-timeline">
+      <span class="bsq-tl-zoom-label" id="bsq-tl-zoom-label" title="Click to reset zoom"></span>
+      <div class="bsq-tl-track-wrap" id="bsq-tl-track-wrap">
+        <div class="bsq-tl-track"></div>
+      </div>
+      <button class="bsq-tl-latest-btn" id="bsq-tl-latest-btn" title="Jump to latest date">
+        <span class="material-symbols-outlined">bolt</span>Latest
+      </button>
+    </div>
+    <div class="bsq-tl-tooltip" id="bsq-tl-tooltip"></div>
 
     <nav class="bsq-sidebar">
       <div class="bsq-brand">
@@ -1998,17 +2085,13 @@ def build_folium_map(output_html: str = "bite_score_map.html") -> folium.Map:
 
       {fsle_section_html}
 
+      {sla_section_html}
+
       {v2_section_html}
 
       {lenigas_section_html}
 
       {relief_map_section_html}
-
-      {lidar_section_html}
-
-      {moreton_bay_approaches_section_html}
-
-      {mudjimba_island_section_html}
 
       {mbgfc_section_html}
 
@@ -2084,7 +2167,7 @@ def build_folium_map(output_html: str = "bite_score_map.html") -> folium.Map:
         "Bite Score heatmap (current, high-res)": "Bite Score \u2014 v1 (current model)",
         "Bite Score heatmap v2 (Beta - structure/eddy model)": "Bite Score \u2014 v2 (Beta model)",
         "Bite Score heatmap Lenigas (SEQ fisherman model)": "Bite Score \u2014 Lenigas (SEQ fisherman model)",
-        "Sunshine Coast LiDAR bathymetry (high-res, 2011 survey)": "High-res bathymetry surveys"
+        "Bathymetry relief map": "High-res bathymetry surveys"
       }};
 
       // Inserts a collapsible header before each group's first layer and
@@ -2396,6 +2479,10 @@ def build_folium_map(output_html: str = "bite_score_map.html") -> folium.Map:
       // persisted here -- basemap choice has its own separate key (see
       // bsqSwitchBasemap() below), and is unaffected by this.
       var BSQ_LAYER_SELECTION_KEY = "bsqLayerSelection_v1";
+      // Guard flag: suppresses bsqSaveLayerSelection() during restore so
+      // intermediate click() calls don't overwrite the intended saved state
+      // before the restore loop finishes.
+      var bsqRestoringLayerSelection = false;
 
       function bsqGetCheckedLayerNames() {{
         var container = document.querySelector("#bsq-layers-slot .leaflet-control-layers-overlays");
@@ -2410,22 +2497,24 @@ def build_folium_map(output_html: str = "bite_score_map.html") -> folium.Map:
       }}
 
       function bsqSaveLayerSelection() {{
+        if (bsqRestoringLayerSelection) return;
         try {{
           localStorage.setItem(BSQ_LAYER_SELECTION_KEY, JSON.stringify(bsqGetCheckedLayerNames()));
         }} catch (e) {{}}
       }}
 
-      // Additive only: turns ON any saved-checked layer that isn't already
-      // checked by Folium's default -- via a genuine `input.click()` (not
-      // `input.checked = true`) so Leaflet's own Control.Layers click
-      // handler runs, firing the real "overlayadd" event that both the
-      // per-date lazy-load listener and bsqSaveLayerSelection() above key
-      // off. Never unchecks anything, so a layer with no saved state (or
-      // a saved name no longer present in the current overlay list, e.g.
-      // one that's been removed/renamed since) simply keeps behaving
-      // exactly like a fresh page load. Must run before
-      // bsqInsertLayerGroupHeaders() below, so a just-restored layer's
-      // group is correctly computed as already "open".
+      // Full restore: turns ON saved-checked layers that aren't currently
+      // checked, and turns OFF default-on layers that weren't in the saved
+      // state -- via genuine `input.click()` calls so Leaflet's own
+      // Control.Layers handler runs (firing "overlayadd"/"overlayremove")
+      // and per-date lazy-loads are triggered correctly. If there is no
+      // saved state at all, nothing is changed (first visit uses Folium
+      // defaults). A saved name no longer present in the current overlay
+      // list (e.g. a renamed layer) is silently ignored. Must run before
+      // bsqInsertLayerGroupHeaders() below, so restored layers' groups are
+      // correctly computed as open. bsqRestoringLayerSelection is set for
+      // the duration to prevent the intermediate click()s from overwriting
+      // the intended saved state in localStorage.
       function bsqRestoreLayerSelection() {{
         var container = document.querySelector("#bsq-layers-slot .leaflet-control-layers-overlays");
         if (!container) return;
@@ -2437,13 +2526,22 @@ def build_folium_map(output_html: str = "bite_score_map.html") -> folium.Map:
         if (!Array.isArray(saved)) return;
         var savedSet = {{}};
         saved.forEach(function (name) {{ savedSet[name] = true; }});
+        var toCheck = [], toUncheck = [];
         Array.prototype.forEach.call(container.querySelectorAll(":scope > label"), function (row) {{
           var input = row.querySelector("input[type=checkbox]");
           var span = row.querySelector("span:last-child");
           if (!input || !span) return;
           var name = span.textContent.trim();
-          if (savedSet[name] && !input.checked) {{ input.click(); }}
+          if (savedSet[name] && !input.checked) {{ toCheck.push(input); }}
+          else if (!savedSet[name] && input.checked) {{ toUncheck.push(input); }}
         }});
+        bsqRestoringLayerSelection = true;
+        try {{
+          toCheck.forEach(function (inp) {{ inp.click(); }});
+          toUncheck.forEach(function (inp) {{ inp.click(); }});
+        }} finally {{
+          bsqRestoringLayerSelection = false;
+        }}
       }}
 
       // Compact bottom-left map control (Parts 3 & 4, 2026-07-25, Lambert):
@@ -2617,21 +2715,22 @@ def build_folium_map(output_html: str = "bite_score_map.html") -> folium.Map:
         {map_var}.on("overlayadd", function (e) {{
           if (e.name === "MBGFC fishing chart (georeferenced)" || e.name === "MBGFC FADs, SFADs & wave buoys") {{
             bsqLoadMbgfc();
+          }} else if (e.name === "Fishing waypoints (Light & Heavy Tackle)") {{
+            bsqLoadWaypoints();
           }} else if (e.name === {depth_suitability_name_json}) {{
             bsqLoadRasterLayer("depth_suitability", {depth_suitability_var});
-          }} else if (e.name === "Sunshine Coast LiDAR bathymetry (high-res, 2011 survey)") {{
-            bsqLoadRasterLayer("lidar", {lidar_var});
-          }} else if (e.name === "Moreton Bay Approaches bathymetry (high-res, 2023 survey)") {{
-            bsqLoadRasterLayer("moreton_bay_approaches", {mba_var});
-          }} else if (e.name === "Mudjimba Island bathymetry (high-res, 2024 survey)") {{
-            bsqLoadRasterLayer("mudjimba_island", {mudjimba_var});
           }} else if (e.name === "Bathymetry relief map") {{
             bsqLoadRasterLayer("relief_map", {relief_map_var});
+            bsqLoadRasterLayer("relief_map_moreton_bay_approaches", {relief_map_mba_var});
+            bsqLoadRasterLayer("relief_map_lidar", {relief_map_lidar_var});
+            bsqLoadRasterLayer("relief_map_mudjimba_island", {relief_map_mudjimba_var});
           }} else if (e.name === "Bathymetry contours (depth reference)") {{
             bsqLoadContours();
           }} else if (e.name === "Land outline") {{
             bsqLoadLandOutline();
-          }} else if (bsqDateLayerByName[e.name]) {{
+          }} else if (e.name === "Sea level anomaly contours") {{
+            if (bsqCurrentDate) bsqLoadSlaContours(bsqCurrentDate);
+          }} else if (bsqDateLayerByName && bsqDateLayerByName[e.name]) {{
             var entry = bsqDateLayerByName[e.name];
             bsqLoadDateLayer(entry.key, entry.layer, entry.key === "bite_score");
           }}
@@ -2645,16 +2744,25 @@ def build_folium_map(output_html: str = "bite_score_map.html") -> folium.Map:
         // every toggle (whether from this Layers list or the new bottom-
         // left reference-chart buttons -- both ultimately fire the same
         // native "overlayadd"/"overlayremove" map events), then restores
-        // them (additively -- only checks layers that were saved-checked
-        // and aren't already checked by default; never unchecks a default-
-        // on layer) before bsqInsertLayerGroupHeaders() below computes
-        // each group's initial open/closed state, so a restored layer's
-        // group starts open too. Also keeps the bottom-left reference-
-        // chart buttons' active state in sync with the sidebar checkboxes.
+        // exact saved state (turning ON non-default layers and turning OFF
+        // default-on layers the user unchecked) before
+        // bsqInsertLayerGroupHeaders() below computes each group's initial
+        // open/closed state, so a restored layer's group starts open too.
+        // Also keeps the bottom-left reference-chart buttons' active state
+        // in sync with the sidebar checkboxes.
         {map_var}.on("overlayadd overlayremove", function () {{
           bsqSaveLayerSelection();
           bsqSyncRefChartButtons();
         }});
+        // bsqInitDateLayers() must run before bsqRestoreLayerSelection() so
+        // that bsqDateLayerByName is populated when restored layer clicks fire
+        // "overlayadd". bsqCurrentDate is seeded from the URL path here (for
+        // /history/<date> navigations) so bsqLoadDateLayer() won't bail out
+        // with an early "if (!bsqCurrentDate) return" during restore; the root
+        // "/" case is handled by bsqLoadRestoredDateLayers() called from
+        // bsqResolveDateAndLoad() after the async fetch completes.
+        bsqInitDateLayers();
+        if (bsqDateFromPath) {{ bsqCurrentDate = bsqDateFromPath; }}
         bsqRestoreLayerSelection();
 
         bsqInsertLayerGroupHeaders();
@@ -2701,12 +2809,6 @@ def build_folium_map(output_html: str = "bite_score_map.html") -> folium.Map:
           this.classList.toggle("open", opening);
         }});
 
-        document.getElementById("bsq-lidar-toggle").addEventListener("click", function () {{
-          var opening = !document.getElementById("bsq-lidar-body").classList.contains("open");
-          document.getElementById("bsq-lidar-body").classList.toggle("open", opening);
-          this.classList.toggle("open", opening);
-        }});
-
         document.getElementById("bsq-relief-toggle").addEventListener("click", function () {{
           var opening = !document.getElementById("bsq-relief-body").classList.contains("open");
           document.getElementById("bsq-relief-body").classList.toggle("open", opening);
@@ -2726,7 +2828,6 @@ def build_folium_map(output_html: str = "bite_score_map.html") -> folium.Map:
         // earlier above, alongside bsqRestoreLayerSelection() -- see the
         // 2026-07-25, Lambert comment there.)
 
-        bsqInitDateLayers();
         bsqLoadContours();
         bsqLoadLandOutline();
         bsqResolveDateAndLoad();
@@ -2770,9 +2871,31 @@ def build_folium_map(output_html: str = "bite_score_map.html") -> folium.Map:
         // default, so it's loaded directly here rather than waiting for
         // an "overlayadd" event.
         bsqLoadDateLayer("bite_score", {heatmap_var}, true);
+        // Load any date layers that were restored (checked) before
+        // bsqCurrentDate was available -- covers layers turned on via
+        // bsqRestoreLayerSelection() when bsqCurrentDate was still null
+        // (root "/" route where the date is fetched async).
+        bsqLoadRestoredDateLayers();
+        bsqMaybeLoadSlaContours();
         bsqLoadMoonPhase();
         bsqCheckV2Availability();
         bsqCheckLenigasAvailability();
+      }}
+
+      // Scan checked overlay rows and load any date layer whose data hasn't
+      // been fetched yet -- used by bsqResolveDateAndLoad() above to catch
+      // layers that were restored before bsqCurrentDate was known.
+      function bsqLoadRestoredDateLayers() {{
+        if (!bsqDateLayerByName || !bsqCurrentDate) return;
+        var container = document.querySelector("#bsq-layers-slot .leaflet-control-layers-overlays");
+        if (!container) return;
+        Array.prototype.forEach.call(container.querySelectorAll(":scope > label"), function (row) {{
+          var input = row.querySelector("input[type=checkbox]");
+          var span = row.querySelector("span:last-child");
+          if (!input || !input.checked || !span) return;
+          var entry = bsqDateLayerByName[span.textContent.trim()];
+          if (entry) {{ bsqLoadDateLayer(entry.key, entry.layer, entry.key === "bite_score"); }}
+        }});
       }}
 
       // Generic loader for the per-date layers (Bite Score heatmap,
@@ -2983,11 +3106,287 @@ def build_folium_map(output_html: str = "bite_score_map.html") -> folium.Map:
             document.getElementById("bsq-history-body").classList.add("open");
             document.getElementById("bsq-history-toggle").classList.add("open");
           }}
+
+          bsqBuildTimeline(dates);
         }} catch (e) {{
           // No dashboard server running (e.g. this HTML was opened directly
           // as a file) -- explain why the list can't be populated.
           listEl.innerHTML = '<div class="bsq-history-empty">Can\\'t reach history server. Run: python -m bite_score.webapp</div>';
         }}
+      }}
+
+      // Timeline bar -- zoom/pan state
+      var bsqTlAllDates = null;
+      var bsqTlAllTimestamps = null;
+      var bsqTlViewMin = null;
+      var bsqTlViewMax = null;
+      var bsqTlTotalMin = null;
+      var bsqTlTotalMax = null;
+      var bsqTlDragState = null; // {{startX, startViewMin, startViewMax, moved}}
+      var BSQ_TL_VIEW_KEY = "bsqTlView_v1";
+
+      // Timeline bar along the bottom of the map. Dates are positioned
+      // proportionally by their calendar timestamp (to scale). Supports
+      // mouse-wheel zoom (centred on the cursor), click-drag panning, and
+      // double-click to reset to the full range.
+      function bsqBuildTimeline(dates) {{
+        var wrap = document.getElementById("bsq-tl-track-wrap");
+        if (!wrap || !dates || dates.length === 0) return;
+
+        bsqTlAllDates = dates.slice();
+        bsqTlAllTimestamps = dates.map(function (d) {{ return new Date(d).getTime(); }});
+        bsqTlTotalMin = Math.min.apply(null, bsqTlAllTimestamps);
+        bsqTlTotalMax = Math.max.apply(null, bsqTlAllTimestamps);
+        // Pad 3% right so the newest dot isn't flush against the edge
+        var pad = (bsqTlTotalMax - bsqTlTotalMin || 1) * 0.03;
+        bsqTlTotalMax += pad;
+        bsqTlViewMin = bsqTlTotalMin;
+        bsqTlViewMax = bsqTlTotalMax;
+
+        // Restore saved zoom window from localStorage (preserved across
+        // date navigation). Clamp to the current total range in case new
+        // dates have been added outside the saved window.
+        try {{
+          var savedView = JSON.parse(localStorage.getItem(BSQ_TL_VIEW_KEY) || "null");
+          if (savedView && typeof savedView.min === "number" && typeof savedView.max === "number") {{
+            var sMin = Math.max(savedView.min, bsqTlTotalMin);
+            var sMax = Math.min(savedView.max, bsqTlTotalMax);
+            if (sMax - sMin > 14 * 86400000) {{
+              bsqTlViewMin = sMin;
+              bsqTlViewMax = sMax;
+            }}
+          }}
+        }} catch (e) {{}}
+
+        // Attach interaction handlers once
+        if (!wrap._bsqTlBound) {{
+          wrap._bsqTlBound = true;
+          wrap.addEventListener("wheel", bsqTlOnWheel, {{passive: false}});
+          wrap.addEventListener("mousedown", bsqTlOnMouseDown);
+          document.addEventListener("mousemove", bsqTlOnMouseMove);
+          document.addEventListener("mouseup", bsqTlOnMouseUp);
+          wrap.addEventListener("dblclick", bsqTlResetZoom);
+        }}
+
+        // Latest button
+        var latestBtn = document.getElementById("bsq-tl-latest-btn");
+        if (latestBtn && !latestBtn._bsqTlBound) {{
+          if (!bsqDateFromPath) {{
+            latestBtn.style.opacity = "0.35";
+            latestBtn.style.cursor = "default";
+            latestBtn.style.pointerEvents = "none";
+          }} else {{
+            latestBtn._bsqTlBound = true;
+            latestBtn.addEventListener("click", function () {{ window.location.href = "/"; }});
+          }}
+        }}
+
+        // Zoom reset label
+        var zoomLabel = document.getElementById("bsq-tl-zoom-label");
+        if (zoomLabel && !zoomLabel._bsqTlBound) {{
+          zoomLabel._bsqTlBound = true;
+          zoomLabel.addEventListener("click", bsqTlResetZoom);
+        }}
+
+        bsqTlRender();
+      }}
+
+      // Re-draws all dots/ticks for the current view window.
+      function bsqTlRender() {{
+        var wrap = document.getElementById("bsq-tl-track-wrap");
+        if (!wrap || !bsqTlAllDates) return;
+        var tooltip = document.getElementById("bsq-tl-tooltip");
+
+        // Clear previous renderable elements
+        Array.prototype.forEach.call(
+          wrap.querySelectorAll(".bsq-tl-dot,.bsq-tl-year-tick,.bsq-tl-year-label,.bsq-tl-label-current"),
+          function (el) {{ el.remove(); }}
+        );
+
+        var viewRange = bsqTlViewMax - bsqTlViewMin;
+        function toPercent(t) {{ return ((t - bsqTlViewMin) / viewRange) * 100; }}
+        var MS_DAY = 86400000;
+
+        // Year lines
+        var yr = new Date(bsqTlViewMin).getUTCFullYear();
+        while (true) {{
+          var tYr = Date.UTC(yr, 0, 1);
+          if (tYr > bsqTlViewMax) break;
+          if (tYr >= bsqTlViewMin) {{
+            var pct = toPercent(tYr);
+            var ytick = document.createElement("div");
+            ytick.className = "bsq-tl-year-tick";
+            ytick.style.left = pct + "%";
+            wrap.appendChild(ytick);
+            var ylbl = document.createElement("div");
+            ylbl.className = "bsq-tl-year-label";
+            ylbl.style.left = pct + "%";
+            ylbl.textContent = yr;
+            wrap.appendChild(ylbl);
+          }}
+          yr++;
+        }}
+
+        // Month sub-ticks when view is < 180 days
+        if (viewRange < 180 * MS_DAY) {{
+          var d0 = new Date(bsqTlViewMin);
+          var mo0 = d0.getUTCFullYear() * 12 + d0.getUTCMonth();
+          var MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+          for (var mi = 0; mi < 25; mi++) {{
+            var abs = mo0 + mi;
+            var moYr = Math.floor(abs / 12), moMo = abs % 12;
+            var tM = Date.UTC(moYr, moMo, 1);
+            if (tM <= bsqTlViewMin) continue;
+            if (tM > bsqTlViewMax) break;
+            var pctM = toPercent(tM);
+            var mtick = document.createElement("div");
+            mtick.className = "bsq-tl-year-tick";
+            mtick.style.left = pctM + "%";
+            mtick.style.height = "4px";
+            mtick.style.opacity = "0.5";
+            wrap.appendChild(mtick);
+            var mlbl = document.createElement("div");
+            mlbl.className = "bsq-tl-year-label";
+            mlbl.style.left = pctM + "%";
+            mlbl.style.opacity = "0.7";
+            mlbl.textContent = MONTHS[moMo];
+            wrap.appendChild(mlbl);
+          }}
+        }}
+
+        // Dots
+        var currentDate = bsqCurrentDate || bsqDateFromPath;
+        bsqTlAllDates.forEach(function (d, i) {{
+          var ts = bsqTlAllTimestamps[i];
+          if (ts < bsqTlViewMin || ts > bsqTlViewMax) return;
+          var pct = toPercent(ts);
+          var isCurrent = (d === currentDate);
+          var dot = document.createElement("div");
+          dot.className = "bsq-tl-dot" + (isCurrent ? " current" : "");
+          dot.style.left = pct + "%";
+
+          if (tooltip) {{
+            dot.addEventListener("mouseenter", function (ev) {{
+              tooltip.textContent = d;
+              tooltip.style.display = "block";
+              bsqTlPositionTooltip(ev);
+            }});
+            dot.addEventListener("mousemove", bsqTlPositionTooltip);
+            dot.addEventListener("mouseleave", function () {{ tooltip.style.display = "none"; }});
+          }}
+
+          if (!isCurrent) {{
+            dot.addEventListener("click", function () {{
+              // Ignore if this mousedown→up was a drag
+              if (bsqTlDragState && bsqTlDragState.moved) return;
+              window.location.href = "/history/" + d;
+            }});
+          }}
+
+          wrap.appendChild(dot);
+
+          if (isCurrent) {{
+            var clbl = document.createElement("div");
+            clbl.className = "bsq-tl-label-current";
+            clbl.style.left = pct + "%";
+            clbl.textContent = d;
+            wrap.appendChild(clbl);
+          }}
+        }});
+
+        // Zoom range label
+        var zoomLabel = document.getElementById("bsq-tl-zoom-label");
+        if (zoomLabel) {{
+          var isFullRange = (bsqTlViewMin <= bsqTlTotalMin + 1000 && bsqTlViewMax >= bsqTlTotalMax - 1000);
+          if (isFullRange) {{
+            zoomLabel.textContent = "";
+            zoomLabel.classList.remove("visible");
+          }} else {{
+            var MONTHS2 = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+            function fmtT(t) {{ var dt = new Date(t); return MONTHS2[dt.getUTCMonth()] + " " + dt.getUTCFullYear(); }}
+            zoomLabel.textContent = fmtT(bsqTlViewMin) + " \u2013 " + fmtT(bsqTlViewMax) + " \u00d7";
+            zoomLabel.classList.add("visible");
+          }}
+        }}
+
+        // Persist view to localStorage so navigating to another date
+        // restores the same zoom window.
+        try {{ localStorage.setItem(BSQ_TL_VIEW_KEY, JSON.stringify({{min: bsqTlViewMin, max: bsqTlViewMax}})); }} catch (e) {{}}
+      }}
+
+      function bsqTlOnWheel(ev) {{
+        ev.preventDefault();
+        var wrap = document.getElementById("bsq-tl-track-wrap");
+        if (!wrap) return;
+        var rect = wrap.getBoundingClientRect();
+        var frac = Math.max(0, Math.min((ev.clientX - rect.left) / rect.width, 1));
+        var viewRange = bsqTlViewMax - bsqTlViewMin;
+        var factor = ev.deltaY < 0 ? 0.6 : 1.65; // wheel-up = zoom in
+        var MS_DAY = 86400000;
+        var newRange = Math.min(
+          Math.max(viewRange * factor, 14 * MS_DAY),
+          bsqTlTotalMax - bsqTlTotalMin
+        );
+        var pivotT = bsqTlViewMin + frac * viewRange;
+        var newMin = pivotT - frac * newRange;
+        var newMax = pivotT + (1 - frac) * newRange;
+        if (newMin < bsqTlTotalMin) {{ newMax += bsqTlTotalMin - newMin; newMin = bsqTlTotalMin; }}
+        if (newMax > bsqTlTotalMax) {{ newMin -= newMax - bsqTlTotalMax; newMax = bsqTlTotalMax; }}
+        bsqTlViewMin = Math.max(newMin, bsqTlTotalMin);
+        bsqTlViewMax = newMax;
+        bsqTlRender();
+      }}
+
+      function bsqTlOnMouseDown(ev) {{
+        if (ev.button !== 0) return;
+        bsqTlDragState = {{startX: ev.clientX, startViewMin: bsqTlViewMin, startViewMax: bsqTlViewMax, moved: false}};
+        var wrap = document.getElementById("bsq-tl-track-wrap");
+        if (wrap) {{ wrap.classList.add("dragging"); }}
+      }}
+
+      function bsqTlOnMouseMove(ev) {{
+        if (!bsqTlDragState) return;
+        var dx = ev.clientX - bsqTlDragState.startX;
+        if (Math.abs(dx) > 4) {{ bsqTlDragState.moved = true; }}
+        if (!bsqTlDragState.moved) return;
+        var wrap = document.getElementById("bsq-tl-track-wrap");
+        if (!wrap) return;
+        var rect = wrap.getBoundingClientRect();
+        var viewRange = bsqTlDragState.startViewMax - bsqTlDragState.startViewMin;
+        var dt = -(dx / rect.width) * viewRange;
+        var newMin = bsqTlDragState.startViewMin + dt;
+        var newMax = bsqTlDragState.startViewMax + dt;
+        if (newMin < bsqTlTotalMin) {{ newMax += bsqTlTotalMin - newMin; newMin = bsqTlTotalMin; }}
+        if (newMax > bsqTlTotalMax) {{ newMin -= newMax - bsqTlTotalMax; newMax = bsqTlTotalMax; }}
+        bsqTlViewMin = Math.max(newMin, bsqTlTotalMin);
+        bsqTlViewMax = newMax;
+        bsqTlRender();
+      }}
+
+      function bsqTlOnMouseUp() {{
+        if (!bsqTlDragState) return;
+        var wrap = document.getElementById("bsq-tl-track-wrap");
+        if (wrap) {{ wrap.classList.remove("dragging"); }}
+        // Keep moved flag alive briefly so click handlers can check it
+        var prev = bsqTlDragState;
+        bsqTlDragState = null;
+        if (prev.moved) {{ setTimeout(function () {{}}, 0); }}
+      }}
+
+      function bsqTlResetZoom() {{
+        if (bsqTlTotalMin === null) return;
+        bsqTlViewMin = bsqTlTotalMin;
+        bsqTlViewMax = bsqTlTotalMax;
+        bsqTlRender();
+      }}
+
+      function bsqTlPositionTooltip(ev) {{
+        var tooltip = document.getElementById("bsq-tl-tooltip");
+        if (!tooltip) return;
+        var x = ev.clientX + 12, y = ev.clientY - 32;
+        if (x + 120 > window.innerWidth) {{ x = ev.clientX - 124; }}
+        tooltip.style.left = x + "px";
+        tooltip.style.top = y + "px";
       }}
 
       // Fetches the MBGFC chart image/bounds and FAD/SFAD/wave-buoy marker
@@ -3035,6 +3434,77 @@ def build_folium_map(output_html: str = "bite_score_map.html") -> folium.Map:
           .catch(function (e) {{ console.warn("MBGFC locations unavailable (is python -m bite_score.webapp running?)", e); }});
       }}
 
+      // Fishing waypoints: Light Tackle Grounds (green) and Heavy Tackle
+      // Marks (red). Loaded lazily the first time the layer is toggled on,
+      // same pattern as bsqLoadMbgfc() above.
+      var bsqWaypointsLoaded = false;
+      function bsqLoadWaypoints() {{
+        if (bsqWaypointsLoaded) return;
+        bsqWaypointsLoaded = true;
+
+        var categoryStyle = {{
+          light_tackle: {{color: "#2ea043", fillColor: "#2ea043", label: "Light Tackle Grounds"}},
+          heavy_tackle: {{color: "#e53e3e", fillColor: "#e53e3e", label: "Heavy Tackle Marks"}},
+        }};
+        fetch("/api/waypoints", {{cache: "no-store"}})
+          .then(function (r) {{ return r.json(); }})
+          .then(function (data) {{
+            (data.waypoints || []).forEach(function (wp) {{
+              var style = categoryStyle[wp.category] || categoryStyle.light_tackle;
+              var marker = L.circleMarker([wp.lat, wp.lon], {{
+                radius: 5, color: style.color, fillColor: style.fillColor,
+                fillOpacity: 0.85, weight: 1.5,
+                pane: {waypoints_pane_json},
+              }});
+              marker.bindPopup(
+                "<b>" + wp.name + "</b><br>" + style.label + "<br>" +
+                wp.lat.toFixed(4) + "\u00b0S, " + wp.lon.toFixed(4) + "\u00b0E"
+              );
+              marker.addTo({waypoints_var});
+              // Text label floating to the right of the dot
+              L.marker([wp.lat, wp.lon], {{
+                icon: L.divIcon({{
+                  iconSize: [0, 0],
+                  iconAnchor: [0, 0],
+                  html: '<div class="bsq-waypoint-label" style="color:' + style.color + '">' + wp.name + '</div>',
+                }}),
+                interactive: false,
+                pane: {waypoints_pane_json},
+              }}).addTo({waypoints_var});
+            }});
+            // Reef lines: polylines with an endpoint-circle at each end and
+            // a label at the midpoint of each line.
+            (data.reef_lines || []).forEach(function (rl) {{
+              var reefColor = "#e67e00";
+              L.polyline(rl.coords, {{
+                color: reefColor, weight: 2.5, opacity: 0.9,
+                dashArray: "6 4",
+                pane: {waypoints_pane_json},
+              }}).bindTooltip(rl.name)
+                .bindPopup("<b>" + rl.name + "</b><br>" + rl.description)
+                .addTo({waypoints_var});
+              // Small circle at each endpoint
+              rl.coords.forEach(function (c) {{
+                L.circleMarker(c, {{
+                  radius: 4, color: reefColor, fillColor: reefColor,
+                  fillOpacity: 0.85, weight: 1.5,
+                  pane: {waypoints_pane_json},
+                }}).addTo({waypoints_var});
+              }});
+              // Label at the midpoint
+              L.marker([rl.label_lat, rl.label_lon], {{
+                icon: L.divIcon({{
+                  iconSize: [0, 0],
+                  iconAnchor: [0, 0],
+                  html: '<div class="bsq-waypoint-label" style="color:' + reefColor + '">' + rl.name + '</div>',
+                }}),
+                interactive: false,
+                pane: {waypoints_pane_json},
+              }}).addTo({waypoints_var});
+            }});
+          }})
+          .catch(function (e) {{ console.warn("Fishing waypoints unavailable (is python -m bite_score.webapp running?)", e); }});
+      }}
       // Generic loader for the shared/static raster layers (Depth-
       // suitability factor, LiDAR, Moreton Bay Approaches, Mudjimba
       // Island): each is built once by the dashboard server and cached
@@ -3090,6 +3560,87 @@ def build_folium_map(output_html: str = "bite_score_map.html") -> folium.Map:
           .catch(function (e) {{ console.warn("Bathymetry contours unavailable (is python -m bite_score.webapp running?)", e); }});
       }}
 
+      // Per-date SLA contour lines (GeoJSON).  Called from overlayadd and
+      // from bsqResolveDateAndLoad() (the async root-path case where the
+      // layer was pre-checked via layer-restore before bsqCurrentDate was
+      // known).  Caches the loaded GeoJSON layer by date so re-toggling
+      // or navigating to the same date doesn't re-fetch.
+      var bsqSlaContoursDate = null;   // date whose contours are in the group
+      var bsqSlaContoursLayer = null;  // the L.geoJSON layer currently in the group
+      function bsqLoadSlaContours(date) {{
+        if (!date) return;
+        if (bsqSlaContoursDate === date) return;  // already current
+        // Remove old contours from the group
+        if (bsqSlaContoursLayer) {{
+          {sla_contour_group_var}.removeLayer(bsqSlaContoursLayer);
+          bsqSlaContoursLayer = null;
+        }}
+        bsqSlaContoursDate = date;  // mark optimistically so rapid switches don't double-fetch
+        fetch("/api/date-layer/" + date + "/sla_contours/contours.json", {{cache: "no-store"}})
+          .then(function (r) {{ return r.json(); }})
+          .then(function (data) {{
+            // Color scale: red for positive, blue for negative, grey dashed for zero
+            var newLayer = L.geoJSON(data.geojson, {{
+              style: function (feature) {{
+                var sla = feature.properties ? (feature.properties.sla_m || 0) : 0;
+                var kind = feature.properties ? (feature.properties.kind || "zero") : "zero";
+                var color = kind === "positive" ? "#c0392b"
+                          : kind === "negative" ? "#1a5276"
+                          : "#777777";
+                var weight = Math.max(1, Math.min(3, Math.round(Math.abs(sla) * 12)));
+                var dashArray = kind === "zero" ? "5,4" : null;
+                return {{color: color, weight: weight, opacity: 0.80, dashArray: dashArray}};
+              }},
+              pane: {sla_contour_pane_json},
+              onEachFeature: function (feature, layer) {{
+                if (feature.properties && feature.properties.sla_m !== undefined) {{
+                  var val = feature.properties.sla_m;
+                  var sign = val > 0.001 ? "+" : "";
+                  layer.bindTooltip("SLA: " + sign + val.toFixed(2) + " m");
+                }}
+              }},
+            }});
+            newLayer.addTo({sla_contour_group_var});
+            bsqSlaContoursLayer = newLayer;
+
+            // Value labels at mid-points of the longest segments
+            (data.labels || []).forEach(function (label) {{
+              var val = label.sla_m;
+              var sign = val > 0.001 ? "+" : "";
+              var kind = val > 0.001 ? "pos" : (val < -0.001 ? "neg" : "zero");
+              L.marker([label.lat, label.lon], {{
+                icon: L.divIcon({{
+                  iconSize: [0, 0],
+                  iconAnchor: [0, 0],
+                  html: '<div class="bsq-sla-label bsq-sla-label--' + kind + '">'
+                        + sign + val.toFixed(2) + ' m</div>',
+                }}),
+                interactive: false,
+                pane: {sla_contour_pane_json},
+              }}).addTo({sla_contour_group_var});
+            }});
+          }})
+          .catch(function (e) {{ console.warn("SLA contours unavailable for " + date, e); }});
+      }}
+
+      // Check if SLA contours layer checkbox is currently checked and, if
+      // so, ensure its data is loaded for the given date.  Called from
+      // bsqResolveDateAndLoad() to handle the case where the layer was
+      // restored before bsqCurrentDate was available (root "/" route).
+      function bsqMaybeLoadSlaContours() {{
+        if (!bsqCurrentDate) return;
+        var container = document.querySelector("#bsq-layers-slot .leaflet-control-layers-overlays");
+        if (!container) return;
+        Array.prototype.forEach.call(container.querySelectorAll(":scope > label"), function (row) {{
+          var input = row.querySelector("input[type=checkbox]");
+          var span = row.querySelector("span:last-child");
+          if (!input || !input.checked || !span) return;
+          if (span.textContent.trim() === "Sea level anomaly contours") {{
+            bsqLoadSlaContours(bsqCurrentDate);
+          }}
+        }});
+      }}
+
       async function bsqPollStatus() {{
         var statusEl = document.getElementById("bsq-status");
         var btn = document.getElementById("bsq-update-btn");
@@ -3127,11 +3678,13 @@ def build_folium_map(output_html: str = "bite_score_map.html") -> folium.Map:
           }});
           if (!resp.ok) {{
             var body = await resp.json().catch(function () {{ return {{}}; }});
-            throw new Error(body.message || ("Server returned " + resp.status));
+            statusEl.textContent = body.message || ("Server error: " + resp.status);
+            btn.disabled = false;
+            return;
           }}
           bsqPollStatus();
         }} catch (e) {{
-          statusEl.textContent = "Can't reach update server. Run: python -m bite_score.webapp";
+          statusEl.textContent = "Can\u2019t reach update server. Run: python -m bite_score.webapp";
           btn.disabled = false;
         }}
       }}

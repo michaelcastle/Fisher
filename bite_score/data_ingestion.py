@@ -28,6 +28,19 @@ logger = logging.getLogger(__name__)
 # dataset aliases), so always identify explicitly.
 _ERDDAP_USER_AGENT = "Mozilla/5.0 (compatible; FisherBiteScorePipeline/1.0)"
 
+# --- IMOS SRS Ocean Colour (NOAA-20 / VIIRS, 0.0075° ≈ 833 m) ---------------
+# THREDDS OPeNDAP ASCII endpoint for the IMOS SRS daily ocean colour gridded
+# product (NOAA-20 / JPSS-1 VIIRS).  Binary OPeNDAP is blocked behind a
+# libcurl/openssl version mismatch in this environment; the plain-HTTP ASCII
+# endpoint works fine and returns only ~1 MB for the SEQ AOI.
+_IMOS_OC_THREDDS_BASE = (
+    "https://thredds.aodn.org.au/thredds/dodsC/IMOS/SRS/OC/gridded/noaa20/P1D"
+)
+_IMOS_OC_LAT_ORIGIN = 12.0    # northernmost latitude of the IMOS OC grid
+_IMOS_OC_LON_ORIGIN = 78.0    # westernmost longitude of the IMOS OC grid
+_IMOS_OC_STEP       = 0.0075  # degrees per pixel (~833 m)
+_IMOS_OC_FILL       = -999.0  # fill / no-data sentinel in the raw product
+
 # The "(last)" ERDDAP fallback (grab whatever granule is currently newest) is
 # only a reasonable substitute for the *exact requested date* when that date
 # is recent -- i.e. the granule is simply missing yet due to normal
@@ -169,6 +182,251 @@ def load_erddap_layer_v2(dataset_key: str, target_date: str) -> xr.DataArray:
     if "altitude" in da.dims:
         da = da.isel(altitude=0)
     return da
+
+
+def _parse_imos_oc_ascii(text: str, target_date: str) -> xr.DataArray:
+    """
+    Parse an IMOS SRS OC OPeNDAP ASCII response into an ``xr.DataArray``
+    named ``'chlor_a'``, ready for the existing chlorophyll pipeline path.
+
+    The response format is::
+
+        Dataset { ... }
+        ---------...----------
+        chl_oci.chl_oci[1][R][C]
+        [0][0], v00, v01, ...
+        [0][1], v10, v11, ...
+        ...
+
+        chl_oci.time[1]  ...
+        chl_oci.latitude[R]  ...
+        chl_oci.longitude[C]  ...
+
+        latitude[R]
+        -26.0025, -26.01, ...
+
+        longitude[C]
+        153.0, 153.0075, ...
+    """
+    import numpy as np
+
+    sep = "---------------------------------------------\n"
+    if sep not in text:
+        raise RuntimeError(
+            f"Unexpected IMOS OC ASCII response format for {target_date}"
+        )
+    _, body = text.split(sep, 1)
+    sections = body.split("\n\n")
+
+    def _find_section(prefix: str) -> str:
+        for sec in sections:
+            if sec.strip().startswith(prefix):
+                return sec.strip()
+        raise RuntimeError(
+            f"IMOS OC ASCII section '{prefix}' not found for {target_date}"
+        )
+
+    def _parse_1d(section: str) -> np.ndarray:
+        lines = section.splitlines()
+        vals: list = []
+        for line in lines[1:]:
+            vals.extend(float(x) for x in line.split(",") if x.strip())
+        return np.array(vals, dtype=np.float64)
+
+    def _parse_2d(section: str) -> np.ndarray:
+        lines = section.splitlines()
+        rows: list = []
+        for line in lines[1:]:
+            # Each data row: '[t][r], v0, v1, v2, ...'
+            # Partition on the first ', ' to strip the '[t][r]' index token.
+            _, _, data_part = line.partition(", ")
+            if data_part:
+                rows.append([float(x) for x in data_part.split(", ")])
+        return np.array(rows, dtype=np.float32)
+
+    lat_vals = _parse_1d(_find_section("latitude["))
+    lon_vals = _parse_1d(_find_section("longitude["))
+    chl_raw  = _parse_2d(_find_section("chl_oci.chl_oci["))
+
+    chl_data = np.where(chl_raw == _IMOS_OC_FILL, np.nan, chl_raw)
+
+    da = xr.DataArray(
+        chl_data,
+        dims=["latitude", "longitude"],
+        coords={"latitude": lat_vals, "longitude": lon_vals},
+        name="chlor_a",
+    )
+    da.attrs.update({
+        "long_name": "Chlorophyll Concentration, OCI Algorithm (IMOS NOAA-20)",
+        "units": "mg m^-3",
+        "source": f"IMOS SRS OC NOAA-20 P1D {target_date}",
+    })
+    return da
+
+
+def fetch_imos_oc_chl(
+    target_date: str,
+    aoi: dict = config.AOI,
+    output_directory: str = config.RAW_DATA_DIR,
+    cache_suffix: str = "",
+) -> xr.DataArray:
+    """
+    Fetch daily chlorophyll-a from the IMOS SRS NOAA-20 Ocean Colour product
+    via THREDDS OPeNDAP ASCII, spatially clipped to *aoi*.
+
+    Resolution : 0.0075° (~833 m) — **5× finer** than the 4 km NOAA ERDDAP
+                 VIIRS products this replaces as the primary source.
+    Coverage   : 78°E–180°E, 60°S–12°N (full Australian regional domain).
+    Archive    : 2023-present, ~1-day latency.
+    Sensor     : NOAA-20 (JPSS-1) VIIRS, Australian-regional atmospheric
+                 correction applied by IMOS SRS.
+
+    Only ~1 MB is downloaded per request (OPeNDAP ASCII spatial subset),
+    avoiding the 100+ MB full-Australia file download.  The parsed result is
+    cached as a local NetCDF so repeat runs for the same date are instant.
+
+    Returns an ``xr.DataArray`` named ``'chlor_a'`` (same name as the NOAA
+    ERDDAP VIIRS products) with ``(latitude, longitude)`` coordinates,
+    compatible with the existing chlorophyll pipeline path.
+    """
+    _ensure_dir(output_directory)
+    cache_path = os.path.join(
+        output_directory,
+        f"chl_imos_oc{cache_suffix}_{target_date}.nc",
+    )
+    if os.path.exists(cache_path):
+        logger.info("IMOS OC chl: loading from cache %s", cache_path)
+        return xr.open_dataset(cache_path)["chlor_a"]
+
+    date_obj = datetime.strptime(target_date, "%Y-%m-%d")
+    yyyy     = date_obj.strftime("%Y")
+    mm       = date_obj.strftime("%m")
+    yyyymmdd = date_obj.strftime("%Y%m%d")
+
+    filename = f"J.P1D.{yyyymmdd}T053000Z.aust.chl_oci.nc"
+    file_url = f"{_IMOS_OC_THREDDS_BASE}/{yyyy}/{mm}/{filename}"
+
+    step      = _IMOS_OC_STEP
+    lat0_idx  = round((_IMOS_OC_LAT_ORIGIN - aoi["max_lat"]) / step)
+    lat1_idx  = round((_IMOS_OC_LAT_ORIGIN - aoi["min_lat"]) / step)
+    lon0_idx  = round((aoi["min_lon"] - _IMOS_OC_LON_ORIGIN) / step)
+    lon1_idx  = round((aoi["max_lon"] - _IMOS_OC_LON_ORIGIN) / step)
+
+    ascii_url = (
+        f"{file_url}.ascii?"
+        f"chl_oci[0][{lat0_idx}:{lat1_idx}][{lon0_idx}:{lon1_idx}],"
+        f"latitude[{lat0_idx}:{lat1_idx}],"
+        f"longitude[{lon0_idx}:{lon1_idx}]"
+    )
+
+    logger.info(
+        "IMOS OC chl: fetching %s (lat_idx %d–%d, lon_idx %d–%d)",
+        target_date, lat0_idx, lat1_idx, lon0_idx, lon1_idx,
+    )
+    try:
+        resp = requests.get(
+            ascii_url, timeout=60, headers={"User-Agent": _ERDDAP_USER_AGENT}
+        )
+        resp.raise_for_status()
+    except requests.RequestException as exc:
+        raise RuntimeError(
+            f"IMOS OC THREDDS request failed for {target_date}: {exc}"
+        ) from exc
+
+    da = _parse_imos_oc_ascii(resp.text, target_date)
+    # Persist to disk cache so repeated runs for the same date are instant.
+    da.to_dataset(name="chlor_a").to_netcdf(cache_path)
+    return da
+
+
+def fetch_chl_composite(
+    target_date: str,
+    lookback_days: int = 7,
+    min_coverage_fraction: float = 0.50,
+    aoi: dict = None,
+    output_directory: str = config.RAW_DATA_DIR,
+    cache_suffix: str = "",
+) -> xr.DataArray:
+    """
+    Multi-day most-recent-valid IMOS OC chlorophyll composite.
+
+    Fetches today's IMOS OC chlorophyll first.  If the fraction of non-NaN
+    pixels is below `min_coverage_fraction` (default 50 %), cloud gaps are
+    backfilled by the most recent available prior day (up to `lookback_days`
+    days back), in newest-first order, until the threshold is met or the
+    lookback window is exhausted.
+
+    This is the standard "most-recent-valid" (MRV) compositing approach used
+    by ocean-colour operational products to reduce cloud patchiness without
+    introducing temporal smearing: a pixel's value is always from the most
+    recent cloud-free observation, not a multi-day average.
+
+    Raises ``RuntimeError`` (or any exception from ``fetch_imos_oc_chl``) if
+    even the target date itself cannot be fetched -- callers should use the
+    same try/except fallback chain as before.
+
+    Returns an ``xr.DataArray`` in exactly the same format as
+    ``fetch_imos_oc_chl`` so it is a drop-in replacement.
+    """
+    import numpy as np
+
+    if aoi is None:
+        aoi = config.AOI
+
+    # Always fetch the target date first -- raises on failure so the
+    # existing fallback chain in main.py is unchanged.
+    base_da = fetch_imos_oc_chl(
+        target_date, aoi=aoi, output_directory=output_directory, cache_suffix=cache_suffix
+    )
+    composite = base_da.values.copy()
+
+    coverage = float(np.isfinite(composite).sum()) / composite.size
+    if coverage >= min_coverage_fraction:
+        logger.info(
+            "CHL composite %s: single day %.1f%% valid -- no backfill needed",
+            target_date, coverage * 100,
+        )
+        return base_da
+
+    logger.info(
+        "CHL composite %s: %.1f%% valid (< %.0f%% threshold) -- backfilling up to %d prior days",
+        target_date, coverage * 100, min_coverage_fraction * 100, lookback_days,
+    )
+
+    date_obj = datetime.strptime(target_date, "%Y-%m-%d")
+    for delta in range(1, lookback_days + 1):
+        gap_mask = ~np.isfinite(composite)
+        if not gap_mask.any():
+            break  # fully covered
+
+        prior_date = (date_obj - timedelta(days=delta)).strftime("%Y-%m-%d")
+        try:
+            prior_da = fetch_imos_oc_chl(
+                prior_date, aoi=aoi, output_directory=output_directory, cache_suffix=cache_suffix
+            )
+        except Exception:
+            logger.debug("CHL composite: no IMOS OC data for prior day -%d (%s)", delta, prior_date)
+            continue
+
+        # IMOS OC uses a fixed grid so grids should be identical, but
+        # interpolate to the base grid with nearest-neighbour to be safe.
+        try:
+            prior_vals = prior_da.interp(
+                latitude=base_da.latitude, longitude=base_da.longitude, method="nearest"
+            ).values
+        except Exception:
+            prior_vals = prior_da.values
+
+        composite = np.where(gap_mask & np.isfinite(prior_vals), prior_vals, composite)
+        coverage = float(np.isfinite(composite).sum()) / composite.size
+        logger.info(
+            "CHL composite %s: after day -%d (%s): %.1f%% valid",
+            target_date, delta, prior_date, coverage * 100,
+        )
+        if coverage >= min_coverage_fraction:
+            break
+
+    return base_da.copy(data=composite)
 
 
 def fetch_copernicus_subset(
