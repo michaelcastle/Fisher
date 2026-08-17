@@ -33,7 +33,6 @@ from .moon_phase import moon_phase_details
 from .normalization_lenigas import (
     compute_ssha_anomaly_cm_lenigas,
     normalize_depth_suitability_lenigas,
-    normalize_distance_offshore_lenigas,
     normalize_sst_bell_lenigas,
     score_ssha_hotspot_lenigas,
 )
@@ -47,7 +46,7 @@ from .overlay_lenigas import (
     weighted_overlay_lenigas,
 )
 from .processing import current_velocity_magnitude, spatial_gradient_magnitude
-from .structure_layers import _cell_size_metres, _lat_lon_names, compute_relative_vorticity
+from .structure_layers import _lat_lon_names, _cell_size_metres, compute_relative_vorticity
 
 logger = logging.getLogger(__name__)
 
@@ -206,12 +205,9 @@ def compute_bite_score_lenigas(
 
     target_month = datetime.strptime(target_date, "%Y-%m-%d").month
 
-    distance_km = compute_distance_from_coast_km(depth)
-
     sst_gradient = spatial_gradient_magnitude(sst)
     sst_bell_score = normalize_sst_bell_lenigas(sst, sst_gradient=sst_gradient)
     depth_score = normalize_depth_suitability_lenigas(depth)
-    distance_score = normalize_distance_offshore_lenigas(distance_km)
 
     zeta = compute_relative_vorticity(uo, vo)
     upwelling_score = score_upwelling_downwelling_lenigas(zeta)
@@ -234,7 +230,7 @@ def compute_bite_score_lenigas(
         )
 
     bite_score, layer_scores = weighted_overlay_lenigas(
-        sst_bell_score, depth_score, distance_score, upwelling_score, eac_axis_score,
+        sst_bell_score, depth_score, upwelling_score, eac_axis_score,
         eac_convergence_score, ssha_hotspot_score,
     )
 

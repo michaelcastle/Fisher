@@ -271,18 +271,6 @@ _CONTRIBUTING_LAYERS_LENIGAS = [
         ),
     },
     {
-        "key": "distance_offshore",
-        "weight_key": "distance_offshore",
-        "label": "Distance-offshore score",
-        "icon": "sailing",
-        "description": (
-            "Ramped suitability envelope over real distance-from-coast "
-            "(computed from the AOI_V2 land/sea mask), peaking at the "
-            "offshore band the source account describes fishing, rather "
-            "than v1/v2's shelf-break-proximity framing."
-        ),
-    },
-    {
         "key": "ssha_hotspot",
         "weight_key": "ssha_hotspot_lenigas",
         "label": "SSHA hotspot score (Lenigas)",
@@ -309,6 +297,276 @@ _CONTRIBUTING_LAYERS_LENIGAS = [
         ),
     },
 ]
+
+_CONTRIBUTING_LAYERS_GT = [
+    {
+        "key": "eac_edge_gt",
+        "weight_key": "eac_edge_gt",
+        "label": "EAC pressure-edge score",
+        "icon": "alt_route",
+        "description": (
+            "Score based on signed distance from the EAC core-jet axis. "
+            "GT sit on the WESTERN (inshore) side of the EAC where the "
+            "southward current presses against reef structure -- the "
+            "highest scores are 5-15\u2009km inshore of the axis, "
+            "opposite to the YFT model's eastern-slack-zone peak."
+        ),
+    },
+    {
+        "key": "upwelling_gt",
+        "weight_key": "upwelling_gt",
+        "label": "Upwelling score",
+        "icon": "swap_vert",
+        "description": (
+            "Continuous tanh-scaled score from relative vorticity sign: "
+            "SH-clockwise (upwelling) scores 100, SH-anticyclonic "
+            "(downwelling) scores 0. Upwelling drives baitfish "
+            "concentration at reef edges where GT ambush."
+        ),
+    },
+    {
+        "key": "depth_gt",
+        "weight_key": "depth_gt",
+        "label": "Depth suitability (GT)",
+        "icon": "terrain",
+        "description": (
+            "Trapezoidal depth envelope for GT reef habitat: "
+            "ramps up from 5\u2009m, prime zone 15\u201330\u2009m "
+            "(shallow reef crests, bommies and hard structure), "
+            "declines to zero at 60\u2009m. GT ambush from shallow "
+            "reef structure, not deep-water."
+        ),
+    },
+    {
+        "key": "structure_gt",
+        "weight_key": "structure_gt",
+        "label": "Depth structure (reef edges)",
+        "icon": "landscape",
+        "description": (
+            "Bathymetric gradient: how steeply the seafloor changes depth. "
+            "GT are ambush predators that sit on hard structural edges \u2014 "
+            "reef ledges, bommies, shelf steps \u2014 and wait for baitfish "
+            "swept past by the EAC. Score = 100\u2009\u00d7\u2009tanh(|\u2207depth| / 5\u2009m\u00b7km\u207b\u00b9). "
+            "High values = sharp depth edges = prime GT ambush habitat."
+        ),
+    },
+    {
+        "key": "sst_gt",
+        "weight_key": "sst_gt",
+        "label": "SST suitability (GT)",
+        "icon": "thermostat",
+        "description": (
+            "Gaussian bell-curve SST score peaking at 26\u00b0C (the "
+            "warm end of EAC surface water in SE QLD). GT prefer "
+            "warm EAC water; higher temperature indicates a stronger "
+            "EAC incursion pushing baitfish into reef pressure edges."
+        ),
+    },
+    {
+        "key": "moon_phase_gt",
+        "weight_key": "moon_phase_gt",
+        "label": "Moon phase score",
+        "icon": "dark_mode",
+        "description": (
+            "GT are low-light ambush predators: darkness is their advantage. "
+            "New moon (days 1\u20132) scores 100; full moon (day 14) scores 20. "
+            "Spatially uniform \u2014 same value everywhere for a given date. "
+            "Included as a WLC factor so it appears as its own map layer."
+        ),
+    },
+    {
+        "key": "current_gradient_gt",
+        "weight_key": "current_gradient_gt",
+        "label": "Current speed gradient",
+        "icon": "speed",
+        "description": (
+            "Spatial gradient of current speed magnitude: high values "
+            "where the current changes speed rapidly (e.g. EAC edge "
+            "meeting slower inshore water). GT ambush from these speed "
+            "change boundaries, so high gradient = good feeding edge."
+        ),
+    },
+    {
+        "key": "north_wind_gt",
+        "weight_key": "north_wind_gt",
+        "label": "North wind score",
+        "icon": "air",
+        "description": (
+            "Northerly wind preference: max(0, cos(wind_dir))\u00b9\u22c5\u2075 "
+            "scaled to 0\u2013100. North wind scores 100; south wind scores 0. "
+            "North winds concentrate baitfish against SE QLD reef faces. "
+            "Data from ASCAT 7-day composite (~5\u20136 week lag; "
+            "weight redistributed if unavailable)."
+        ),
+    },
+]
+
+# Metadata for the "Outerline Method" model's contributing factors -- a
+# FOURTH, INDEPENDENT experimental scoring model targeting Yellowfin Tuna
+# (see overlay_outerline.py::weighted_overlay_outerline / config.WEIGHTS_OUTERLINE),
+# rewarding CO-LOCATION of favourable oceanographic features (current
+# convergence, fronts, EAC boundary, bait proxy...) over any single-factor
+# extreme, with depth as a moderate-weight FILTER only. Order matches
+# config.WEIGHTS_OUTERLINE's weighting (heaviest first); feature-convergence
+# count has no weight_key (informational only -- it drives the non-linear
+# convergence multiplier, not the WLC weights). "season" is a real WEIGHTS_OUTERLINE
+# component but has no exported date-layer key yet, so it's intentionally
+# absent here (matches DATE_LAYER_SPECS_OUTERLINE in date_layers.py).
+_CONTRIBUTING_LAYERS_OUTERLINE = [
+    {
+        "key": "current_convergence",
+        "weight_key": "current_convergence",
+        "label": "Current convergence score",
+        "icon": "join_inner",
+        "description": (
+            "Highest where surface currents converge (negative horizontal "
+            "divergence) -- convergence zones concentrate drifting "
+            "plankton and baitfish. The single highest-weighted Outerline "
+            "factor."
+        ),
+    },
+    {
+        "key": "fsle_front",
+        "weight_key": "fsle_front",
+        "label": "FSLE front score (Outerline)",
+        "icon": "timeline",
+        "description": (
+            "Finite-Size Lyapunov Exponent front strength, normalized to "
+            "0-100 -- unlike v1 (where FSLE is an independent diagnostic "
+            "layer only), Outerline includes it as a genuine WLC factor. "
+            "Gracefully degrades (weight redistributed) when forecast "
+            "current data isn't available."
+        ),
+    },
+    {
+        "key": "sst_front",
+        "weight_key": "sst_front",
+        "label": "SST front score (Outerline)",
+        "icon": "device_thermostat",
+        "description": (
+            "Sharpest sea-surface-temperature gradients (thermal fronts), "
+            "recomputed on the Outerline model's own AOI grid -- the same "
+            "underlying signal as v1's SST factor, reused here as one of "
+            "several co-located boundary features."
+        ),
+    },
+    {
+        "key": "eac_boundary",
+        "weight_key": "eac_boundary",
+        "label": "EAC outer-boundary score",
+        "icon": "alt_route",
+        "description": (
+            "A Gaussian bump peaking ~12\u2009km east of the traced EAC "
+            "core-jet axis -- rewards the current's OUTER boundary/edge "
+            "itself, not the core and not open water far from any EAC "
+            "influence."
+        ),
+    },
+    {
+        "key": "current_interaction",
+        "weight_key": "current_interaction",
+        "label": "Current shear/interaction score",
+        "icon": "speed",
+        "description": (
+            "Normalized gradient magnitude of current speed -- shear "
+            "zones/boundaries where fast core water meets slower "
+            "surrounding water, distinct from the convergence factor's "
+            "divergence-sign signal."
+        ),
+    },
+    {
+        "key": "bait_proxy",
+        "weight_key": "bait_proxy",
+        "label": "Bait concentration proxy",
+        "icon": "grass",
+        "description": (
+            "A composite of a band-pass chlorophyll suitability score "
+            "(moderate, 'green-on-blue-edge' concentration -- neither "
+            "bloom nor gin-clear water) and the mean of the SST front, "
+            "current convergence and FSLE front scores -- baitfish "
+            "concentrate where productive water coincides with physical "
+            "aggregating structure, not from chlorophyll alone."
+        ),
+    },
+    {
+        "key": "sst_suitability",
+        "weight_key": "sst_suitability",
+        "label": "SST suitability score (Outerline)",
+        "icon": "thermostat",
+        "description": (
+            "A broad, forgiving piecewise-linear suitability curve peaking "
+            "in the 23-26\u00b0C range -- deliberately gentler than v1/"
+            "Lenigas/GT's SST curves since suitability alone is low-"
+            "weighted here; the sharper SST front factor above carries "
+            "the boundary signal."
+        ),
+    },
+    {
+        "key": "sla_boundary",
+        "weight_key": "sla_boundary",
+        "label": "SLA / eddy-boundary score",
+        "icon": "water",
+        "description": (
+            "Rewards the GRADIENT of sea-surface-height anomaly (eddy/"
+            "current edges), not the absolute SLA value -- so it marks "
+            "eddy boundaries rather than just re-scoring the eddy core."
+        ),
+    },
+    {
+        "key": "upwelling_downwelling",
+        "weight_key": "upwelling_downwelling",
+        "label": "Upwelling/downwelling transition score",
+        "icon": "swap_vert",
+        "description": (
+            "Peaks at the zero-crossing between upwelling and downwelling "
+            "(the TRANSITION zone), decaying toward zero deep inside "
+            "either regime -- the opposite shape from Lenigas's score, "
+            "which rewards one vorticity sign outright."
+        ),
+    },
+    {
+        "key": "bathymetry",
+        "weight_key": "bathymetry",
+        "label": "Depth-suitability score (Outerline)",
+        "icon": "terrain",
+        "description": (
+            "A wide, flat 'good' plateau from ~200\u2009m to 4000\u2009m+ "
+            "-- deliberately NOT a narrow ideal band like v1/Lenigas/GT's "
+            "depth curves, per real catch evidence (11 Oct 2023, "
+            "~250\u2009m) that yellowfin hold well short of deep water. "
+            "Only 5% weight -- a moderate FILTER, never a dominant factor."
+        ),
+    },
+    {
+        "key": "wind_visibility",
+        "weight_key": "wind_visibility",
+        "label": "Wind & visibility score",
+        "icon": "air",
+        "description": (
+            "A 50/50 blend of a sighting/spotting-conditions score (best "
+            "in a flat calm, decaying with wind speed) and a neutral 0.5 "
+            "ocean-mechanism placeholder. Lowest-weighted (1%) Outerline "
+            "factor; gracefully degrades when ASCAT wind data isn't "
+            "available."
+        ),
+    },
+    {
+        "key": "feature_convergence_count",
+        "weight_key": None,
+        "label": "Feature convergence count",
+        "icon": "join_full",
+        "description": (
+            "How many of 8 tracked factors (SST front, EAC boundary, "
+            "current convergence/interaction, FSLE front, SLA boundary, "
+            "upwelling/downwelling, bait proxy) independently score "
+            "\u226565/100 at that pixel -- drives a non-linear multiplier "
+            "(1.00\u00d7 up to 1.25\u00d7 at 6+ features) rewarding genuine "
+            "co-location of favourable conditions. Informational only, "
+            "not itself part of the WLC weights."
+        ),
+    },
+]
+
 
 def build_folium_map(output_html: str = "bite_score_map.html") -> folium.Map:
     """
@@ -435,19 +693,29 @@ def build_folium_map(output_html: str = "bite_score_map.html") -> folium.Map:
     # always render in front of the chart image and relief map even when
     # those raster layers are enabled underneath them.
     mbgfc_locations_pane = _add_pane("MBGFC FADs, SFADs & wave buoys")
-    mbgfc_locations_layer = folium.FeatureGroup(name="MBGFC FADs, SFADs & wave buoys", show=False)
+    # control=False: toggled via the bottom-left quick-access buttons.
+    mbgfc_locations_layer = folium.FeatureGroup(name="MBGFC FADs, SFADs & wave buoys", show=False, control=False)
     mbgfc_locations_layer.add_to(fmap)
 
     # Fishing waypoints: Light Tackle Grounds and Heavy Tackle Marks
     # supplied by the user. Loaded lazily from /api/waypoints on first
     # toggle, same decoupled pattern as the MBGFC locations layer above.
     waypoints_pane = _add_pane("Fishing waypoints (Light & Heavy Tackle)")
-    waypoints_layer = folium.FeatureGroup(name="Fishing waypoints (Light & Heavy Tackle)", show=False)
+    # control=False: toggled via the bottom-left quick-access buttons.
+    waypoints_layer = folium.FeatureGroup(name="Fishing waypoints (Light & Heavy Tackle)", show=False, control=False)
     waypoints_layer.add_to(fmap)
 
-    # MBGFC chart image: below the dots/waypoints so markers stay visible
-    # even when the chart scan is enabled.
-    mbgfc_chart_pane = _add_pane("MBGFC fishing chart (georeferenced)")
+    # MBGFC chart image: pinned at z-index 202 so it sits just above the
+    # basemap tile pane (z=200) but below every other data overlay.  Using
+    # a fixed z-index rather than _add_pane() keeps the auto-decrement
+    # sequence unaffected for all subsequent overlay panes.
+    _mbgfc_chart_pane_obj = folium.map.CustomPane(
+        f"bsqPane{len(_pane_vars)}", z_index=202, pointer_events=True
+    )
+    _mbgfc_chart_pane_obj.add_to(fmap)
+    _pane_vars["MBGFC fishing chart (georeferenced)"] = _mbgfc_chart_pane_obj.get_name()
+    mbgfc_chart_pane = _mbgfc_chart_pane_obj.name
+    # control=False: toggled via the bottom-left quick-access button.
     mbgfc_chart_layer = folium.raster_layers.ImageOverlay(
         image=np.zeros((1, 1, 4)),
         bounds=[[bounds[1], bounds[0]], [bounds[3], bounds[2]]],
@@ -456,6 +724,7 @@ def build_folium_map(output_html: str = "bite_score_map.html") -> folium.Map:
         interactive=True,
         cross_origin=False,
         show=False,
+        control=False,
         pane=mbgfc_chart_pane,
     )
     mbgfc_chart_layer.add_to(fmap)
@@ -722,6 +991,80 @@ def build_folium_map(output_html: str = "bite_score_map.html") -> folium.Map:
         factor_layer_lenigas.add_to(fmap)
         factor_vars_lenigas[meta["key"]] = (factor_name_lenigas, factor_layer_lenigas)
 
+    # GT (Giant Trevally) Bite Score heatmap -- a THIRD, SEPARATE species-
+    # specific scoring model for reef ambush predators. GT sit on the
+    # WESTERN (inshore) EAC pressure edge, not the eastern slack zone.
+    # Same lazy-overlay pattern as Lenigas above: reads from the SEPARATE
+    # output/history/<date>/gt/ subfolder, 404s gracefully for dates
+    # without a GT run, never touches v1/v2/Lenigas outputs.
+    gt_heatmap_pane = _add_pane("Bite Score heatmap GT (Giant Trevally reef model)")
+    gt_heatmap_layer = folium.raster_layers.ImageOverlay(
+        image=np.zeros((1, 1, 4)),
+        bounds=[[bounds[1], bounds[0]], [bounds[3], bounds[2]]],
+        opacity=0.78,
+        name="Bite Score heatmap GT (Giant Trevally reef model)",
+        interactive=True,
+        cross_origin=False,
+        show=False,
+        pane=gt_heatmap_pane,
+    )
+    gt_heatmap_layer.add_to(fmap)
+
+    factor_vars_gt = {}
+    for meta in _CONTRIBUTING_LAYERS_GT:
+        factor_name_gt = f"Factor (GT): {meta['label']}"
+        factor_pane_gt = _add_pane(factor_name_gt)
+        factor_layer_gt = folium.raster_layers.ImageOverlay(
+            image=np.zeros((1, 1, 4)),
+            bounds=[[bounds[1], bounds[0]], [bounds[3], bounds[2]]],
+            opacity=0.78,
+            name=factor_name_gt,
+            interactive=True,
+            cross_origin=False,
+            show=False,
+            pane=factor_pane_gt,
+        )
+        factor_layer_gt.add_to(fmap)
+        factor_vars_gt[meta["key"]] = (factor_name_gt, factor_layer_gt)
+
+    # Outerline Method Bite Score heatmap -- a FOURTH, SEPARATE experimental
+    # model for Yellowfin Tuna rewarding CO-LOCATION of favourable
+    # oceanographic features (current convergence, fronts, EAC boundary,
+    # bait proxy...) over any single-factor extreme, with depth as a
+    # moderate-weight filter only. Same lazy-overlay pattern as v2/Lenigas/GT
+    # above: reads from the SEPARATE output/history/<date>/outerline/
+    # subfolder, 404s gracefully for dates without an Outerline run, never
+    # touches v1/v2/Lenigas/GT outputs.
+    outerline_heatmap_pane = _add_pane("Bite Score heatmap Outerline (Yellowfin outer-line convergence model)")
+    outerline_heatmap_layer = folium.raster_layers.ImageOverlay(
+        image=np.zeros((1, 1, 4)),
+        bounds=[[bounds[1], bounds[0]], [bounds[3], bounds[2]]],
+        opacity=0.78,
+        name="Bite Score heatmap Outerline (Yellowfin outer-line convergence model)",
+        interactive=True,
+        cross_origin=False,
+        show=False,
+        pane=outerline_heatmap_pane,
+    )
+    outerline_heatmap_layer.add_to(fmap)
+
+    factor_vars_outerline = {}
+    for meta in _CONTRIBUTING_LAYERS_OUTERLINE:
+        factor_name_outerline = f"Factor (Outerline): {meta['label']}"
+        factor_pane_outerline = _add_pane(factor_name_outerline)
+        factor_layer_outerline = folium.raster_layers.ImageOverlay(
+            image=np.zeros((1, 1, 4)),
+            bounds=[[bounds[1], bounds[0]], [bounds[3], bounds[2]]],
+            opacity=0.78,
+            name=factor_name_outerline,
+            interactive=True,
+            cross_origin=False,
+            show=False,
+            pane=factor_pane_outerline,
+        )
+        factor_layer_outerline.add_to(fmap)
+        factor_vars_outerline[meta["key"]] = (factor_name_outerline, factor_layer_outerline)
+
     # The remaining layer never changes across dates (it's derived purely
     # from the static GEBCO/composite bathymetry grid plus the local
     # LiDAR/AusSeabed/AusBathyTopo surveys -- none of which depend on any
@@ -750,7 +1093,13 @@ def build_folium_map(output_html: str = "bite_score_map.html") -> folium.Map:
     relief_map_lidar_pane = _add_pane("Bathymetry relief map (LiDAR inset)")
     relief_map_mba_pane = _add_pane("Bathymetry relief map (Moreton Bay Approaches inset)")
     relief_map_pane = _add_pane("Bathymetry relief map")
-    relief_map_group = folium.FeatureGroup(name="Bathymetry relief map", show=False)
+    # control=False: this toggle now lives only in the bottom-left quick-
+    # access control (see bsqToggleBathymetry() JS below), not the sidebar
+    # Layers list -- unlike every other overlay here, it's driven directly
+    # via map.addLayer()/removeLayer() rather than a Folium-authored
+    # checkbox, so it needs its own dedicated persistence/lazy-load wiring
+    # instead of the shared checkbox-based one.
+    relief_map_group = folium.FeatureGroup(name="Bathymetry relief map", show=False, control=False)
     relief_map_group.add_to(fmap)
 
     relief_map_layer = folium.raster_layers.ImageOverlay(
@@ -817,6 +1166,7 @@ def build_folium_map(output_html: str = "bite_score_map.html") -> folium.Map:
     land_outline_group_var = land_outline_group.get_name()
     contour_group_var = contour_group.get_name()
     depth_suitability_var = depth_suitability_layer.get_name()
+    relief_map_group_var = relief_map_group.get_name()
     relief_map_var = relief_map_layer.get_name()
     relief_map_mba_var = relief_map_mba_layer.get_name()
     relief_map_lidar_var = relief_map_lidar_layer.get_name()
@@ -826,6 +1176,8 @@ def build_folium_map(output_html: str = "bite_score_map.html") -> folium.Map:
     sla_contour_group_var = sla_contour_group.get_name()
     v2_heatmap_var = v2_heatmap_layer.get_name()
     lenigas_heatmap_var = lenigas_heatmap_layer.get_name()
+    gt_heatmap_var = gt_heatmap_layer.get_name()
+    outerline_heatmap_var = outerline_heatmap_layer.get_name()
     light_var = light_layer.get_name()
     streets_var = streets_layer.get_name()
     satellite_var = satellite_layer.get_name()
@@ -851,6 +1203,8 @@ def build_folium_map(output_html: str = "bite_score_map.html") -> folium.Map:
         "Sea level anomaly (altimetry)": ("sla", sla_var),
         "Bite Score heatmap v2 (Beta - structure/eddy model)": ("v2/bite_score_v2", v2_heatmap_var),
         "Bite Score heatmap Lenigas (SEQ fisherman model)": ("lenigas/bite_score_lenigas", lenigas_heatmap_var),
+        "Bite Score heatmap GT (Giant Trevally reef model)": ("gt/bite_score_gt", gt_heatmap_var),
+        "Bite Score heatmap Outerline (Yellowfin outer-line convergence model)": ("outerline/hotspot_score_outerline", outerline_heatmap_var),
     }
     for key, (factor_name, factor_layer) in factor_vars.items():
         _date_layer_by_name[factor_name] = (key, factor_layer.get_name())
@@ -858,6 +1212,10 @@ def build_folium_map(output_html: str = "bite_score_map.html") -> folium.Map:
         _date_layer_by_name[factor_name_v2] = (f"v2/{key}", factor_layer_v2.get_name())
     for key, (factor_name_lenigas, factor_layer_lenigas) in factor_vars_lenigas.items():
         _date_layer_by_name[factor_name_lenigas] = (f"lenigas/{key}", factor_layer_lenigas.get_name())
+    for key, (factor_name_gt, factor_layer_gt) in factor_vars_gt.items():
+        _date_layer_by_name[factor_name_gt] = (f"gt/{key}", factor_layer_gt.get_name())
+    for key, (factor_name_outerline, factor_layer_outerline) in factor_vars_outerline.items():
+        _date_layer_by_name[factor_name_outerline] = (f"outerline/{key}", factor_layer_outerline.get_name())
 
     # ---- Per-layer legends + info icons (2026-07-24, Lambert) ----
     # `_layer_ui` maps every selectable overlay's exact Layers-list label
@@ -919,6 +1277,23 @@ def build_folium_map(output_html: str = "bite_score_map.html") -> folium.Map:
         else:
             _ui_entry["weight_pct"] = round(config.LAYER_WEIGHTS_LENIGAS.get(meta["weight_key"], 0) * 100)
         _layer_ui[factor_name_lenigas] = _ui_entry
+
+    for meta in _CONTRIBUTING_LAYERS_GT:
+        factor_name_gt, _layer = factor_vars_gt[meta["key"]]
+        _ui_entry = {
+            "info": meta["description"], "legend": {"kind": "score"}, "role": "factor",
+            "weight_pct": round(config.LAYER_WEIGHTS_GT.get(meta["weight_key"], 0) * 100),
+        }
+        _layer_ui[factor_name_gt] = _ui_entry
+
+    for meta in _CONTRIBUTING_LAYERS_OUTERLINE:
+        factor_name_outerline, _layer = factor_vars_outerline[meta["key"]]
+        _ui_entry = {"info": meta["description"], "legend": {"kind": "score"}, "role": "factor"}
+        if meta["weight_key"] is None:
+            _ui_entry["informational"] = True
+        else:
+            _ui_entry["weight_pct"] = round(config.WEIGHTS_OUTERLINE.get(meta["weight_key"], 0) * 100)
+        _layer_ui[factor_name_outerline] = _ui_entry
 
     _layer_ui["Bite Score heatmap (current, high-res)"] = {
         "info": (
@@ -993,6 +1368,33 @@ def build_folium_map(output_html: str = "bite_score_map.html") -> folium.Map:
             "upwelling/downwelling, its own SST bell curve and depth-"
             "suitability ramp). Not validated against catch data -- an "
             "informal third opinion, not a replacement for v1 or v2."
+        ),
+        "legend": {"kind": "score"},
+        "role": "composite",
+    }
+    _layer_ui["Bite Score heatmap GT (Giant Trevally reef model)"] = {
+        "info": (
+            "A third, independent, experimental scoring model targeting "
+            "Giant Trevally reef habitat: inshore EAC pressure-edge position, "
+            "upwelling plumes, shallow reef depth, SST bell curve centred on "
+            "26\u00b0C, current speed gradient and northerly wind preference. "
+            "Not validated against catch data -- an informal fourth opinion."
+        ),
+        "legend": {"kind": "score"},
+        "role": "composite",
+    }
+    _layer_ui["Bite Score heatmap Outerline (Yellowfin outer-line convergence model)"] = {
+        "info": (
+            "A fourth, independent, experimental Yellowfin Tuna scoring model "
+            "built around a distinct principle: rewarding CO-LOCATION of "
+            "multiple favourable oceanographic features (current convergence, "
+            "SST/FSLE/SLA fronts, the EAC's outer boundary, bait proxy...) "
+            "rather than any single-factor extreme, with depth as a moderate-"
+            "weight filter only (never dominant). A non-linear multiplier "
+            "(up to 1.25\u00d7) rewards pixels where 6+ features co-occur. "
+            "Validated against one real historical event (11 Oct 2023, Point "
+            "Lookout) without tuning to fit it -- not validated against a "
+            "broader catch-data record, an informal fifth opinion."
         ),
         "legend": {"kind": "score"},
         "role": "composite",
@@ -1392,6 +1794,108 @@ def build_folium_map(output_html: str = "bite_score_map.html") -> folium.Map:
       </div>
     """
 
+    # GT sidebar section: "Giant Trevally Bite Score" -- a THIRD independent
+    # experimental model targeting reef ambush habitat (EAC inshore pressure
+    # edge, 20-150 m reef depth, SST 26 ± 1.7 °C, upwelling plumes, current
+    # gradients, northerly wind preference). Live availability check via
+    # bsqCheckGtAvailability() JS, same pattern as Lenigas above.
+    gt_methodology_rows = []
+    for meta in _CONTRIBUTING_LAYERS_GT:
+        weight_pct = config.LAYER_WEIGHTS_GT.get(meta["weight_key"], 0) * 100
+        weight_html_gt = f'<span class="bsq-factor-weight">{weight_pct:.0f}%</span>'
+        gt_methodology_rows.append(
+            f"""
+            <div class="bsq-factor-row">
+              <div class="bsq-factor-head">
+                <span class="material-symbols-outlined">{meta['icon']}</span>
+                <span class="bsq-factor-label">{meta['label']}</span>
+                {weight_html_gt}
+              </div>
+              <p class="bsq-factor-desc">{meta['description']}</p>
+            </div>
+            """
+        )
+    gt_methodology_html = "".join(gt_methodology_rows)
+
+    gt_section_html = f"""
+      <div class="bsq-section">
+        <div class="bsq-accordion-header" id="bsq-gt-toggle">
+          <h3><span class="material-symbols-outlined">waves</span>GT Bite Score<span class="bsq-beta-pill">EXPERIMENTAL</span></h3>
+          <span class="material-symbols-outlined bsq-chevron">expand_more</span>
+        </div>
+        <div class="bsq-accordion-body" id="bsq-gt-body">
+          <p class="bsq-sub"><strong>This is a third, independent, experimental scoring model</strong> &mdash; targeting Giant Trevally and other large reef ambush predators, not Yellowfin Tuna. GT are inshore reef specialists: they sit on the <em>western</em> (inshore) pressure edge of the EAC, not the eastern slack zone, and ambush prey over 20&ndash;150&thinsp;m reef structure. This model is species-specific and uses completely different weights and depth thresholds than v1, v2 or Lenigas. It has <strong>not</strong> been validated against catch data &mdash; treat it as an informal, experimental species layer.</p>
+          <p class="bsq-gt-status" id="bsq-gt-status">Checking GT availability...</p>
+          <div class="bsq-factor-row">
+            <div class="bsq-factor-head">
+              <span class="material-symbols-outlined">toggle_on</span>
+              <span class="bsq-factor-label">Viewing it</span>
+            </div>
+            <p class="bsq-factor-desc">Toggle on <strong>&ldquo;Bite Score heatmap GT (Giant Trevally reef model)&rdquo;</strong> in the Layers list above. Its 6 individual contributing factors are also available, each labelled <strong>&ldquo;Factor (GT): &hellip;&rdquo;</strong>.</p>
+          </div>
+          {gt_methodology_html}
+          <div class="bsq-factor-row">
+            <div class="bsq-factor-head">
+              <span class="material-symbols-outlined">calendar_month</span>
+              <span class="bsq-factor-label">Seasonal multiplier</span>
+            </div>
+            <p class="bsq-factor-desc">Combined score is scaled by a seasonal multiplier (&times;1.0 Sep&ndash;Nov, &times;0.9 Jan/Dec, &times;0.8 Jun&ndash;Aug, &times;0.6 Feb&ndash;Apr). Moon phase is already baked into the WLC as a factor layer (moon phase score above).</p>
+          </div>
+          <p class="bsq-sub">Only available for dates where the GT pipeline has been run &mdash; if it hasn&rsquo;t, the status above will say so and the heatmap toggle stays blank. v1, v2 and Lenigas heatmaps are completely unaffected either way.</p>
+        </div>
+      </div>
+    """
+
+    # Outerline sidebar section: "Outerline Bite Score" -- a FOURTH
+    # independent experimental model, still targeting Yellowfin Tuna (like
+    # v1/v2), but built around a distinct "reward co-location of
+    # favourable features" principle instead of any single-factor
+    # extreme, with depth as a moderate-weight filter only. Live
+    # availability check via bsqCheckOutlineAvailability() JS, same
+    # pattern as Lenigas/GT above.
+    outerline_methodology_rows = []
+    for meta in _CONTRIBUTING_LAYERS_OUTERLINE:
+        if meta["weight_key"] is None:
+            weight_html_outerline = '<span class="bsq-factor-weight">info</span>'
+        else:
+            weight_pct = config.WEIGHTS_OUTERLINE.get(meta["weight_key"], 0) * 100
+            weight_html_outerline = f'<span class="bsq-factor-weight">{weight_pct:.0f}%</span>'
+        outerline_methodology_rows.append(
+            f"""
+            <div class="bsq-factor-row">
+              <div class="bsq-factor-head">
+                <span class="material-symbols-outlined">{meta['icon']}</span>
+                <span class="bsq-factor-label">{meta['label']}</span>
+                {weight_html_outerline}
+              </div>
+              <p class="bsq-factor-desc">{meta['description']}</p>
+            </div>
+            """
+        )
+    outerline_methodology_html = "".join(outerline_methodology_rows)
+
+    outerline_section_html = f"""
+      <div class="bsq-section">
+        <div class="bsq-accordion-header" id="bsq-outerline-toggle">
+          <h3><span class="material-symbols-outlined">hub</span>Outerline Bite Score<span class="bsq-beta-pill">EXPERIMENTAL</span></h3>
+          <span class="material-symbols-outlined bsq-chevron">expand_more</span>
+        </div>
+        <div class="bsq-accordion-body" id="bsq-outerline-body">
+          <p class="bsq-sub"><strong>This is a fourth, independent, experimental scoring model</strong> for Yellowfin Tuna, built on a different principle from v1/v2/Lenigas/GT above: it rewards CO-LOCATION of multiple favourable oceanographic features (current convergence, SST/FSLE/SLA fronts, the EAC's outer boundary, a bait-concentration proxy...) rather than any single-factor extreme, and treats depth as a moderate-weight FILTER only -- never a dominant factor. A non-linear multiplier (up to 1.25&times;) rewards pixels where 6 or more of these features co-occur. It was validated against one real historical event (11 Oct 2023, Point Lookout) without tuning to fit it, but has <strong>not</strong> been validated against a broader catch-data record -- treat it as an informal, experimental fifth opinion.</p>
+          <p class="bsq-outerline-status" id="bsq-outerline-status">Checking Outerline availability...</p>
+          <div class="bsq-factor-row">
+            <div class="bsq-factor-head">
+              <span class="material-symbols-outlined">toggle_on</span>
+              <span class="bsq-factor-label">Viewing it</span>
+            </div>
+            <p class="bsq-factor-desc">Toggle on <strong>&ldquo;Bite Score heatmap Outerline (Yellowfin outer-line convergence model)&rdquo;</strong> in the Layers list above. Its 11 individual contributing factors plus an informational feature-convergence-count layer are also available, each labelled <strong>&ldquo;Factor (Outerline): &hellip;&rdquo;</strong>.</p>
+          </div>
+          {outerline_methodology_html}
+          <p class="bsq-sub">Only available for dates where the Outerline pipeline has been run &mdash; if it hasn&rsquo;t, the status above will say so and the heatmap toggle stays blank. v1, v2, Lenigas and GT heatmaps are completely unaffected either way.</p>
+        </div>
+      </div>
+    """
+
     # "Bathymetry Relief Map" explanation: describes the single unified
     # shaded-relief toggle, which is really 4 stacked image layers -- a
     # whole-AOI AusBathyTopo-based base at its own native ~250m
@@ -1400,8 +1904,8 @@ def build_folium_map(output_html: str = "bite_score_map.html") -> folium.Map:
     # native resolutions -- bundled under one toggle instead of the 4
     # separate top-level layers this used to be.
     relief_map_availability_html = (
-        '<p class="bsq-sub">Toggle on <strong>&ldquo;Bathymetry relief '
-        'map&rdquo;</strong> in the Layers list above. Loaded on demand from '
+        '<p class="bsq-sub">Toggle on <strong>&ldquo;Bathymetry&rdquo;</strong> in the '
+        'bottom-left map control (next to the basemap switcher). Loaded on demand from '
         'the local dashboard server (<code>python -m bite_score.webapp</code>) the '
         'first time it&rsquo;s switched on.</p>'
     )
@@ -1448,12 +1952,11 @@ def build_folium_map(output_html: str = "bite_score_map.html") -> folium.Map:
     # is served via `python -m bite_score.webapp` (same requirement as the
     # "Update Data" button and "Historical Data" list above).
     mbgfc_availability_html = (
-        '<p class="bsq-sub">Toggle on <strong>&ldquo;MBGFC fishing chart&rdquo;</strong> '
-        'and <strong>&ldquo;MBGFC FADs, SFADs &amp; wave buoys&rdquo;</strong> in the '
-        'Layers list above. Loaded on demand from the local dashboard server '
-        '(<code>python -m bite_score.webapp</code>) the first time either is switched '
-        'on, so this layer is always available on every date&rsquo;s map without '
-        'needing to be regenerated.</p>'
+        '<p class="bsq-sub">Toggle on <strong>&ldquo;Fishing chart&rdquo;</strong>, '
+        '<strong>&ldquo;FADs/buoys&rdquo;</strong> and '
+        '<strong>&ldquo;Waypoints&rdquo;</strong> using the buttons in the '
+        'bottom-left map control. Loaded on demand from the local dashboard server '
+        '(<code>python -m bite_score.webapp</code>) the first time each is switched on.</p>'
     )
 
     mbgfc_section_html = f"""
@@ -1678,6 +2181,21 @@ def build_folium_map(output_html: str = "bite_score_map.html") -> folium.Map:
       #bsq-update-btn:active {{ transform: scale(0.97); }}
       #bsq-update-btn:disabled {{ background: rgba(99,247,255,0.35); color: rgba(0,55,57,0.6); cursor: default; transform: none; }}
       #bsq-status {{ margin-top: 8px; font-size: 11.5px; color: #c4c6cf; min-height: 16px; line-height: 1.4; }}
+      #bsq-share-btn {{
+        width: 100%; margin-top: 10px; padding: 8px 0;
+        background: transparent; color: #63f7ff; border: 1px solid rgba(99,247,255,0.4);
+        border-radius: 8px; font-size: 12.5px; font-weight: 600; cursor: pointer;
+        transition: background .15s ease; display: flex; align-items: center; justify-content: center; gap: 6px;
+      }}
+      #bsq-share-btn:hover {{ background: rgba(99,247,255,0.12); }}
+      #bsq-share-btn .material-symbols-outlined {{ font-size: 15px; }}
+      #bsq-share-status {{ margin-top: 6px; font-size: 11px; color: #8e9198; min-height: 14px; text-align: center; word-break: break-all; }}
+      #bsq-loading-wrap {{ display: flex; align-items: center; gap: 9px; margin-top: 9px; min-height: 22px; }}
+      .bsq-spinner {{ display: none; width: 18px; height: 18px; border: 2.5px solid rgba(99,247,255,0.2); border-top-color: #63f7ff; border-radius: 50%; animation: bsq-spin .75s linear infinite; flex-shrink: 0; }}
+      .bsq-spinner.active {{ display: block; }}
+      @keyframes bsq-spin {{ to {{ transform: rotate(360deg); }} }}
+      .bsq-step-dots::after {{ content: ''; animation: bsq-dots 1.4s steps(4, end) infinite; }}
+      @keyframes bsq-dots {{ 0%,100%{{content:'';}} 25%{{content:'.';}} 50%{{content:'..';}} 75%{{content:'...';}} }}
 
       /* Collapsible history list -- it lives inline in the sidebar instead
          of a separate overlay drawer, so it never covers the map. */
@@ -2048,7 +2566,15 @@ def build_folium_map(output_html: str = "bite_score_map.html") -> folium.Map:
         <label for="bsq-date">Update data for date</label>
         <input type="date" id="bsq-date" value="{config.DEFAULT_TARGET_DATE}">
         <button id="bsq-update-btn" onclick="bsqUpdateData()">Update Data</button>
-        <div id="bsq-status"></div>
+        <div id="bsq-loading-wrap">
+          <div class="bsq-spinner" id="bsq-spinner"></div>
+          <div id="bsq-status"></div>
+        </div>
+        <button id="bsq-share-btn" onclick="bsqCopyShareLink()"
+                title="Copy a direct link to this exact date with the currently-selected layers pre-loaded">
+          <span class="material-symbols-outlined">link</span>Copy share link
+        </button>
+        <div id="bsq-share-status"></div>
       </div>
 
       <div class="bsq-section">
@@ -2091,6 +2617,10 @@ def build_folium_map(output_html: str = "bite_score_map.html") -> folium.Map:
 
       {lenigas_section_html}
 
+      {gt_section_html}
+
+      {outerline_section_html}
+
       {relief_map_section_html}
 
       {mbgfc_section_html}
@@ -2110,6 +2640,21 @@ def build_folium_map(output_html: str = "bite_score_map.html") -> folium.Map:
 
       <div class="bsq-sidebar-footer">
         SE Queensland &middot; Noosa &rarr; Gold Coast
+        <br/>
+        <a href="/tactics" style="color:#00c8ff;text-decoration:none;font-size:11px;display:inline-flex;align-items:center;gap:4px;margin-top:6px;">
+          <span class="material-symbols-outlined" style="font-size:14px;">menu_book</span>
+          Catching Tactics Guide
+        </a>
+        <br/>
+        <a href="/tips" style="color:#f59e0b;text-decoration:none;font-size:11px;display:inline-flex;align-items:center;gap:4px;margin-top:4px;">
+          <span class="material-symbols-outlined" style="font-size:14px;">lightbulb</span>
+          Yellowfin Tips
+        </a>
+        <br/>
+        <a href="/conditions" style="color:#22d3ee;text-decoration:none;font-size:11px;display:inline-flex;align-items:center;gap:4px;margin-top:4px;">
+          <span class="material-symbols-outlined" style="font-size:14px;">partly_cloudy_day</span>
+          Sea Conditions
+        </a>
       </div>
     </nav>
 
@@ -2162,12 +2707,18 @@ def build_folium_map(output_html: str = "bite_score_map.html") -> folium.Map:
       // drop reordering and per-date lazy-loading are completely
       // unaffected by this.
       var bsqLayerGroupStarts = {{
-        "MBGFC fishing chart (georeferenced)": "Reference charts",
+        // All reference-chart layers (MBGFC chart/FADs, waypoints) are
+        // control=False -- the "Reference charts" group is no longer needed.
         "Land outline": "Ocean & environmental context",
         "Bite Score heatmap (current, high-res)": "Bite Score \u2014 v1 (current model)",
         "Bite Score heatmap v2 (Beta - structure/eddy model)": "Bite Score \u2014 v2 (Beta model)",
         "Bite Score heatmap Lenigas (SEQ fisherman model)": "Bite Score \u2014 Lenigas (SEQ fisherman model)",
-        "Bathymetry relief map": "High-res bathymetry surveys"
+        "Bite Score heatmap GT (Giant Trevally reef model)": "Bite Score \u2014 GT (Giant Trevally reef model)",
+        "Bite Score heatmap Outerline (Yellowfin outer-line convergence model)": "Bite Score \u2014 Outerline (Yellowfin convergence model)"
+        // Bathymetry relief map used to start its own "High-res bathymetry
+        // surveys" group here -- it's no longer in this sidebar list at
+        // all (control=False; toggled via the bottom-left quick-access
+        // button instead -- see bsqToggleBathymetry() above).
       }};
 
       // Inserts a collapsible header before each group's first layer and
@@ -2181,7 +2732,7 @@ def build_folium_map(output_html: str = "bite_score_map.html") -> folium.Map:
       // checked/active layer on page load (e.g. v1's main heatmap, or the
       // always-on land outline/contours) -- so collapsing never silently
       // hides something the user (or the default state) already switched
-      // on -- and starts CLOSED otherwise (Reference charts, v2 Beta,
+      // on -- and starts CLOSED otherwise (v2 Beta, Lenigas, and GT are all
       // Lenigas, and the high-res bathymetry surveys are all off by
       // default), decluttering the initial view.
       function bsqInsertLayerGroupHeaders() {{
@@ -2503,6 +3054,22 @@ def build_folium_map(output_html: str = "bite_score_map.html") -> folium.Map:
         }} catch (e) {{}}
       }}
 
+      // A shared/direct link (see bsqBuildShareUrl()/bsqCopyShareLink()
+      // below) encodes the checked-layer names as a comma-separated,
+      // percent-encoded "layers" query param, e.g.
+      // "/history/2026-07-22?layers=SST%20thermal-front%20score,MLD%20front%20score".
+      // Returns null if absent/unparseable so callers fall back to the
+      // normal localStorage-based restore below.
+      function bsqGetLayersFromUrl() {{
+        var raw;
+        try {{ raw = new URLSearchParams(location.search).get("layers"); }} catch (e) {{ return null; }}
+        if (!raw) return null;
+        var names = raw.split(",").map(function (s) {{
+          try {{ return decodeURIComponent(s.trim()); }} catch (e) {{ return s.trim(); }}
+        }}).filter(Boolean);
+        return names.length ? names : null;
+      }}
+
       // Full restore: turns ON saved-checked layers that aren't currently
       // checked, and turns OFF default-on layers that weren't in the saved
       // state -- via genuine `input.click()` calls so Leaflet's own
@@ -2515,14 +3082,26 @@ def build_folium_map(output_html: str = "bite_score_map.html") -> folium.Map:
       // correctly computed as open. bsqRestoringLayerSelection is set for
       // the duration to prevent the intermediate click()s from overwriting
       // the intended saved state in localStorage.
+      //
+      // A "layers" query param on the URL (a direct/shared link -- see
+      // bsqBuildShareUrl() below) takes priority over the localStorage
+      // selection, so opening a shared link always reproduces exactly the
+      // layers it was created with, regardless of whatever this browser
+      // last had checked. Once applied, it's also saved back into
+      // localStorage so it "sticks" across subsequent in-app navigation
+      // (e.g. switching historical dates via the timeline), the same way a
+      // manual toggle would.
       function bsqRestoreLayerSelection() {{
         var container = document.querySelector("#bsq-layers-slot .leaflet-control-layers-overlays");
         if (!container) return;
-        var raw;
-        try {{ raw = localStorage.getItem(BSQ_LAYER_SELECTION_KEY); }} catch (e) {{ return; }}
-        if (!raw) return;
-        var saved;
-        try {{ saved = JSON.parse(raw); }} catch (e) {{ return; }}
+        var fromUrl = bsqGetLayersFromUrl();
+        var saved = fromUrl;
+        if (!saved) {{
+          var raw;
+          try {{ raw = localStorage.getItem(BSQ_LAYER_SELECTION_KEY); }} catch (e) {{ return; }}
+          if (!raw) return;
+          try {{ saved = JSON.parse(raw); }} catch (e) {{ return; }}
+        }}
         if (!Array.isArray(saved)) return;
         var savedSet = {{}};
         saved.forEach(function (name) {{ savedSet[name] = true; }});
@@ -2541,6 +3120,56 @@ def build_folium_map(output_html: str = "bite_score_map.html") -> folium.Map:
           toUncheck.forEach(function (inp) {{ inp.click(); }});
         }} finally {{
           bsqRestoringLayerSelection = false;
+        }}
+        if (fromUrl) {{ bsqSaveLayerSelection(); }}
+      }}
+
+      // Builds a direct link to the currently-viewed date with the
+      // currently-checked layers pre-selected (see bsqCopyShareLink()
+      // below, and bsqGetLayersFromUrl()/bsqRestoreLayerSelection() above
+      // for how it's applied on load). Always points at the stable
+      // "/history/<date>" route (never "/", which follows whatever the
+      // latest processed date happens to be at click time) so the link
+      // keeps showing the same date whenever it's opened later.
+      function bsqBuildShareUrl() {{
+        var datePart = bsqCurrentDate ? ("/history/" + encodeURIComponent(bsqCurrentDate)) : "/";
+        var names = bsqGetCheckedLayerNames();
+        var url = location.origin + datePart;
+        if (names.length) {{
+          url += "?layers=" + names.map(encodeURIComponent).join(",");
+        }}
+        return url;
+      }}
+
+      function bsqCopyShareLink() {{
+        var url = bsqBuildShareUrl();
+        var statusEl = document.getElementById("bsq-share-status");
+        function showResult(copied) {{
+          if (!statusEl) return;
+          statusEl.textContent = copied ? "Link copied to clipboard!" : url;
+          setTimeout(function () {{ statusEl.textContent = ""; }}, copied ? 2500 : 8000);
+        }}
+        if (navigator.clipboard && navigator.clipboard.writeText) {{
+          navigator.clipboard.writeText(url).then(
+            function () {{ showResult(true); }},
+            function () {{ showResult(false); }}
+          );
+          return;
+        }}
+        // Fallback for browsers/contexts without the async Clipboard API
+        // (e.g. non-HTTPS origins) -- select+copy via a temporary textarea.
+        try {{
+          var ta = document.createElement("textarea");
+          ta.value = url;
+          ta.style.position = "fixed";
+          ta.style.opacity = "0";
+          document.body.appendChild(ta);
+          ta.select();
+          document.execCommand("copy");
+          document.body.removeChild(ta);
+          showResult(true);
+        }} catch (e) {{
+          showResult(false);
         }}
       }}
 
@@ -2597,9 +3226,95 @@ def build_folium_map(output_html: str = "bite_score_map.html") -> folium.Map:
         if (input) {{ input.click(); }}
       }}
 
+      // Bathymetry isn't in the sidebar Layers list (control=False on
+      // relief_map_group above), so it's driven directly rather than by
+      // proxying a sidebar checkbox click like bsqToggleRefChartLayer()
+      // above -- with its own localStorage key standing in for the
+      // sidebar-checkbox-based persistence the other quick-access buttons
+      // get for free via bsqSaveLayerSelection()/bsqRestoreLayerSelection().
+      var BSQ_BATHYMETRY_KEY = "bsqBathymetry_v1";
+
+      function bsqToggleBathymetry() {{
+        var nowOn;
+        if ({map_var}.hasLayer({relief_map_group_var})) {{
+          {map_var}.removeLayer({relief_map_group_var});
+          nowOn = false;
+        }} else {{
+          {map_var}.addLayer({relief_map_group_var});
+          bsqLoadRasterLayer("relief_map", {relief_map_var});
+          bsqLoadRasterLayer("relief_map_moreton_bay_approaches", {relief_map_mba_var});
+          bsqLoadRasterLayer("relief_map_lidar", {relief_map_lidar_var});
+          bsqLoadRasterLayer("relief_map_mudjimba_island", {relief_map_mudjimba_var});
+          nowOn = true;
+        }}
+        try {{ localStorage.setItem(BSQ_BATHYMETRY_KEY, nowOn ? "1" : "0"); }} catch (e) {{}}
+        bsqSyncRefChartButtons();
+      }}
+
+      var BSQ_MBGFC_CHART_KEY = "bsqMbgfcChart_v1";
+
+      function bsqToggleMbgfcChart() {{
+        var nowOn;
+        if ({map_var}.hasLayer({mbgfc_chart_var})) {{
+          {map_var}.removeLayer({mbgfc_chart_var});
+          nowOn = false;
+        }} else {{
+          {map_var}.addLayer({mbgfc_chart_var});
+          bsqLoadMbgfc();
+          nowOn = true;
+        }}
+        try {{ localStorage.setItem(BSQ_MBGFC_CHART_KEY, nowOn ? "1" : "0"); }} catch (e) {{}}
+        bsqSyncRefChartButtons();
+      }}
+
+      var BSQ_FADS_KEY = "bsqFads_v1";
+
+      function bsqToggleFads() {{
+        var nowOn;
+        if ({map_var}.hasLayer({mbgfc_locations_var})) {{
+          {map_var}.removeLayer({mbgfc_locations_var});
+          nowOn = false;
+        }} else {{
+          {map_var}.addLayer({mbgfc_locations_var});
+          bsqLoadMbgfc();
+          nowOn = true;
+        }}
+        try {{ localStorage.setItem(BSQ_FADS_KEY, nowOn ? "1" : "0"); }} catch (e) {{}}
+        bsqSyncRefChartButtons();
+      }}
+
+      var BSQ_WAYPOINTS_KEY = "bsqWaypoints_v1";
+
+      function bsqToggleWaypoints() {{
+        var nowOn;
+        if ({map_var}.hasLayer({waypoints_var})) {{
+          {map_var}.removeLayer({waypoints_var});
+          nowOn = false;
+        }} else {{
+          {map_var}.addLayer({waypoints_var});
+          bsqLoadWaypoints();
+          nowOn = true;
+        }}
+        try {{ localStorage.setItem(BSQ_WAYPOINTS_KEY, nowOn ? "1" : "0"); }} catch (e) {{}}
+        bsqSyncRefChartButtons();
+      }}
+
+      var _bsqDirectLayers = [
+        {{name: "Bathymetry relief map", fn: function () {{ return bsqToggleBathymetry(); }}, check: function () {{ return {map_var}.hasLayer({relief_map_group_var}); }}}},
+        {{name: "MBGFC FADs, SFADs & wave buoys", fn: function () {{ return bsqToggleFads(); }}, check: function () {{ return {map_var}.hasLayer({mbgfc_locations_var}); }}}},
+        {{name: "Fishing waypoints (Light & Heavy Tackle)", fn: function () {{ return bsqToggleWaypoints(); }}, check: function () {{ return {map_var}.hasLayer({waypoints_var}); }}}},
+        {{name: "MBGFC fishing chart (georeferenced)", fn: function () {{ return bsqToggleMbgfcChart(); }}, check: function () {{ return {map_var}.hasLayer({mbgfc_chart_var}); }}}},
+      ];
+
       function bsqSyncRefChartButtons() {{
         document.querySelectorAll(".bsq-refchart-btn").forEach(function (btn) {{
           var name = btn.getAttribute("data-refchart-name");
+          for (var i = 0; i < _bsqDirectLayers.length; i++) {{
+            if (_bsqDirectLayers[i].name === name) {{
+              btn.classList.toggle("active", _bsqDirectLayers[i].check());
+              return;
+            }}
+          }}
           var row = bsqFindOverlayRow(name);
           var input = row ? row.querySelector("input[type=checkbox]") : null;
           btn.classList.toggle("active", !!(input && input.checked));
@@ -2634,8 +3349,10 @@ def build_folium_map(output_html: str = "bite_score_map.html") -> folium.Map:
             container.appendChild(divider);
 
             [
+              {{name: "Fishing waypoints (Light & Heavy Tackle)", label: "Waypoints", icon: "place"}},
               {{name: "MBGFC FADs, SFADs & wave buoys", label: "FADs/buoys", icon: "anchor"}},
-              {{name: "MBGFC fishing chart (georeferenced)", label: "Fishing chart", icon: "map"}}
+              {{name: "MBGFC fishing chart (georeferenced)", label: "Fishing chart", icon: "map"}},
+              {{name: "Bathymetry relief map", label: "Bathymetry", icon: "terrain"}}
             ].forEach(function (rc) {{
               var a = document.createElement("a");
               a.href = "#";
@@ -2643,7 +3360,14 @@ def build_folium_map(output_html: str = "bite_score_map.html") -> folium.Map:
               a.setAttribute("data-refchart-name", rc.name);
               a.title = "Toggle " + rc.label;
               a.innerHTML = '<span class="material-symbols-outlined">' + rc.icon + '</span>' + rc.label;
-              a.addEventListener("click", function (e) {{ e.preventDefault(); bsqToggleRefChartLayer(rc.name); }});
+              a.addEventListener("click", function (e) {{
+                e.preventDefault();
+                var found = false;
+                for (var i = 0; i < _bsqDirectLayers.length; i++) {{
+                  if (_bsqDirectLayers[i].name === rc.name) {{ _bsqDirectLayers[i].fn(); found = true; break; }}
+                }}
+                if (!found) {{ bsqToggleRefChartLayer(rc.name); }}
+              }});
               container.appendChild(a);
             }});
 
@@ -2702,6 +3426,14 @@ def build_folium_map(output_html: str = "bite_score_map.html") -> folium.Map:
           if (savedBasemap) {{ bsqSwitchBasemap(savedBasemap); }}
         }} catch (e) {{}}
 
+        // Restore direct-toggle layers (not sidebar checkboxes).
+        try {{
+          if (localStorage.getItem(BSQ_BATHYMETRY_KEY) === "1") {{ bsqToggleBathymetry(); }}
+          if (localStorage.getItem(BSQ_FADS_KEY) === "1") {{ bsqToggleFads(); }}
+          if (localStorage.getItem(BSQ_WAYPOINTS_KEY) === "1") {{ bsqToggleWaypoints(); }}
+          if (localStorage.getItem(BSQ_MBGFC_CHART_KEY) === "1") {{ bsqToggleMbgfcChart(); }}
+        }} catch (e) {{}}
+
         bsqInitLayerPanes();
 
         // These layers carry no data of their own on this page -- fetch
@@ -2713,17 +3445,8 @@ def build_folium_map(output_html: str = "bite_score_map.html") -> folium.Map:
         // programmatically re-checks any saved layer -- a restored layer
         // triggers its lazy load exactly like a real user click would.
         {map_var}.on("overlayadd", function (e) {{
-          if (e.name === "MBGFC fishing chart (georeferenced)" || e.name === "MBGFC FADs, SFADs & wave buoys") {{
-            bsqLoadMbgfc();
-          }} else if (e.name === "Fishing waypoints (Light & Heavy Tackle)") {{
-            bsqLoadWaypoints();
-          }} else if (e.name === {depth_suitability_name_json}) {{
+          if (e.name === {depth_suitability_name_json}) {{
             bsqLoadRasterLayer("depth_suitability", {depth_suitability_var});
-          }} else if (e.name === "Bathymetry relief map") {{
-            bsqLoadRasterLayer("relief_map", {relief_map_var});
-            bsqLoadRasterLayer("relief_map_moreton_bay_approaches", {relief_map_mba_var});
-            bsqLoadRasterLayer("relief_map_lidar", {relief_map_lidar_var});
-            bsqLoadRasterLayer("relief_map_mudjimba_island", {relief_map_mudjimba_var});
           }} else if (e.name === "Bathymetry contours (depth reference)") {{
             bsqLoadContours();
           }} else if (e.name === "Land outline") {{
@@ -2880,6 +3603,8 @@ def build_folium_map(output_html: str = "bite_score_map.html") -> folium.Map:
         bsqLoadMoonPhase();
         bsqCheckV2Availability();
         bsqCheckLenigasAvailability();
+        bsqCheckGtAvailability();
+        bsqCheckOutlineAvailability();
       }}
 
       // Scan checked overlay rows and load any date layer whose data hasn't
@@ -2910,8 +3635,8 @@ def build_folium_map(output_html: str = "bite_score_map.html") -> folium.Map:
       // build_folium_map()) routes to the SEPARATE `/api/date-layer-v2/`
       // endpoint instead of v1's `/api/date-layer/` -- v1 keys (no
       // prefix) behave EXACTLY as before, so this is purely additive.
-      // Same treatment for a "lenigas/"-prefixed key, routing to the
-      // SEPARATE `/api/date-layer-lenigas/` endpoint instead.
+      // Same treatment for a "lenigas/"-prefixed key, and a "gt/"-prefixed
+      // key routing to `/api/date-layer-gt/`.
       var bsqLoadedDateLayers = {{}};
       function bsqLoadDateLayer(key, layerVar, updateStats) {{
         if (!bsqCurrentDate) return;
@@ -2920,8 +3645,10 @@ def build_folium_map(output_html: str = "bite_score_map.html") -> folium.Map:
         bsqLoadedDateLayers[cacheKey] = true;
         var isV2 = key.indexOf("v2/") === 0;
         var isLenigas = key.indexOf("lenigas/") === 0;
-        var apiKey = isV2 ? key.slice(3) : (isLenigas ? key.slice(8) : key);
-        var base = (isV2 ? "/api/date-layer-v2/" : (isLenigas ? "/api/date-layer-lenigas/" : "/api/date-layer/")) + bsqCurrentDate + "/" + apiKey;
+        var isGt = key.indexOf("gt/") === 0;
+        var isOutline = key.indexOf("outerline/") === 0;
+        var apiKey = isV2 ? key.slice(3) : (isLenigas ? key.slice(8) : (isGt ? key.slice(3) : (isOutline ? key.slice(10) : key)));
+        var base = (isV2 ? "/api/date-layer-v2/" : (isLenigas ? "/api/date-layer-lenigas/" : (isGt ? "/api/date-layer-gt/" : (isOutline ? "/api/date-layer-outerline/" : "/api/date-layer/")))) + bsqCurrentDate + "/" + apiKey;
         fetch(base + "/meta", {{cache: "no-store"}})
           .then(function (r) {{ if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); }})
           .then(function (meta) {{
@@ -2935,14 +3662,13 @@ def build_folium_map(output_html: str = "bite_score_map.html") -> folium.Map:
           }})
           .catch(function (e) {{
             console.warn("Date layer '" + key + "' unavailable for " + bsqCurrentDate, e);
-            // Toggling on a v2/Lenigas layer for a date it hasn't been run
-            // for is expected (not every date has a v2/Lenigas run yet,
-            // since both are experimental) -- surface it in that model's
-            // sidebar status text too, rather than only a console warning,
-            // so it's obvious in the UI why the layer just stayed blank
-            // instead of appearing.
+            // Toggling on a v2/Lenigas/GT layer for a date it hasn't been
+            // run for is expected -- surface it in that model's sidebar
+            // status text too, rather than only a console warning.
             if (isV2) {{ bsqSetV2Status(false); }}
             if (isLenigas) {{ bsqSetLenigasStatus(false); }}
+            if (isGt) {{ bsqSetGtStatus(false); }}
+            if (isOutline) {{ bsqSetOutlineStatus(false); }}
           }});
       }}
 
@@ -3007,6 +3733,59 @@ def build_folium_map(output_html: str = "bite_score_map.html") -> folium.Map:
           .then(function (r) {{ if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); }})
           .then(function () {{ bsqSetLenigasStatus(true); }})
           .catch(function () {{ bsqSetLenigasStatus(false); }});
+      }}
+
+      // GT availability check for the CURRENTLY resolved date -- mirrors
+      // bsqCheckLenigasAvailability() above but for the Giant Trevally
+      // reef model. Checks /api/date-layer-gt/<date>/bite_score_gt/meta
+      // to determine whether the GT pipeline has been run for this date.
+      function bsqSetGtStatus(available) {{
+        var statusEl = document.getElementById("bsq-gt-status");
+        if (!statusEl || !bsqCurrentDate) return;
+        if (available) {{
+          statusEl.textContent = "GT data is available for " + bsqCurrentDate + " -- toggle \u201cBite Score heatmap GT (Giant Trevally reef model)\u201d on in the Layers list above to view it.";
+          statusEl.className = "bsq-gt-status bsq-gt-available";
+        }} else {{
+          statusEl.textContent = "GT has not been run for " + bsqCurrentDate + " yet. This experimental model is only available for dates where the GT pipeline has been run -- v1\u2019s and v2\u2019s heatmaps are unaffected.";
+          statusEl.className = "bsq-gt-status bsq-gt-unavailable";
+        }}
+      }}
+      function bsqCheckGtAvailability() {{
+        var statusEl = document.getElementById("bsq-gt-status");
+        if (!bsqCurrentDate || !statusEl) return;
+        statusEl.textContent = "Checking GT availability for " + bsqCurrentDate + "...";
+        statusEl.className = "bsq-gt-status";
+        fetch("/api/date-layer-gt/" + bsqCurrentDate + "/bite_score_gt/meta", {{cache: "no-store"}})
+          .then(function (r) {{ if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); }})
+          .then(function () {{ bsqSetGtStatus(true); }})
+          .catch(function () {{ bsqSetGtStatus(false); }});
+      }}
+
+      // Outerline availability check for the CURRENTLY resolved date --
+      // mirrors bsqCheckGtAvailability() above but for the Outerline
+      // Method model. Checks
+      // /api/date-layer-outerline/<date>/hotspot_score_outerline/meta to
+      // determine whether the Outerline pipeline has been run for this date.
+      function bsqSetOutlineStatus(available) {{
+        var statusEl = document.getElementById("bsq-outerline-status");
+        if (!statusEl || !bsqCurrentDate) return;
+        if (available) {{
+          statusEl.textContent = "Outerline data is available for " + bsqCurrentDate + " -- toggle \u201cBite Score heatmap Outerline (Yellowfin outer-line convergence model)\u201d on in the Layers list above to view it.";
+          statusEl.className = "bsq-outerline-status bsq-outerline-available";
+        }} else {{
+          statusEl.textContent = "Outerline has not been run for " + bsqCurrentDate + " yet. This experimental model is only available for dates where the Outerline pipeline has been run -- v1's, v2's, Lenigas's and GT's heatmaps are unaffected.";
+          statusEl.className = "bsq-outerline-status bsq-outerline-unavailable";
+        }}
+      }}
+      function bsqCheckOutlineAvailability() {{
+        var statusEl = document.getElementById("bsq-outerline-status");
+        if (!bsqCurrentDate || !statusEl) return;
+        statusEl.textContent = "Checking Outerline availability for " + bsqCurrentDate + "...";
+        statusEl.className = "bsq-outerline-status";
+        fetch("/api/date-layer-outerline/" + bsqCurrentDate + "/hotspot_score_outerline/meta", {{cache: "no-store"}})
+          .then(function (r) {{ if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); }})
+          .then(function () {{ bsqSetOutlineStatus(true); }})
+          .catch(function () {{ bsqSetOutlineStatus(false); }});
       }}
 
       // Day-level (non-spatial) moon illumination readout -- unlike every
@@ -3644,19 +4423,24 @@ def build_folium_map(output_html: str = "bite_score_map.html") -> folium.Map:
       async function bsqPollStatus() {{
         var statusEl = document.getElementById("bsq-status");
         var btn = document.getElementById("bsq-update-btn");
+        var spinner = document.getElementById("bsq-spinner");
         try {{
           var resp = await fetch("/api/status", {{cache: "no-store"}});
           var data = await resp.json();
           if (data.state === "running") {{
-            statusEl.textContent = data.message || "Updating...";
+            statusEl.innerHTML = "<span class='bsq-step-dots'>" + (data.message || "Updating") + "</span>";
+            if (spinner) spinner.classList.add("active");
             setTimeout(bsqPollStatus, 2000);
           }} else if (data.state === "done") {{
-            statusEl.textContent = "Done! Reloading map...";
+            if (spinner) spinner.classList.remove("active");
+            statusEl.textContent = "Done! Reloading map\u2026";
             setTimeout(function () {{ window.location.reload(); }}, 1200);
           }} else if (data.state === "error") {{
+            if (spinner) spinner.classList.remove("active");
             statusEl.textContent = "Update failed: " + (data.message || "unknown error");
             btn.disabled = false;
           }} else {{
+            if (spinner) spinner.classList.remove("active");
             btn.disabled = false;
           }}
         }} catch (e) {{
@@ -3668,8 +4452,10 @@ def build_folium_map(output_html: str = "bite_score_map.html") -> folium.Map:
         var dateVal = document.getElementById("bsq-date").value;
         var btn = document.getElementById("bsq-update-btn");
         var statusEl = document.getElementById("bsq-status");
+        var spinner = document.getElementById("bsq-spinner");
         btn.disabled = true;
-        statusEl.textContent = "Starting update...";
+        if (spinner) spinner.classList.add("active");
+        statusEl.innerHTML = "<span class='bsq-step-dots'>Starting update</span>";
         try {{
           var resp = await fetch("/api/update", {{
             method: "POST",
@@ -3678,12 +4464,14 @@ def build_folium_map(output_html: str = "bite_score_map.html") -> folium.Map:
           }});
           if (!resp.ok) {{
             var body = await resp.json().catch(function () {{ return {{}}; }});
+            if (spinner) spinner.classList.remove("active");
             statusEl.textContent = body.message || ("Server error: " + resp.status);
             btn.disabled = false;
             return;
           }}
           bsqPollStatus();
         }} catch (e) {{
+          if (spinner) spinner.classList.remove("active");
           statusEl.textContent = "Can\u2019t reach update server. Run: python -m bite_score.webapp";
           btn.disabled = false;
         }}

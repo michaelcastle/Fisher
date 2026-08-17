@@ -220,7 +220,6 @@ def score_eac_convergence_lenigas(
 def weighted_overlay_lenigas(
     sst_bell_score: xr.DataArray,
     depth_score: xr.DataArray,
-    distance_offshore_score: xr.DataArray,
     upwelling_downwelling_score: xr.DataArray,
     eac_axis_position_score: xr.DataArray,
     eac_convergence_score: xr.DataArray,
@@ -228,47 +227,32 @@ def weighted_overlay_lenigas(
     weights: Dict[str, float] = config.LAYER_WEIGHTS_LENIGAS,
 ) -> Tuple[xr.DataArray, Dict[str, xr.DataArray]]:
     """
-    Combine the seven Lenigas normalized (0-1) suitability layers into a
+    Combine the six Lenigas normalized (0-1) suitability layers into a
     single "Bite Score Lenigas" raster scaled 0-100:
 
         Bite Score Lenigas = 100 * (
-            0.135 * SST_bell_lenigas_score +
-            0.18  * Depth_suitability_lenigas_score +
-            0.09  * Distance_offshore_score +
-            0.135 * Upwelling_downwelling_score +
-            0.18  * EAC_axis_position_score +
-            0.18  * EAC_convergence_score +
-            0.10  * SSHA_hotspot_lenigas_score
+            0.145 * SST_bell_lenigas_score +
+            0.180 * Depth_suitability_lenigas_score +
+            0.160 * Upwelling_downwelling_score +
+            0.210 * EAC_axis_position_score +
+            0.205 * EAC_convergence_score +
+            0.100 * SSHA_hotspot_lenigas_score
         )
 
-    (weights above are `config.LAYER_WEIGHTS_LENIGAS`'s defaults -- see
-    that module and kane-lenigas-scoring-spec.md item 8 /
-    kane-lenigas-ssha-final-decision.md for the full weight-scheme
-    rationale, incl. the arithmetic showing the original 6 weights were
-    proportionally rescaled by x0.90 to make room for the new 0.10
-    `ssha_hotspot_lenigas` factor.)
-
-    Depth suitability is used as the alignment *reference* grid (same
-    reasoning as v1/v2's bathymetry reference): it is the finest-
-    resolution input in this model.
-
-    Every one of the seven layers is expected to be computable from the
-    Lenigas pipeline's standard required inputs (SST, currents,
-    bathymetry, SSHA) -- unlike v1/v2's optional MLD factor, there is no
-    genuinely-optional layer here, so no proportional-reweighting
-    graceful-degradation path is implemented (a missing/None layer would
-    be a real bug upstream, not an expected degraded-data scenario).
+    Distance-offshore was removed: the AOI already confines all scored
+    pixels to offshore fishing grounds. Its freed weight was redistributed
+    to the EAC and upwelling factors (see config.LAYER_WEIGHTS_LENIGAS).
+    Depth suitability is used as the alignment *reference* grid.
     """
     total_weight = sum(weights.values())
     if not np.isclose(total_weight, 1.0):
         raise ValueError(f"Lenigas layer weights must sum to 1.0, got {total_weight}")
 
     ref, (
-        sst_aligned, distance_aligned, upwelling_aligned, axis_aligned, convergence_aligned, ssha_aligned,
+        sst_aligned, upwelling_aligned, axis_aligned, convergence_aligned, ssha_aligned,
     ) = align_to_reference(
         depth_score,
         sst_bell_score,
-        distance_offshore_score,
         upwelling_downwelling_score,
         eac_axis_position_score,
         eac_convergence_score,
@@ -278,7 +262,6 @@ def weighted_overlay_lenigas(
     combined = (
         weights["sst_bell_lenigas"] * sst_aligned.fillna(0)
         + weights["depth_suitability_lenigas"] * ref.fillna(0)
-        + weights["distance_offshore"] * distance_aligned.fillna(0)
         + weights["upwelling_downwelling"] * upwelling_aligned.fillna(0)
         + weights["eac_axis_position"] * axis_aligned.fillna(0)
         + weights["eac_convergence"] * convergence_aligned.fillna(0)
@@ -302,7 +285,6 @@ def weighted_overlay_lenigas(
     layer_scores = {
         "sst_bell_lenigas": _scaled(sst_aligned, "sst_bell_lenigas_score"),
         "depth_suitability_lenigas": _scaled(ref, "depth_suitability_lenigas_score"),
-        "distance_offshore": _scaled(distance_aligned, "distance_offshore_score"),
         "upwelling_downwelling": _scaled(upwelling_aligned, "upwelling_downwelling_score"),
         "eac_axis_position": _scaled(axis_aligned, "eac_axis_position_score"),
         "eac_convergence": _scaled(convergence_aligned, "eac_convergence_score"),

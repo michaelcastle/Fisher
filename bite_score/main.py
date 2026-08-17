@@ -31,6 +31,8 @@ from .overlay import apply_moon_phase_multiplier
 from .pipeline import compute_bite_score, compute_bite_score_legacy
 from .pipeline_v2 import compute_bite_score_v2
 from .pipeline_lenigas import compute_bite_score_lenigas
+from .pipeline_gt import compute_bite_score_gt
+from .pipeline_outerline import compute_hotspot_score_outerline
 from .export import export_geotiff
 from .visualize import build_folium_map, build_plotly_map
 
@@ -414,9 +416,9 @@ def run_pipeline_v2(target_date: str = config.DEFAULT_TARGET_DATE) -> str:
 def run_pipeline_lenigas(target_date: str = config.DEFAULT_TARGET_DATE) -> str:
     """
     Run the end-to-end "Lenigas" pipeline (fisherman-notes-derived scoring:
-    SST bell curve, ramp-plateau-decline depth suitability, distance-
-    offshore-from-coast, continuous vorticity-sign upwelling/downwelling,
-    EAC-axis-position + EAC-convergence, asymmetric moon-phase multiplier)
+    SST bell curve, ramp-plateau-decline depth suitability, continuous
+    vorticity-sign upwelling/downwelling, EAC-axis-position +
+    EAC-convergence, SSHA hotspot, asymmetric moon-phase multiplier)
     for a single date and return the Lenigas GeoTIFF path.
 
     This is a NEW, SEPARATE entry point (see
@@ -532,6 +534,257 @@ def run_pipeline_lenigas(target_date: str = config.DEFAULT_TARGET_DATE) -> str:
     return geotiff_path
 
 
+def run_pipeline_gt(target_date: str = config.DEFAULT_TARGET_DATE) -> str:
+    """
+    Run the end-to-end Giant Trevally (GT) pipeline for a single date and
+    return the GT GeoTIFF path.
+
+    GT are a reef ambush predator in SE QLD whose optimal habitat is on the
+    WESTERN (inshore) edge of the EAC where the southward current presses
+    against coastal reef structures, creating a "pressure edge" that
+    concentrates baitfish. This is fundamentally different from YFT/Lenigas,
+    which target the EASTERN SLACK ZONE of the EAC.
+
+    Follows the same separation pattern as Lenigas: own normalization /
+    overlay / pipeline modules, writes to output/history/<date>/gt/ (never
+    touches v1/v2/Lenigas outputs), reuses AOI_V2 (= AOI_LENIGAS) data
+    sources since GT reef zones are within this domain.
+    """
+    if not _DATE_RE.match(target_date or ""):
+        raise ValueError(f"target_date must be in YYYY-MM-DD format, got: {target_date!r}")
+
+    logger.info("=== Giant Trevally (GT) Bite Score pipeline: %s ===", target_date)
+
+    # 1. Data ingestion (reuses v2/Lenigas AOI_V2-clipped sources) ----------
+    depth = load_bathymetry_v2()
+
+    ocean = fetch_daily_ocean_data_v2(target_date)
+    physics = ocean["physics"]
+
+    copernicus_sst = physics["thetao"].isel(time=0)
+    if "depth" in copernicus_sst.dims:
+        copernicus_sst = copernicus_sst.isel(depth=0)
+
+    try:
+        sst = load_erddap_layer_v2("sst", target_date)
+    except Exception:
+        logger.warning(
+            "NOAA MUR SST unavailable for %s (GT), falling back to Copernicus SST",
+            target_date, exc_info=True,
+        )
+        sst = copernicus_sst
+
+    uo = physics["uo"].isel(time=0)
+    vo = physics["vo"].isel(time=0)
+    if "depth" in uo.dims:
+        uo, vo = uo.isel(depth=0), vo.isel(depth=0)
+
+    # Moon phase: GT use a GT-specific asymmetric model (new moon = best,
+    # full moon = worst -- opposite of pelagic intuition). moon_phase_details
+    # is the same astronomical calculation, phase_age_days feeds the GT model.
+    moon_details = moon_phase_details(target_date)
+
+    # Wind: same ASCAT 7-day composite as Lenigas. Used as a WLC factor for
+    # GT (north wind scores well -- concentrates baitfish against reef faces).
+    # Degrades gracefully (wind=None) if unavailable (ASCAT ~5-6 week lag).
+    wind = None
+    try:
+        wind = fetch_wind_data_lenigas(target_date)
+        wind_dir_nan_frac = float(
+            wind["wind_direction"].isnull().sum() / wind["wind_direction"].size
+        )
+        logger.info(
+            "GT wind data fetched for %s: %.1f%% NaN coverage",
+            target_date, wind_dir_nan_frac * 100.0,
+        )
+    except Exception:
+        logger.warning(
+            "Wind data unavailable for %s (GT); north_wind_gt weight redistributed",
+            target_date, exc_info=True,
+        )
+
+    wind_direction = wind["wind_direction"] if wind is not None else None
+
+    # 2-4. GT normalization -> WLC overlay -> seasonal + moon multipliers ----
+    bite_score_gt, layer_scores_gt = compute_bite_score_gt(
+        sst=sst,
+        uo=uo,
+        vo=vo,
+        depth=depth,
+        target_date=target_date,
+        wind_direction=wind_direction,
+        phase_age_days=moon_details["phase_age_days"],
+    )
+
+    # 5. Export to output/history/<date>/gt/ ---------------------------------
+    date_dir = os.path.join(config.HISTORY_DIR, target_date, config.GT_OUTPUT_SUBDIR)
+    os.makedirs(date_dir, exist_ok=True)
+
+    geotiff_path = export_geotiff(
+        bite_score_gt, output_path=os.path.join(date_dir, "bite_score_gt.tif")
+    )
+
+    for key, layer in layer_scores_gt.items():
+        export_geotiff(layer, output_path=os.path.join(date_dir, f"layer_{key}.tif"))
+
+    # North-wind diagnostic: export the raw wind_direction raster if available
+    # so the ASCAT coverage footprint is visible on disk even when the layer
+    # isn't in layer_scores_gt (which only holds WLC-contributing layers).
+    if wind is not None and "wind_direction" in wind:
+        export_geotiff(
+            wind["wind_direction"],
+            output_path=os.path.join(date_dir, "layer_wind_direction_gt.tif"),
+        )
+
+    with open(os.path.join(date_dir, "moon_phase.json"), "w", encoding="utf-8") as f:
+        json.dump({"date": target_date, **moon_details}, f)
+
+    logger.info("GT pipeline complete. GeoTIFF: %s", geotiff_path)
+    return geotiff_path
+
+
+def run_pipeline_outerline(target_date: str = config.DEFAULT_TARGET_DATE) -> str:
+    """
+    Run the end-to-end "Outerline Method" (v3) pipeline -- the Yellowfin
+    Environmental Hotspot Score, rewarding co-location/intersection of
+    favourable oceanographic features (fronts, EAC boundary, current
+    convergence, FSLE ridges, SLA gradients, upwelling/downwelling
+    transitions) rather than any single extreme value -- for a single
+    date and return the Outerline GeoTIFF path.
+
+    This is a NEW, SEPARATE entry point (see pipeline_outerline.py /
+    overlay_outerline.py / normalization_outerline.py / config.py's
+    Outerline section). It reuses the same AOI_V2-clipped ingestion
+    functions v2/Lenigas/GT already use, and writes to a SEPARATE
+    output/history/<date>/outerline/ subfolder, so no other model's
+    existing per-date outputs are ever touched or overwritten by an
+    Outerline run for the same date.
+    """
+    if not _DATE_RE.match(target_date or ""):
+        raise ValueError(f"target_date must be in YYYY-MM-DD format, got: {target_date!r}")
+
+    logger.info("=== Yellowfin Environmental Hotspot Score (Outerline Method) pipeline: %s ===", target_date)
+
+    # 1. Data ingestion (reuses v2/Lenigas/GT's AOI_V2-clipped sources) -----
+    depth = load_bathymetry_v2()
+
+    ocean = fetch_daily_ocean_data_v2(target_date)
+    physics = ocean["physics"]
+
+    copernicus_sst = physics["thetao"].isel(time=0)
+    if "depth" in copernicus_sst.dims:
+        copernicus_sst = copernicus_sst.isel(depth=0)
+
+    copernicus_chl = ocean["biogeochemistry"]["chl"].isel(time=0)
+    if "depth" in copernicus_chl.dims:
+        copernicus_chl = copernicus_chl.isel(depth=0)
+
+    try:
+        sst = load_erddap_layer_v2("sst", target_date)
+    except Exception:
+        logger.warning(
+            "NOAA MUR SST unavailable for %s (outerline), falling back to Copernicus SST",
+            target_date, exc_info=True,
+        )
+        sst = copernicus_sst
+
+    try:
+        chl = fetch_chl_composite(target_date, aoi=config.AOI_OUTERLINE, cache_suffix="_v2")
+        logger.info("Using IMOS SRS OC NOAA-20 chlorophyll composite (833m) for %s (outerline)", target_date)
+    except Exception:
+        logger.warning(
+            "IMOS OC chlorophyll unavailable for %s (outerline), trying VIIRS NRT...",
+            target_date, exc_info=True,
+        )
+        try:
+            chl = load_erddap_layer_v2("chl", target_date)
+        except Exception:
+            logger.warning(
+                "VIIRS NRT chlorophyll unavailable for %s (outerline), trying VIIRS Science Quality...",
+                target_date, exc_info=True,
+            )
+            try:
+                chl = load_erddap_layer_v2("chl_sq", target_date)
+                logger.info("Using VIIRS Science Quality chlorophyll for %s (outerline)", target_date)
+            except Exception:
+                logger.warning(
+                    "VIIRS SQ chlorophyll unavailable for %s (outerline), trying MODIS Aqua R2022SQ...",
+                    target_date, exc_info=True,
+                )
+                try:
+                    chl = load_erddap_layer_v2("chl_modis", target_date)
+                    logger.info("Using MODIS Aqua R2022SQ chlorophyll for %s (outerline)", target_date)
+                except Exception:
+                    logger.warning(
+                        "All satellite chlorophyll sources unavailable for %s (outerline), "
+                        "falling back to Copernicus BGC model (27km)",
+                        target_date, exc_info=True,
+                    )
+                    chl = copernicus_chl
+
+    uo = physics["uo"].isel(time=0)
+    vo = physics["vo"].isel(time=0)
+    if "depth" in uo.dims:
+        uo, vo = uo.isel(depth=0), vo.isel(depth=0)
+
+    zos = physics["zos"].isel(time=0)
+    if "depth" in zos.dims:
+        zos = zos.isel(depth=0)
+
+    # FSLE: independent Lagrangian ocean-front diagnostic, requires forward
+    # forecast days beyond target_date -- not always available (e.g. for
+    # far-past historical dates like the 11 Oct 2023 validation run), so
+    # this degrades gracefully rather than failing the whole pipeline; its
+    # WLC weight is proportionally redistributed when absent (see
+    # overlay_outerline.py::weighted_overlay_outerline).
+    fsle_field = None
+    try:
+        fsle_field = fetch_and_compute_fsle(target_date)
+    except Exception:
+        logger.warning(
+            "FSLE computation unavailable for %s (outerline); fsle_front weight redistributed",
+            target_date, exc_info=True,
+        )
+
+    # Wind: same ASCAT 7-day composite Lenigas/GT already fetch. Degrades
+    # gracefully (wind=None) if unavailable; its (1%) wind_visibility
+    # weight is proportionally redistributed when absent.
+    wind_speed = None
+    try:
+        wind = fetch_wind_data_lenigas(target_date, aoi=config.AOI_OUTERLINE)
+        wind_speed = wind["wind_speed"]
+    except Exception:
+        logger.warning(
+            "Wind data unavailable for %s (outerline); wind_visibility weight redistributed",
+            target_date, exc_info=True,
+        )
+
+    moon_details = moon_phase_details(target_date)
+
+    # 2-4. Gradients, Outerline normalization, Outerline WLC overlay +
+    #      convergence multiplier + moon-phase multiplier ------------------
+    hotspot_score, layer_scores, feature_count = compute_hotspot_score_outerline(
+        sst, uo, vo, chl, zos, depth, target_date,
+        fsle=fsle_field, wind_speed=wind_speed,
+        illumination_fraction=moon_details["illumination_fraction"],
+    )
+
+    # 5. Export -------------------------------------------------------------
+    date_dir = os.path.join(config.HISTORY_DIR, target_date, config.OUTERLINE_OUTPUT_SUBDIR)
+    os.makedirs(date_dir, exist_ok=True)
+
+    geotiff_path = export_geotiff(hotspot_score, output_path=os.path.join(date_dir, "hotspot_score_outerline.tif"))
+
+    for key, layer in layer_scores.items():
+        export_geotiff(layer, output_path=os.path.join(date_dir, f"layer_{key}.tif"))
+
+    with open(os.path.join(date_dir, "moon_phase.json"), "w", encoding="utf-8") as f:
+        json.dump({"date": target_date, **moon_details}, f)
+
+    logger.info("Outerline pipeline complete. GeoTIFF: %s", geotiff_path)
+    return geotiff_path
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="Compute the daily Yellowfin Tuna Bite Probability Score for SE Queensland"
@@ -539,18 +792,26 @@ def main():
     parser.add_argument("--date", default=config.DEFAULT_TARGET_DATE, help="Target date, YYYY-MM-DD")
     parser.add_argument(
         "--version",
-        choices=["v1", "v2", "lenigas"],
+        choices=["v1", "v2", "lenigas", "gt", "outerline"],
         default="v1",
         help="Scoring model version to run: 'v1' (default, existing production pipeline), "
-        "'v2' (separate structure/eddy/bell-curve model, writes to output/history/<date>/v2/), or "
-        "'lenigas' (separate fisherman-notes-derived model, writes to "
-        "output/history/<date>/lenigas/)",
+        "'v2' (separate structure/eddy/bell-curve model, writes to output/history/<date>/v2/), "
+        "'lenigas' (separate fisherman-notes-derived YFT model, writes to "
+        "output/history/<date>/lenigas/), "
+        "'gt' (Giant Trevally reef-ambush model, writes to output/history/<date>/gt/), or "
+        "'outerline' (Yellowfin Environmental Hotspot Score / v3, rewards co-located "
+        "favourable features over single-factor extremes, writes to "
+        "output/history/<date>/outerline/)",
     )
     args = parser.parse_args()
     if args.version == "v2":
         run_pipeline_v2(args.date)
     elif args.version == "lenigas":
         run_pipeline_lenigas(args.date)
+    elif args.version == "gt":
+        run_pipeline_gt(args.date)
+    elif args.version == "outerline":
+        run_pipeline_outerline(args.date)
     else:
         run_pipeline(args.date)
 

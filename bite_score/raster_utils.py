@@ -56,6 +56,20 @@ def raster_to_rgba(values: np.ndarray, cmap_name: str = "turbo") -> np.ndarray:
     return rgba
 
 
+def sst_celsius_to_rgba(values: np.ndarray, vmin: float = 17.0, vmax: float = 29.0) -> np.ndarray:
+    """Render raw SST (°C) with a fixed vmin-vmax colour scale.
+
+    Uses the RdYlBu_r colormap: blue = cold (17 °C), yellow = mid (23 °C),
+    red = warm (29 °C). Values outside the range are clamped to the nearest
+    colour. NaN / land cells are rendered fully transparent.
+    """
+    normed = np.clip((values - vmin) / (vmax - vmin), 0.0, 1.0)
+    colormap = matplotlib.colormaps["RdYlBu_r"]
+    rgba = colormap(normed)
+    rgba[..., 3] = np.where(np.isnan(values), 0.0, 0.85)
+    return rgba
+
+
 def fsle_to_rgba(values: np.ndarray, cmap_name: str = "inferno") -> np.ndarray:
     """
     Convert a Finite-Size Lyapunov Exponent field (units 1/day, NaN where

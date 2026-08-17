@@ -46,13 +46,16 @@ class TestLayerWeightsLenigasConfig:
     def test_weights_sum_to_one(self):
         assert np.isclose(sum(config.LAYER_WEIGHTS_LENIGAS.values()), 1.0)
 
-    def test_includes_all_seven_lenigas_factors(self):
+    def test_includes_all_six_lenigas_factors(self):
         expected = {
-            "sst_bell_lenigas", "depth_suitability_lenigas", "distance_offshore",
+            "sst_bell_lenigas", "depth_suitability_lenigas",
             "upwelling_downwelling", "eac_axis_position", "eac_convergence",
             "ssha_hotspot_lenigas",
         }
         assert set(config.LAYER_WEIGHTS_LENIGAS) == expected
+
+    def test_distance_offshore_removed(self):
+        assert "distance_offshore" not in config.LAYER_WEIGHTS_LENIGAS
 
     def test_wind_is_not_a_weighted_factor(self):
         assert not any("wind" in key for key in config.LAYER_WEIGHTS_LENIGAS)
@@ -60,20 +63,16 @@ class TestLayerWeightsLenigasConfig:
     def test_ssha_hotspot_weight_is_0_10(self):
         assert config.LAYER_WEIGHTS_LENIGAS["ssha_hotspot_lenigas"] == pytest.approx(0.10)
 
-    def test_original_six_weights_rescaled_by_0_90(self):
-        # 0.15*0.90=0.135, 0.20*0.90=0.18, 0.10*0.90=0.09, 0.15*0.90=0.135,
-        # 0.20*0.90=0.18, 0.20*0.90=0.18 -- see config.py's comment above
-        # LAYER_WEIGHTS_LENIGAS for the full arithmetic.
-        expected = {
-            "sst_bell_lenigas": 0.135,
-            "depth_suitability_lenigas": 0.18,
-            "distance_offshore": 0.09,
-            "upwelling_downwelling": 0.135,
-            "eac_axis_position": 0.18,
-            "eac_convergence": 0.18,
-        }
-        for key, value in expected.items():
-            assert config.LAYER_WEIGHTS_LENIGAS[key] == pytest.approx(value)
+    def test_new_weights_reflect_eac_priority(self):
+        # EAC axis + convergence together are the dominant pair after
+        # distance_offshore was removed and its weight redistributed.
+        w = config.LAYER_WEIGHTS_LENIGAS
+        assert w["eac_axis_position"] == pytest.approx(0.210)
+        assert w["eac_convergence"]   == pytest.approx(0.205)
+        assert w["upwelling_downwelling"] == pytest.approx(0.160)
+        assert w["sst_bell_lenigas"]        == pytest.approx(0.145)
+        assert w["depth_suitability_lenigas"] == pytest.approx(0.180)
+        assert w["ssha_hotspot_lenigas"]      == pytest.approx(0.100)
 
 
 class TestScoreUpwellingDownwellingLenigas:
@@ -186,7 +185,7 @@ class TestWeightedOverlayLenigas:
         one_layer = xr.full_like(depth_score, fill_value=0.5)
 
         bite_score, layer_scores = weighted_overlay_lenigas(
-            one_layer, depth_score, one_layer, one_layer, one_layer, one_layer, one_layer
+            one_layer, depth_score, one_layer, one_layer, one_layer, one_layer
         )
         land_mask = np.isnan(reference_grid.values)
         assert np.isnan(bite_score.values[land_mask]).all()
@@ -197,7 +196,7 @@ class TestWeightedOverlayLenigas:
         one_layer = xr.full_like(depth_score, fill_value=0.8)
 
         bite_score, _ = weighted_overlay_lenigas(
-            one_layer, depth_score, one_layer, one_layer, one_layer, one_layer, one_layer
+            one_layer, depth_score, one_layer, one_layer, one_layer, one_layer
         )
         finite = bite_score.values[np.isfinite(bite_score.values)]
         assert finite.size > 0
@@ -209,7 +208,7 @@ class TestWeightedOverlayLenigas:
         one_layer = xr.full_like(depth_score, fill_value=1.0)
 
         bite_score, _ = weighted_overlay_lenigas(
-            one_layer, depth_score, one_layer, one_layer, one_layer, one_layer, one_layer
+            one_layer, depth_score, one_layer, one_layer, one_layer, one_layer
         )
         finite = bite_score.values[np.isfinite(bite_score.values)]
         assert finite.max() == pytest.approx(100.0, abs=1e-6)
@@ -219,21 +218,22 @@ class TestWeightedOverlayLenigas:
         one_layer = xr.full_like(depth_score, fill_value=0.8)
 
         _, layer_scores = weighted_overlay_lenigas(
-            one_layer, depth_score, one_layer, one_layer, one_layer, one_layer, one_layer
+            one_layer, depth_score, one_layer, one_layer, one_layer, one_layer
         )
         assert "ssha_hotspot_lenigas" in layer_scores
+        assert "distance_offshore" not in layer_scores
 
     def test_weights_not_summing_to_one_raises(self, reference_grid):
         depth_score = (reference_grid / reference_grid.max()).clip(min=0, max=1)
         one_layer = xr.full_like(depth_score, fill_value=0.5)
         bad_weights = {
-            "sst_bell_lenigas": 0.5, "depth_suitability_lenigas": 0.5, "distance_offshore": 0.5,
-            "upwelling_downwelling": 0.5, "eac_axis_position": 0.5, "eac_convergence": 0.5,
-            "ssha_hotspot_lenigas": 0.5,
+            "sst_bell_lenigas": 0.5, "depth_suitability_lenigas": 0.5,
+            "upwelling_downwelling": 0.5, "eac_axis_position": 0.5,
+            "eac_convergence": 0.5, "ssha_hotspot_lenigas": 0.5,
         }
         with pytest.raises(ValueError):
             weighted_overlay_lenigas(
-                one_layer, depth_score, one_layer, one_layer, one_layer, one_layer, one_layer,
+                one_layer, depth_score, one_layer, one_layer, one_layer, one_layer,
                 weights=bad_weights,
             )
 

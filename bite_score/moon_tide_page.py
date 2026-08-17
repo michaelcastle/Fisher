@@ -109,7 +109,8 @@ def build_moon_tide_page_html(date: str) -> str:
   }};
 </script>
 <style>
-  body {{ background: radial-gradient(circle at top left, #101c38 0%, #0b1326 55%, #070c18 100%); }}
+  html, body {{ height: 100%; overflow: hidden; }}
+  body {{ background: #0b1326; }}
   .material-symbols-outlined {{ font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; vertical-align: middle; }}
   .glass-panel {{
     background: rgba(23, 31, 51, 0.55);
@@ -118,26 +119,78 @@ def build_moon_tide_page_html(date: str) -> str:
     -webkit-backdrop-filter: blur(14px);
   }}
   .mono {{ font-family: 'JetBrains Mono', monospace; }}
+  .mtp-nav-inactive {{ color: #94a3b8; transition: all .15s; }}
+  .mtp-nav-inactive:hover {{ background: rgba(30,41,59,.8); color: #e2e8f0; }}
+  .mtp-history-item {{
+    display: flex; align-items: center; gap: 8px; padding: 6px 10px;
+    border-radius: 8px; cursor: pointer; font-size: 12px; color: #94a3b8;
+    text-decoration: none; transition: all .15s;
+  }}
+  .mtp-history-item:hover {{ background: rgba(30,41,59,.8); color: #e2e8f0; }}
+  .mtp-history-item.current {{ background: rgba(8,145,178,.15); color: #67e8f9; font-weight: 600; }}
+  .mtp-history-empty {{ font-size: 11px; color: #475569; padding: 8px 10px; }}
 </style>
 </head>
-<body class="min-h-screen text-slate-200 font-sans">
-  <header class="flex items-center justify-between px-6 md:px-10 py-5 border-b border-white/10">
-    <div class="flex items-center gap-3">
-      <a href="/history/{safe_date}" class="flex items-center gap-2 text-slate-400 hover:text-cyan-400 transition-colors" title="Back to map">
-        <span class="material-symbols-outlined text-xl">arrow_back</span>
-      </a>
-      <div>
-        <h1 class="text-lg font-extrabold tracking-tight text-white">{_BRAND_NAME}</h1>
-        <p class="text-[11px] uppercase tracking-widest text-cyan-400/80">{_BRAND_TAGLINE} &middot; Moon &amp; Tides</p>
-      </div>
-    </div>
-    <div class="text-right">
-      <p class="text-[10px] uppercase tracking-widest text-slate-500">Data date</p>
-      <p class="mono text-base text-cyan-400" id="mtp-date">{safe_date}</p>
-    </div>
-  </header>
+<body class="h-full flex overflow-hidden text-slate-200 font-sans">
 
-  <main class="px-6 md:px-10 py-8 max-w-6xl mx-auto">
+<!-- SIDEBAR -->
+<aside style="width:220px;min-width:220px;background:#0d1525;border-right:1px solid rgba(30,41,59,.8)" class="flex flex-col h-screen sticky top-0 shrink-0">
+  <div class="p-4" style="border-bottom:1px solid rgba(30,41,59,.8)">
+    <a href="/" style="text-decoration:none">
+      <h1 class="text-sm font-bold flex items-center gap-2" style="color:#00f2ff">
+        <svg class="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M21 12c0 0-3-6-9-6S3 12 3 12s3 6 9 6 9-6 9-6z" stroke-linecap="round"/>
+          <circle cx="15" cy="12" r="1.5" fill="currentColor"/>
+        </svg>
+        TunaTrack<span style="color:#fff">SEQ</span>
+      </h1>
+    </a>
+    <div class="mt-2">
+      <p class="text-[10px] uppercase text-slate-500 tracking-widest">Moon &amp; Tides</p>
+      <p class="mono text-xs" style="color:#00f2ff">{safe_date}</p>
+    </div>
+  </div>
+  <nav class="px-3 py-2 space-y-1">
+    <a href="/" style="text-decoration:none" class="flex items-center gap-3 px-3 py-2.5 rounded-lg mtp-nav-inactive">
+      <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path d="M9 20l-5.447-2.724A2 2 0 013 15.488V5.111a2 2 0 011.168-1.815l6-2.667a2 2 0 011.664 0l6 2.667A2 2 0 0119 5.111v10.377a2 2 0 01-1.168 1.815L12 20m-3 0l3 1.5m0-1.5v-6" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+      </svg>
+      Live Map
+    </a>
+    <a href="/tactics" style="text-decoration:none" class="flex items-center gap-3 px-3 py-2.5 rounded-lg mtp-nav-inactive">
+      <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+      </svg>
+      Catching Tactics
+    </a>
+    <a href="/tips" style="text-decoration:none" class="flex items-center gap-3 px-3 py-2.5 rounded-lg mtp-nav-inactive">
+      <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+      </svg>
+      Yellowfin Tips
+    </a>
+    <a href="/conditions" style="text-decoration:none" class="flex items-center gap-3 px-3 py-2.5 rounded-lg mtp-nav-inactive">
+      <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+      </svg>
+      Sea Conditions
+    </a>
+  </nav>
+  <div style="border-top:1px solid rgba(30,41,59,.8)" class="flex flex-col flex-1 overflow-hidden">
+    <div class="px-4 py-2 flex items-center gap-2">
+      <span class="material-symbols-outlined" style="font-size:14px;color:#475569">calendar_month</span>
+      <span class="text-[10px] uppercase tracking-widest" style="color:#475569">Historical Dates</span>
+    </div>
+    <div id="mtp-history-list" class="flex-1 overflow-y-auto px-2 pb-2"></div>
+  </div>
+  <div class="p-3 text-[10px]" style="border-top:1px solid rgba(30,41,59,.8);color:#475569">
+    SE Queensland<br/>Noosa &rarr; Gold Coast
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="flex-1 overflow-y-auto" style="background:radial-gradient(circle at top left,#101c38 0%,#0b1326 55%,#070c18 100%)">
+  <div class="px-6 md:px-10 py-8 max-w-5xl mx-auto">
     <div id="mtp-unavailable-banner" class="hidden mb-6 glass-panel rounded-xl px-5 py-3 text-sm text-amber-300 flex items-center gap-2">
       <span class="material-symbols-outlined text-lg">warning</span>
       <span>No moon-phase data has been processed for {safe_date} yet. Run the pipeline for this date, then reload.</span>
@@ -243,7 +296,20 @@ def build_moon_tide_page_html(date: str) -> str:
             </div>
           </div>
         </div>
-        <p class="text-[11px] text-slate-500 mt-3">Times shown in Australia/Brisbane local time (AEST, fixed UTC+10 year-round &ndash; Queensland does not observe daylight saving).</p>
+        <p class="text-[11px] text-slate-500 mt-3">Times in Brisbane time (AEST, UTC+10). Queensland does not observe daylight saving.</p>
+        <!-- Tide graphs -->
+        <div class="mt-5 grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div>
+            <p class="text-[10px] uppercase tracking-widest text-slate-500 mb-2" id="mtp-tg-label-tangalooma">Tangalooma &mdash; today&rsquo;s tide</p>
+            <canvas id="mtp-tide-chart-tangalooma" height="160" style="width:100%;display:block;border-radius:10px;background:rgba(255,255,255,.03)"></canvas>
+            <p class="text-[10px] text-slate-500 mt-1" id="mtp-tg-note-tangalooma">Loading&hellip;</p>
+          </div>
+          <div>
+            <p class="text-[10px] uppercase tracking-widest text-slate-500 mb-2" id="mtp-tg-label-maroochydore">Maroochydore &mdash; today&rsquo;s tide</p>
+            <canvas id="mtp-tide-chart-maroochydore" height="160" style="width:100%;display:block;border-radius:10px;background:rgba(255,255,255,.03)"></canvas>
+            <p class="text-[10px] text-slate-500 mt-1" id="mtp-tg-note-maroochydore">Loading&hellip;</p>
+          </div>
+        </div>
       </section>
 
       <!-- Moonrise / Moonset: REAL data (astral.moon.moonrise/moonset for the AOI centroid) -->
@@ -254,15 +320,15 @@ def build_moon_tide_page_html(date: str) -> str:
         </div>
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <p class="text-[11px] uppercase tracking-widest text-slate-500">Rise (UTC)</p>
+            <p class="text-[11px] uppercase tracking-widest text-slate-500">Rise (AEST)</p>
             <p class="mono text-lg text-cyan-400" id="mtp-moonrise">&ndash;</p>
           </div>
           <div>
-            <p class="text-[11px] uppercase tracking-widest text-slate-500">Set (UTC)</p>
+            <p class="text-[11px] uppercase tracking-widest text-slate-500">Set (AEST)</p>
             <p class="mono text-lg text-cyan-400" id="mtp-moonset">&ndash;</p>
           </div>
         </div>
-        <p class="text-[11px] text-slate-500 mt-3">Computed for the AOI centroid (no per-spot GPS picker yet -- see Location below).</p>
+        <p class="text-[11px] text-slate-500 mt-3">Times in Brisbane time (AEST, UTC+10). Computed for the SEQ AOI centroid.</p>
       </section>
 
       <!-- Solunar Peak Windows: REAL data (moon_phase.py::moon_phase_details()'s solunar_periods field -- transit/antitransit elevation extrema + moonrise/moonset, see .squad/decisions/inbox/ripley-solunar-peak-windows.md) -->
@@ -298,7 +364,7 @@ def build_moon_tide_page_html(date: str) -> str:
             <p class="mono text-sm text-cyan-400" data-field="range">&ndash;</p>
           </div>
         </div>
-        <p class="text-[11px] text-slate-500 mt-3">Times in UTC (no per-observer timezone conversion yet &ndash; computed for the AOI centroid, see Location below).</p>
+        <p class="text-[11px] text-slate-500 mt-3">Times in Brisbane time (AEST, UTC+10). Computed for the SEQ AOI centroid.</p>
       </section>
 
       <!-- Location: REAL data (config.AOI bounding box/centroid -- no named sub-regions exist in config.py, no interactive GPS picker/minimap implemented) -->
@@ -326,7 +392,6 @@ def build_moon_tide_page_html(date: str) -> str:
       </section>
 
     </div>
-  </main>
 
   <script>
     var mtpDate = {safe_date!r};
@@ -369,7 +434,7 @@ def build_moon_tide_page_html(date: str) -> str:
         function formatMoonTime(iso, note) {{
           if (typeof iso === "string") {{
             var d = new Date(iso);
-            return d.toLocaleTimeString("en-GB", {{hour: "2-digit", minute: "2-digit", timeZone: "UTC"}});
+            return d.toLocaleTimeString("en-AU", {{hour: "2-digit", minute: "2-digit", timeZone: "Australia/Brisbane", hour12: false}});
           }}
           return note || "Does not occur today";
         }}
@@ -491,7 +556,131 @@ def build_moon_tide_page_html(date: str) -> str:
           if (card) renderTideSiteUnavailable(card, "Unavailable");
         }});
       }});
+
+    // ---- Historical dates sidebar ----
+    fetch("/api/history", {{cache: "no-store"}})
+      .then(function(r) {{ return r.json(); }})
+      .then(function(data) {{
+        var listEl = document.getElementById("mtp-history-list");
+        var dates = data.dates || [];
+        listEl.innerHTML = "";
+        var latestItem = document.createElement("a");
+        latestItem.href = "/";
+        latestItem.className = "mtp-history-item";
+        latestItem.innerHTML = '<span class="material-symbols-outlined" style="font-size:14px">bolt</span><span>Latest (live map)</span>';
+        listEl.appendChild(latestItem);
+        dates.forEach(function(d) {{
+          var item = document.createElement("a");
+          item.href = "/moon/" + d;
+          item.className = "mtp-history-item" + (d === mtpDate ? " current" : "");
+          item.innerHTML = '<span class="material-symbols-outlined" style="font-size:14px">nightlight</span><span>' + d + '</span>';
+          listEl.appendChild(item);
+        }});
+      }})
+      .catch(function() {{
+        var listEl = document.getElementById("mtp-history-list");
+        listEl.innerHTML = '<div class="mtp-history-empty">Server offline</div>';
+      }});
+
+    // ---- Tide graph ----
+    function drawTideChart(canvasId, noteId, siteData) {{
+      var noteEl = document.getElementById(noteId);
+      if (!siteData || !siteData.available || !siteData.series || siteData.series.length < 2) {{
+        noteEl.textContent = siteData && !siteData.available
+          ? "No tide data available for this date \u2014 the DES feed is a live 7-day window."
+          : "Tide series unavailable.";
+        return;
+      }}
+      noteEl.textContent = "";
+      var canvas = document.getElementById(canvasId);
+      // Make canvas pixel-width match rendered CSS width for sharp rendering
+      canvas.width = canvas.offsetWidth || canvas.parentElement.offsetWidth || 400;
+      var ctx = canvas.getContext("2d");
+      var W = canvas.width, H = canvas.height;
+      var pad = {{top: 24, right: 16, bottom: 32, left: 44}};
+      var series = siteData.series;
+      var turning = siteData.turning_points || [];
+      var pts = series.map(function(p) {{ return {{t: new Date(p.time).getTime(), v: p.prediction}}; }});
+      var minT = pts[0].t, maxT = pts[pts.length-1].t;
+      var vals = pts.map(function(p){{return p.v;}});
+      var minV = Math.min.apply(null, vals);
+      var maxV = Math.max.apply(null, vals);
+      var vPad = (maxV - minV) * 0.12 || 0.1;
+      minV -= vPad; maxV += vPad;
+      var vRange = maxV - minV;
+      var tRange = maxT - minT || 1;
+      function xp(t) {{ return pad.left + (t - minT) / tRange * (W - pad.left - pad.right); }}
+      function yp(v) {{ return H - pad.bottom - (v - minV) / vRange * (H - pad.top - pad.bottom); }}
+      ctx.clearRect(0, 0, W, H);
+      // Grid lines
+      ctx.strokeStyle = "rgba(255,255,255,0.04)";
+      ctx.lineWidth = 1;
+      for (var gi = 0; gi <= 4; gi++) {{
+        var gv = minV + vRange * gi / 4;
+        var gy = yp(gv);
+        ctx.beginPath(); ctx.moveTo(pad.left, gy); ctx.lineTo(W - pad.right, gy); ctx.stroke();
+        ctx.fillStyle = "rgba(148,163,184,0.55)";
+        ctx.font = "10px 'JetBrains Mono',monospace";
+        ctx.textAlign = "right";
+        ctx.fillText(gv.toFixed(1) + "m", pad.left - 4, gy + 3);
+      }}
+      // X-axis time labels every 6h
+      var sixH = 6 * 3600 * 1000;
+      for (var ht = minT; ht <= maxT + 60000; ht += sixH) {{
+        var hx = xp(ht);
+        var d = new Date(ht);
+        var label = d.toLocaleTimeString("en-AU", {{hour:"2-digit",minute:"2-digit",timeZone:"Australia/Brisbane",hour12:false}});
+        ctx.fillStyle = "rgba(148,163,184,0.55)";
+        ctx.font = "10px monospace";
+        ctx.textAlign = "center";
+        ctx.fillText(label, Math.min(Math.max(hx, pad.left + 16), W - pad.right - 16), H - 6);
+      }}
+      // Fill under curve
+      var grad = ctx.createLinearGradient(0, pad.top, 0, H - pad.bottom);
+      grad.addColorStop(0, "rgba(0,242,255,0.28)");
+      grad.addColorStop(1, "rgba(0,242,255,0.02)");
+      ctx.beginPath();
+      ctx.moveTo(xp(pts[0].t), H - pad.bottom);
+      ctx.lineTo(xp(pts[0].t), yp(pts[0].v));
+      for (var i = 1; i < pts.length; i++) ctx.lineTo(xp(pts[i].t), yp(pts[i].v));
+      ctx.lineTo(xp(pts[pts.length-1].t), H - pad.bottom);
+      ctx.closePath();
+      ctx.fillStyle = grad; ctx.fill();
+      // Line
+      ctx.beginPath();
+      ctx.moveTo(xp(pts[0].t), yp(pts[0].v));
+      for (var j = 1; j < pts.length; j++) ctx.lineTo(xp(pts[j].t), yp(pts[j].v));
+      ctx.strokeStyle = "#00f2ff"; ctx.lineWidth = 2; ctx.stroke();
+      // Turning point markers
+      turning.forEach(function(tp) {{
+        var tx = xp(new Date(tp.time).getTime());
+        var ty = yp(tp.height_m);
+        var color = tp.type === "High" ? "#34d399" : "#60a5fa";
+        ctx.beginPath(); ctx.arc(tx, ty, 4, 0, Math.PI*2);
+        ctx.fillStyle = color; ctx.fill();
+        ctx.fillStyle = color;
+        ctx.font = "bold 10px 'JetBrains Mono',monospace";
+        ctx.textAlign = "center";
+        var label = tp.type[0] + " " + tp.height_m.toFixed(1) + "m";
+        ctx.fillText(label, tx, tp.type === "High" ? ty - 8 : ty + 16);
+      }});
+    }}
+
+    fetch("/api/tide-series/" + encodeURIComponent(mtpDate), {{cache: "no-store"}})
+      .then(function(r) {{ if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); }})
+      .then(function(data) {{
+        var sites = data.sites || {{}};
+        drawTideChart("mtp-tide-chart-tangalooma", "mtp-tg-note-tangalooma", sites["tangalooma"]);
+        drawTideChart("mtp-tide-chart-maroochydore", "mtp-tg-note-maroochydore", sites["maroochydore"]);
+      }})
+      .catch(function(e) {{
+        ["tangalooma","maroochydore"].forEach(function(s) {{
+          var noteEl = document.getElementById("mtp-tg-note-" + s);
+          if (noteEl) noteEl.textContent = "Tide graph unavailable.";
+        }});
+      }});
   </script>
+</div></main>
 </body>
 </html>
 """

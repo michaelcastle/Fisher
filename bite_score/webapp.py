@@ -21,21 +21,31 @@ import time
 import webbrowser
 from datetime import datetime
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from urllib.parse import urlsplit
 
 from . import config
 from .data_ingestion import fetch_tide_data
-from .main import run_pipeline, run_pipeline_v2, run_pipeline_lenigas
+from .main import run_pipeline, run_pipeline_v2, run_pipeline_lenigas, run_pipeline_gt, run_pipeline_outerline
 from .mbgfc_chart import build_mbgfc_chart_png, load_mbgfc_locations
 from .date_layers import (
     DATE_LAYER_SPECS,
     DATE_LAYER_SPECS_V2,
     DATE_LAYER_SPECS_LENIGAS,
+    DATE_LAYER_SPECS_GT,
+    DATE_LAYER_SPECS_OUTERLINE,
     build_date_layer_assets,
     build_date_layer_assets_v2,
     build_date_layer_assets_lenigas,
+    build_date_layer_assets_gt,
+    build_date_layer_assets_outerline,
     build_sla_contours_json,
     validate_date_key,
 )
+from .pipeline_outerline import sample_point_outerline_from_date
+from .catching_tactics_page import build_catching_tactics_html
+from .yellowfin_tips_page import build_yellowfin_tips_html
+from .conditions_page import build_conditions_html
+from .windy_api import fetch_all as windy_fetch_all
 from .moon_tide_page import build_moon_tide_page_html
 from .tide import classify_tide_state, next_tide_events
 from .static_layers import (
@@ -49,6 +59,7 @@ logger = logging.getLogger(__name__)
 
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MAP_HTML_PATH = os.path.join(REPO_ROOT, "bite_score_map.html")
+STATIC_DIR = os.path.join(REPO_ROOT, "static")
 
 # Only matches real YYYY-MM-DD dates -- used for the Historical Data list
 # and the "/" root route's fallback "latest date", so `run_demo.py`'s
@@ -135,7 +146,7 @@ def _clear_date_layer_cache(target_date: str) -> None:
     """
     date_dir = os.path.join(config.HISTORY_DIR, target_date)
     subdirs = [date_dir]
-    for sub in ("v2", config.LENIGAS_OUTPUT_SUBDIR):
+    for sub in ("v2", config.LENIGAS_OUTPUT_SUBDIR, config.GT_OUTPUT_SUBDIR, config.OUTERLINE_OUTPUT_SUBDIR):
         p = os.path.join(date_dir, sub)
         if os.path.isdir(p):
             subdirs.append(p)
@@ -164,6 +175,12 @@ def _run_update_job(target_date: str) -> None:
             _state.update(state="running", message=f"Running Lenigas pipeline for {target_date}...", date=target_date)
         run_pipeline_lenigas(target_date)
         with _state_lock:
+            _state.update(state="running", message=f"Running GT pipeline for {target_date}...", date=target_date)
+        run_pipeline_gt(target_date)
+        with _state_lock:
+            _state.update(state="running", message=f"Running Outerline pipeline for {target_date}...", date=target_date)
+        run_pipeline_outerline(target_date)
+        with _state_lock:
             _state.update(state="running", message=f"Refreshing layer cache for {target_date}...", date=target_date)
         _clear_date_layer_cache(target_date)
         with _state_lock:
@@ -187,6 +204,16 @@ class BiteScoreRequestHandler(BaseHTTPRequestHandler):
         self.wfile.write(body)
 
     def do_GET(self):
+        # Strip any query string (e.g. "?layers=..." from a shareable direct
+        # link -- see visualize.py::bsqBuildShareUrl()/bsqGetLayersFromUrl())
+        # before routing below. Every route here matches on exact/prefix/
+        # suffix checks against `self.path` with no query-string handling of
+        # its own, so a link like "/history/2026-07-22?layers=sst,mld" would
+        # otherwise fail `/history/<date>`'s date-format validation (the
+        # query string would be treated as part of the date). The `layers`
+        # param is only ever read client-side (location.search), the server
+        # never needs to see it.
+        self.path = urlsplit(self.path).path
         if self.path in ("/", "/index.html", "/bite_score_map.html"):
             if not os.path.exists(MAP_HTML_PATH):
                 self._send_json(
@@ -446,6 +473,128 @@ class BiteScoreRequestHandler(BaseHTTPRequestHandler):
 
             as_of = max(reference_times.values()).isoformat() if reference_times else datetime.now(config.TIDE_TIMEZONE).isoformat()
             self._send_json({"date": date_str, "as_of": as_of, "sites": sites_payload})
+        elif self.path.startswith("/api/tide-series/"):
+            # Full tide Prediction time series for the given date, for both
+            # configured QLD DES sites -- backs the tide graph on /moon/<date>.
+            # Returns 10-minute-interval Prediction values filtered to the
+            # 24-hour window of `date_str` in Brisbane time. Gracefully
+            # returns available:false for dates outside the rolling live window.
+            date_str = self.path[len("/api/tide-series/"):].strip("/")
+            try:
+                validate_date_key(date_str)
+            except ValueError as exc:
+                self._send_json({"message": str(exc)}, status=400)
+                return
+            try:
+                tide_df = _get_tide_dataframe()
+            except RuntimeError as exc:
+                self._send_json({"message": str(exc)}, status=503)
+                return
+            try:
+                from datetime import date as _date_cls
+                day_start = datetime.strptime(date_str, "%Y-%m-%d").replace(
+                    hour=0, minute=0, second=0, microsecond=0,
+                    tzinfo=config.TIDE_TIMEZONE,
+                )
+                day_end = day_start.replace(hour=23, minute=59, second=59)
+            except ValueError:
+                self._send_json({"message": "Invalid date format"}, status=400)
+                return
+            sites_series = {}
+            for site_code, location_name in config.TIDE_SITES.items():
+                site_rows = tide_df[
+                    (tide_df["Site"].str.lower() == site_code.lower())
+                    & (tide_df["DateTime"] >= day_start)
+                    & (tide_df["DateTime"] <= day_end)
+                ].sort_values("DateTime").reset_index(drop=True)
+                if site_rows.empty:
+                    sites_series[site_code] = {"location_name": location_name, "available": False}
+                    continue
+                series = [
+                    {
+                        "time": row["DateTime"].isoformat(),
+                        "prediction": round(float(row["Prediction"]), 3),
+                    }
+                    for _, row in site_rows.iterrows()
+                ]
+                # Simple local-extremum turning points (same logic as tide.py)
+                import numpy as np
+                from scipy.signal import argrelextrema
+                vals = site_rows["Prediction"].to_numpy()
+                high_idx = argrelextrema(vals, np.greater, order=2)[0]
+                low_idx = argrelextrema(vals, np.less, order=2)[0]
+                turning = []
+                for idx in sorted(list(high_idx) + list(low_idx)):
+                    turning.append({
+                        "time": site_rows["DateTime"].iloc[idx].isoformat(),
+                        "type": "High" if idx in high_idx else "Low",
+                        "height_m": round(float(vals[idx]), 2),
+                    })
+                sites_series[site_code] = {
+                    "location_name": location_name,
+                    "available": True,
+                    "series": series,
+                    "turning_points": turning,
+                }
+            self._send_json({"date": date_str, "sites": sites_series})
+        elif self.path in ("/api/sst-raw/png", "/api/sst-raw/meta"):
+            # Custom SST rendering with a fixed 17-29 °C colour scale.
+            # Reads the latest NOAA MUR SST NetCDF from the raw-data cache
+            # and renders it using sst_celsius_to_rgba(), returning either a
+            # PNG image (for Leaflet ImageOverlay) or bounds/range metadata.
+            import io as _io
+            import numpy as _np
+            import xarray as _xr
+            from PIL import Image as _PilImage
+            from .raster_utils import sst_celsius_to_rgba as _sst_rgba
+            sst_path = os.path.join(config.RAW_DATA_DIR, "sst_erddap_latest.nc")
+            if not os.path.isfile(sst_path):
+                self._send_json({"message": "SST data not available — run the pipeline first."}, status=404)
+                return
+            try:
+                ds = _xr.open_dataset(sst_path)
+                v = ds["analysed_sst"].squeeze()
+                values = v.values.astype(float)
+                # NOAA MUR SST is delivered in Kelvin for some date ranges;
+                # detect and convert automatically.
+                finite = values[_np.isfinite(values)]
+                if finite.size > 0 and float(_np.nanmean(finite)) > 100:
+                    values = values - 273.15
+                # MUR lat/lon coordinates; north-up flip for display.
+                lat_vals = v["latitude"].values
+                if float(lat_vals[0]) < float(lat_vals[-1]):
+                    values = values[::-1, :]
+                lat_min = float(lat_vals.min())
+                lat_max = float(lat_vals.max())
+                lon_vals = v["longitude"].values
+                lon_min = float(lon_vals.min())
+                lon_max = float(lon_vals.max())
+                bounds = [[lat_min, lon_min], [lat_max, lon_max]]
+                if self.path.endswith("/meta"):
+                    finite_c = values[_np.isfinite(values)]
+                    self._send_json({
+                        "bounds": bounds,
+                        "colorscale": {"min": 17.0, "max": 29.0, "unit": "°C"},
+                        "data_min": round(float(_np.nanmin(finite_c)), 2) if finite_c.size else None,
+                        "data_max": round(float(_np.nanmax(finite_c)), 2) if finite_c.size else None,
+                        "source": "NOAA MUR SST (ERDDAP jplMURSST41)",
+                    })
+                    return
+                rgba = _sst_rgba(values)
+                rgba_uint8 = (_np.clip(rgba, 0.0, 1.0) * 255).astype("uint8")
+                img = _PilImage.fromarray(rgba_uint8, mode="RGBA")
+                buf = _io.BytesIO()
+                img.save(buf, format="PNG")
+                png_bytes = buf.getvalue()
+                self.send_response(200)
+                self.send_header("Content-Type", "image/png")
+                self.send_header("Content-Length", str(len(png_bytes)))
+                self.send_header("Cache-Control", "public, max-age=600")
+                self.end_headers()
+                self.wfile.write(png_bytes)
+            except Exception as _exc:
+                logger.warning("SST raw render failed: %s", _exc, exc_info=True)
+                self._send_json({"message": str(_exc)}, status=500)
         elif self.path.startswith("/api/date-layer/") and (
             self.path.endswith("/chart.png") or self.path.endswith("/meta")
         ):
@@ -483,7 +632,17 @@ class BiteScoreRequestHandler(BaseHTTPRequestHandler):
                 self.send_response(200)
                 self.send_header("Content-Type", "image/png")
                 self.send_header("Content-Length", str(len(body)))
-                self.send_header("Cache-Control", "public, max-age=3600")
+                # no-store (not the 1hr public caching used by the static
+                # layers below): this PNG is regenerated whenever the
+                # pipeline is re-run for this date, but the URL never
+                # changes, so a long-lived Cache-Control let browsers keep
+                # showing a stale heatmap after a fresh "Update Data" run
+                # even though the meta endpoint (already fetched with
+                # cache: "no-store" client-side) reported fresh min/max.
+                # The file is already cheap to serve (cached on disk by
+                # date_layers.py), so there's no real cost to always
+                # revalidating.
+                self.send_header("Cache-Control", "no-store")
                 self.end_headers()
                 self.wfile.write(body)
             else:
@@ -532,7 +691,137 @@ class BiteScoreRequestHandler(BaseHTTPRequestHandler):
                 self.send_response(200)
                 self.send_header("Content-Type", "image/png")
                 self.send_header("Content-Length", str(len(body)))
-                self.send_header("Cache-Control", "public, max-age=3600")
+                # no-store: see the identical comment on /api/date-layer/
+                # above -- this URL doesn't change when the Lenigas
+                # pipeline is re-run for the same date, so long-lived
+                # caching here was the cause of the map "not updating"
+                # after downloading fresh data for a date.
+                self.send_header("Cache-Control", "no-store")
+                self.end_headers()
+                self.wfile.write(body)
+            else:
+                with open(meta_path, "r", encoding="utf-8") as f:
+                    meta = json.load(f)
+                self._send_json(meta)
+        elif self.path.startswith("/api/date-layer-gt/") and (
+            self.path.endswith("/chart.png") or self.path.endswith("/meta")
+        ):
+            # GT (Giant Trevally) counterpart of /api/date-layer-lenigas/
+            # above -- the combined GT Bite Score heatmap plus its 6 WLC
+            # factors (eac_edge_gt/upwelling_gt/depth_gt/sst_gt/
+            # current_gradient_gt/north_wind_gt), read from that date's
+            # SEPARATE output/history/<date>/gt/ subfolder (see
+            # date_layers.py::DATE_LAYER_SPECS_GT/build_date_layer_assets_gt()
+            # and main.py::run_pipeline_gt()). Most dates simply don't have
+            # a GT run yet -- expected, surfaces here as an ordinary 404
+            # (never a 500/crash). Never referred to as "v4" anywhere.
+            suffix = "/chart.png" if self.path.endswith("/chart.png") else "/meta"
+            rest = self.path[len("/api/date-layer-gt/"):-len(suffix)]
+            date_str, _, key = rest.partition("/")
+            try:
+                validate_date_key(date_str)
+            except ValueError as exc:
+                self._send_json({"message": str(exc)}, status=400)
+                return
+            if key not in DATE_LAYER_SPECS_GT:
+                self._send_json({"message": f"Unknown GT layer: {key}"}, status=404)
+                return
+            try:
+                png_path, meta_path = build_date_layer_assets_gt(date_str, key)
+            except FileNotFoundError as exc:
+                self._send_json({"message": str(exc)}, status=404)
+                return
+            except Exception as exc:
+                logger.warning("GT date layer %s/%s unavailable", date_str, key, exc_info=True)
+                self._send_json({"message": str(exc)}, status=404)
+                return
+            if suffix == "/chart.png":
+                with open(png_path, "rb") as f:
+                    body = f.read()
+                self.send_response(200)
+                self.send_header("Content-Type", "image/png")
+                self.send_header("Content-Length", str(len(body)))
+                # no-store: see the identical comment on /api/date-layer/
+                # above.
+                self.send_header("Cache-Control", "no-store")
+                self.end_headers()
+                self.wfile.write(body)
+            else:
+                with open(meta_path, "r", encoding="utf-8") as f:
+                    meta = json.load(f)
+                self._send_json(meta)
+        elif self.path.startswith("/api/date-layer-outerline/") and self.path.endswith("/point"):
+            # Outerline ("v3" / Yellowfin Environmental Hotspot Score)
+            # "click for details" endpoint: samples the nearest grid cell
+            # to ?lat=&lon= in that date's already-exported layer GeoTIFFs
+            # and returns the hotspot score, every contributing component
+            # (0-100), the feature-convergence count, and a plain-English
+            # explanation string (see pipeline_outerline.py::sample_point_outerline_from_date()).
+            # Unlike every other /api/date-layer*/ route, this has no
+            # "chart.png"/"meta" suffix -- it answers a single point query,
+            # not an image tile.
+            date_str = self.path[len("/api/date-layer-outerline/"):-len("/point")]
+            try:
+                validate_date_key(date_str)
+            except ValueError as exc:
+                self._send_json({"message": str(exc)}, status=400)
+                return
+            query = dict(pair.split("=") for pair in urlsplit(self.path).query.split("&") if "=" in pair)
+            try:
+                lat = float(query["lat"])
+                lon = float(query["lon"])
+            except (KeyError, ValueError):
+                self._send_json({"message": "lat and lon query parameters are required"}, status=400)
+                return
+            try:
+                result = sample_point_outerline_from_date(date_str, lat, lon)
+            except FileNotFoundError as exc:
+                self._send_json({"message": str(exc)}, status=404)
+                return
+            except Exception as exc:
+                logger.warning("Outerline point query %s (%s,%s) failed", date_str, lat, lon, exc_info=True)
+                self._send_json({"message": str(exc)}, status=500)
+                return
+            self._send_json(result)
+        elif self.path.startswith("/api/date-layer-outerline/") and (
+            self.path.endswith("/chart.png") or self.path.endswith("/meta")
+        ):
+            # Outerline ("v3" / Yellowfin Environmental Hotspot Score)
+            # counterpart of /api/date-layer-gt/ above -- the combined
+            # hotspot score heatmap plus its WLC factor layers, read from
+            # that date's SEPARATE output/history/<date>/outerline/
+            # subfolder (see date_layers.py::DATE_LAYER_SPECS_OUTERLINE/
+            # build_date_layer_assets_outerline() and
+            # main.py::run_pipeline_outerline()). Most dates simply don't
+            # have an Outerline run yet -- expected, surfaces here as an
+            # ordinary 404 (never a 500/crash).
+            suffix = "/chart.png" if self.path.endswith("/chart.png") else "/meta"
+            rest = self.path[len("/api/date-layer-outerline/"):-len(suffix)]
+            date_str, _, key = rest.partition("/")
+            try:
+                validate_date_key(date_str)
+            except ValueError as exc:
+                self._send_json({"message": str(exc)}, status=400)
+                return
+            if key not in DATE_LAYER_SPECS_OUTERLINE:
+                self._send_json({"message": f"Unknown Outerline layer: {key}"}, status=404)
+                return
+            try:
+                png_path, meta_path = build_date_layer_assets_outerline(date_str, key)
+            except FileNotFoundError as exc:
+                self._send_json({"message": str(exc)}, status=404)
+                return
+            except Exception as exc:
+                logger.warning("Outerline date layer %s/%s unavailable", date_str, key, exc_info=True)
+                self._send_json({"message": str(exc)}, status=404)
+                return
+            if suffix == "/chart.png":
+                with open(png_path, "rb") as f:
+                    body = f.read()
+                self.send_response(200)
+                self.send_header("Content-Type", "image/png")
+                self.send_header("Content-Length", str(len(body)))
+                self.send_header("Cache-Control", "no-store")
                 self.end_headers()
                 self.wfile.write(body)
             else:
@@ -579,7 +868,9 @@ class BiteScoreRequestHandler(BaseHTTPRequestHandler):
                 self.send_response(200)
                 self.send_header("Content-Type", "image/png")
                 self.send_header("Content-Length", str(len(body)))
-                self.send_header("Cache-Control", "public, max-age=3600")
+                # no-store: see the identical comment on /api/date-layer/
+                # above.
+                self.send_header("Cache-Control", "no-store")
                 self.end_headers()
                 self.wfile.write(body)
             else:
@@ -614,6 +905,30 @@ class BiteScoreRequestHandler(BaseHTTPRequestHandler):
             self.send_header("Cache-Control", "no-store")
             self.end_headers()
             self.wfile.write(body)
+        elif self.path == "/tactics":
+            body = build_catching_tactics_html().encode("utf-8")
+            self.send_response(200)
+            self.send_header("Content-Type", "text/html; charset=utf-8")
+            self.send_header("Content-Length", str(len(body)))
+            self.send_header("Cache-Control", "no-store")
+            self.end_headers()
+            self.wfile.write(body)
+        elif self.path == "/tips":
+            body = build_yellowfin_tips_html().encode("utf-8")
+            self.send_response(200)
+            self.send_header("Content-Type", "text/html; charset=utf-8")
+            self.send_header("Content-Length", str(len(body)))
+            self.send_header("Cache-Control", "no-store")
+            self.end_headers()
+            self.wfile.write(body)
+        elif self.path == "/conditions":
+            body = build_conditions_html().encode("utf-8")
+            self.send_response(200)
+            self.send_header("Content-Type", "text/html; charset=utf-8")
+            self.send_header("Content-Length", str(len(body)))
+            self.send_header("Cache-Control", "no-store")
+            self.end_headers()
+            self.wfile.write(body)
         elif self.path.startswith("/moon/"):
             # Standalone "Moon & Tides" detail page (Lambert) -- a small
             # dark glass-panel/bento-grid page, NOT the Folium map, so it's
@@ -638,6 +953,28 @@ class BiteScoreRequestHandler(BaseHTTPRequestHandler):
             self.send_header("Cache-Control", "no-store")
             self.end_headers()
             self.wfile.write(body)
+        elif self.path.startswith("/static/"):
+            # Serve files from the repo-root static/ folder (e.g. images
+            # referenced by standalone pages like /tactics).
+            filename = os.path.basename(self.path[len("/static/"):])
+            if not filename:
+                self._send_json({"message": "Not found"}, status=404)
+                return
+            file_path = os.path.join(STATIC_DIR, filename)
+            if not os.path.isfile(file_path):
+                self._send_json({"message": "Not found"}, status=404)
+                return
+            ext = os.path.splitext(filename)[1].lower()
+            mime = {".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg",
+                    ".gif": "image/gif", ".webp": "image/webp", ".svg": "image/svg+xml"}.get(ext, "application/octet-stream")
+            with open(file_path, "rb") as f:
+                body = f.read()
+            self.send_response(200)
+            self.send_header("Content-Type", mime)
+            self.send_header("Content-Length", str(len(body)))
+            self.send_header("Cache-Control", "public, max-age=86400")
+            self.end_headers()
+            self.wfile.write(body)
         else:
             self._send_json({"message": "Not found"}, status=404)
 
@@ -659,6 +996,30 @@ class BiteScoreRequestHandler(BaseHTTPRequestHandler):
             thread = threading.Thread(target=_run_update_job, args=(target_date,), daemon=True)
             thread.start()
             self._send_json({"status": "started", "date": target_date}, status=202)
+        elif self.path == "/api/windy/forecast":
+            length = int(self.headers.get("Content-Length", 0) or 0)
+            raw = self.rfile.read(length) if length else b"{}"
+            try:
+                payload = json.loads(raw or b"{}")
+            except json.JSONDecodeError:
+                self._send_json({"message": "Invalid JSON"}, status=400)
+                return
+            try:
+                lat = float(payload.get("lat", -27.0))
+                lon = float(payload.get("lon", 154.0))
+            except (TypeError, ValueError):
+                self._send_json({"message": "lat/lon must be numbers"}, status=400)
+                return
+            # Bounds-check: SE Queensland + seamount region
+            if not (-35.0 <= lat <= -20.0 and 140.0 <= lon <= 160.0):
+                self._send_json({"message": "lat/lon out of supported range"}, status=400)
+                return
+            try:
+                result = windy_fetch_all(lat, lon)
+            except Exception as exc:
+                self._send_json({"errors": {"all": str(exc)}}, status=500)
+                return
+            self._send_json(result)
         else:
             self._send_json({"message": "Not found"}, status=404)
 

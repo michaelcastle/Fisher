@@ -192,7 +192,6 @@ DATE_LAYER_SPECS_LENIGAS = {
     "bite_score_lenigas": {"filename": "bite_score_lenigas.tif", "rgba_fn": raster_to_rgba},
     "sst_bell": {"filename": "layer_sst_bell_lenigas.tif", "rgba_fn": raster_to_rgba},
     "depth_suitability": {"filename": "layer_depth_suitability_lenigas.tif", "rgba_fn": raster_to_rgba},
-    "distance_offshore": {"filename": "layer_distance_offshore.tif", "rgba_fn": raster_to_rgba},
     "upwelling_downwelling": {"filename": "layer_upwelling_downwelling.tif", "rgba_fn": raster_to_rgba},
     "eac_axis_position": {"filename": "layer_eac_axis_position.tif", "rgba_fn": raster_to_rgba},
     "eac_convergence": {"filename": "layer_eac_convergence.tif", "rgba_fn": raster_to_rgba},
@@ -242,6 +241,138 @@ def build_date_layer_assets_lenigas(date: str, key: str, force_rebuild: bool = F
         json.dump(meta, f)
 
     logger.info("Cached Lenigas %s layer for %s to %s / %s", key, date, png_path, meta_path)
+    return png_path, meta_path
+
+
+# GT registry: mirrors DATE_LAYER_SPECS_LENIGAS above exactly, but reads
+# from that date's SEPARATE output/history/<date>/gt/ subfolder so it
+# can never collide with any of v1/v2/Lenigas's cached assets. All six WLC
+# factor layers plus the combined bite score are 0-100 rasters, so
+# raster_to_rgba works unmodified for them all.
+DATE_LAYER_SPECS_GT = {
+    "bite_score_gt":      {"filename": "bite_score_gt.tif",             "rgba_fn": raster_to_rgba},
+    "eac_edge_gt":        {"filename": "layer_eac_edge_gt.tif",         "rgba_fn": raster_to_rgba},
+    "upwelling_gt":       {"filename": "layer_upwelling_gt.tif",        "rgba_fn": raster_to_rgba},
+    "depth_gt":           {"filename": "layer_depth_gt.tif",            "rgba_fn": raster_to_rgba},
+    "structure_gt":       {"filename": "layer_structure_gt.tif",        "rgba_fn": raster_to_rgba},
+    "sst_gt":             {"filename": "layer_sst_gt.tif",              "rgba_fn": raster_to_rgba},
+    "moon_phase_gt":      {"filename": "layer_moon_phase_gt.tif",       "rgba_fn": raster_to_rgba},
+    "current_gradient_gt":{"filename": "layer_current_gradient_gt.tif", "rgba_fn": raster_to_rgba},
+    "north_wind_gt":      {"filename": "layer_north_wind_gt.tif",       "rgba_fn": raster_to_rgba},
+}
+
+
+def build_date_layer_assets_gt(date: str, key: str, force_rebuild: bool = False) -> tuple:
+    """
+    GT counterpart of build_date_layer_assets_lenigas() -- reads/writes
+    under output/history/<date>/gt/ so it can never overwrite any of
+    v1/v2/Lenigas's cached chart_<key>.png/meta_<key>.json files.
+
+    Raises KeyError for an unknown layer key; FileNotFoundError if the GT
+    pipeline hasn't been run for this date yet (webapp.py turns either into
+    a 404 response).
+    """
+    validate_date_key(date)
+    if key not in DATE_LAYER_SPECS_GT:
+        raise KeyError(f"Unknown GT date layer: {key!r}")
+    spec = DATE_LAYER_SPECS_GT[key]
+    gt_dir = os.path.join(config.HISTORY_DIR, date, config.GT_OUTPUT_SUBDIR)
+    geotiff_path = os.path.join(gt_dir, spec["filename"])
+    if not os.path.isfile(geotiff_path):
+        raise FileNotFoundError(f"No GT {key!r} data for {date!r}")
+
+    png_path = os.path.join(gt_dir, f"chart_{key}.png")
+    meta_path = os.path.join(gt_dir, f"meta_{key}.json")
+    if os.path.exists(png_path) and os.path.exists(meta_path) and not force_rebuild:
+        return png_path, meta_path
+
+    _da, values, bounds = open_score_raster(geotiff_path)
+    rgba = spec["rgba_fn"](values)
+    rgba_uint8 = (np.clip(rgba, 0.0, 1.0) * 255).astype("uint8")
+    Image.fromarray(rgba_uint8, mode="RGBA").save(png_path)
+
+    finite_values = values[np.isfinite(values)]
+    meta = {
+        "bounds": [[bounds[1], bounds[0]], [bounds[3], bounds[2]]],
+        "min": float(finite_values.min()) if finite_values.size else None,
+        "max": float(finite_values.max()) if finite_values.size else None,
+    }
+    with open(meta_path, "w", encoding="utf-8") as f:
+        json.dump(meta, f)
+
+    logger.info("Cached GT %s layer for %s to %s / %s", key, date, png_path, meta_path)
+    return png_path, meta_path
+
+
+# Outerline ("v3" / Yellowfin Environmental Hotspot Score) registry:
+# mirrors DATE_LAYER_SPECS_GT above exactly, but reads from that date's
+# SEPARATE output/history/<date>/outerline/ subfolder (see
+# main.py::run_pipeline_outerline() / pipeline_outerline.py) so it can
+# never collide with any other model's cached assets. The combined
+# hotspot score and every WLC factor layer are already scaled 0-100 by
+# overlay_outerline.py::weighted_overlay_outerline(), so raster_to_rgba
+# works unmodified for all of them, including feature_convergence_count
+# (an integer count 0-8, rendered on the same 0-100 colour ramp -- its
+# real range is shown via the min/max in the accompanying meta JSON).
+DATE_LAYER_SPECS_OUTERLINE = {
+    "hotspot_score_outerline":  {"filename": "hotspot_score_outerline.tif", "rgba_fn": raster_to_rgba},
+    "sst_suitability":          {"filename": "layer_sst_suitability.tif", "rgba_fn": raster_to_rgba},
+    "sst_front":                {"filename": "layer_sst_front.tif", "rgba_fn": raster_to_rgba},
+    "eac_boundary":              {"filename": "layer_eac_boundary.tif", "rgba_fn": raster_to_rgba},
+    "current_convergence":      {"filename": "layer_current_convergence.tif", "rgba_fn": raster_to_rgba},
+    "current_interaction":      {"filename": "layer_current_interaction.tif", "rgba_fn": raster_to_rgba},
+    "sla_boundary":              {"filename": "layer_sla_boundary.tif", "rgba_fn": raster_to_rgba},
+    "upwelling_downwelling":    {"filename": "layer_upwelling_downwelling.tif", "rgba_fn": raster_to_rgba},
+    "bathymetry":                {"filename": "layer_bathymetry.tif", "rgba_fn": raster_to_rgba},
+    "bait_proxy":                {"filename": "layer_bait_proxy.tif", "rgba_fn": raster_to_rgba},
+    "fsle_front":                {"filename": "layer_fsle_front.tif", "rgba_fn": raster_to_rgba},
+    "wind_visibility":          {"filename": "layer_wind_visibility.tif", "rgba_fn": raster_to_rgba},
+    "feature_convergence_count": {"filename": "layer_feature_convergence_count.tif", "rgba_fn": raster_to_rgba},
+}
+
+
+def build_date_layer_assets_outerline(date: str, key: str, force_rebuild: bool = False) -> tuple:
+    """
+    Outerline counterpart of build_date_layer_assets_gt() -- reads/writes
+    under output/history/<date>/outerline/ so it can never overwrite any
+    other model's cached chart_<key>.png/meta_<key>.json files.
+
+    Raises KeyError for an unknown layer key; FileNotFoundError if the
+    Outerline pipeline hasn't been run for this date yet (webapp.py turns
+    either into a 404 response). `season` and `feature_convergence_count`
+    (a scalar-broadcast and a count layer, not "gradient/front" layers
+    like the rest) are still plain 0-100-range GeoTIFFs, so no special
+    handling is needed here.
+    """
+    validate_date_key(date)
+    if key not in DATE_LAYER_SPECS_OUTERLINE:
+        raise KeyError(f"Unknown Outerline date layer: {key!r}")
+    spec = DATE_LAYER_SPECS_OUTERLINE[key]
+    outerline_dir = os.path.join(config.HISTORY_DIR, date, config.OUTERLINE_OUTPUT_SUBDIR)
+    geotiff_path = os.path.join(outerline_dir, spec["filename"])
+    if not os.path.isfile(geotiff_path):
+        raise FileNotFoundError(f"No Outerline {key!r} data for {date!r}")
+
+    png_path = os.path.join(outerline_dir, f"chart_{key}.png")
+    meta_path = os.path.join(outerline_dir, f"meta_{key}.json")
+    if os.path.exists(png_path) and os.path.exists(meta_path) and not force_rebuild:
+        return png_path, meta_path
+
+    _da, values, bounds = open_score_raster(geotiff_path)
+    rgba = spec["rgba_fn"](values)
+    rgba_uint8 = (np.clip(rgba, 0.0, 1.0) * 255).astype("uint8")
+    Image.fromarray(rgba_uint8, mode="RGBA").save(png_path)
+
+    finite_values = values[np.isfinite(values)]
+    meta = {
+        "bounds": [[bounds[1], bounds[0]], [bounds[3], bounds[2]]],
+        "min": float(finite_values.min()) if finite_values.size else None,
+        "max": float(finite_values.max()) if finite_values.size else None,
+    }
+    with open(meta_path, "w", encoding="utf-8") as f:
+        json.dump(meta, f)
+
+    logger.info("Cached Outerline %s layer for %s to %s / %s", key, date, png_path, meta_path)
     return png_path, meta_path
 
 

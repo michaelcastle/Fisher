@@ -309,6 +309,13 @@ LAND_OUTLINE_JSON_PATH = os.environ.get("LAND_OUTLINE_JSON_PATH") or os.path.joi
     os.path.dirname(__file__), "..", "data", "processed", "land_outline.json"
 )
 
+# --- Windy.com Point Forecast API key ------------------------------------
+# Get a free testing key at https://api.windy.com/keys
+# Free tier: 500 req/day, returns randomly shuffled data (development only).
+# Professional (€990/yr): 10,000 req/day, real forecast data.
+# Used by bite_score/windy_api.py and served via /api/windy/forecast.
+WINDY_API_KEY = os.environ.get("WINDY_API_KEY", "")
+
 # --- Optional supplementary local data: MBGFC fishing-locations chart -----
 # The Moreton Bay Game Fish Club publishes a one-page PDF with a scanned
 # nautical chart (printed lat/lon grid, reef/bank names) plus a text table
@@ -904,43 +911,28 @@ EAC_CONVERGENCE_NEUTRAL_SCORE = 50.0
 MOON_PHASE_LENIGAS_ANCHORS_D = [-14, -9, -7, -5, -3, -1, 0, 1, 2, 3, 7, 9, 14]
 MOON_PHASE_LENIGAS_ANCHORS_SCORE = [50, 50, 35, 50, 100, 85, 15, 55, 55, 50, 35, 50, 50]
 
-# Overall WLC weights (Kane's spec, item 8; sums to 1.0). SST is
-# deliberately LOWER-weighted than in v1/v2 since the notes explicitly
-# de-emphasize exact temperature ("26-23C... not too much of a thing").
-# Wind is DELIBERATELY EXCLUDED from this weights table for this first
-# Lenigas build (Kane's explicit scope note) -- Ash's wind ingestion
-# (data_ingestion_lenigas.py::fetch_wind_data_lenigas) is fetched/reported
-# on during a real pipeline run for validation purposes, but does not yet
-# feed into this WLC combination; a wind-suitability curve and a
-# corresponding weight-rebalance are flagged as follow-up work once one
-# is specified.
-# UPDATED (Kane's FINAL SSHA-hotspot decision, see
-# .squad/decisions/inbox/kane-lenigas-ssha-final-decision.md /
-# .squad/decisions/inbox/ripley-lenigas-ssha-hotspot.md): a 7th WLC
-# component, `ssha_hotspot_lenigas` (weight 0.10), was added as a
-# SUPPLEMENT to (not a replacement of) `upwelling_downwelling` -- it
-# scores a percentile-tiered SSHA-anomaly hotspot/boundary signal from a
-# different source field (zos directly) than upwelling_downwelling's
-# current-shear-derived vorticity. The original 6 weights were rescaled
-# by (1 - 0.10) = 0.90 to make room for it, preserving their relative
-# balance (same proportional-redistribution technique already used
-# elsewhere in this project, e.g. LAYER_WEIGHTS_LEGACY):
-#   sst_bell_lenigas:          0.15 * 0.90 = 0.135
-#   depth_suitability_lenigas: 0.20 * 0.90 = 0.18
-#   distance_offshore:         0.10 * 0.90 = 0.09
-#   upwelling_downwelling:     0.15 * 0.90 = 0.135
-#   eac_axis_position:         0.20 * 0.90 = 0.18
-#   eac_convergence:           0.20 * 0.90 = 0.18
-#   ssha_hotspot_lenigas (NEW):            = 0.10
-#   Sum = 0.135 + 0.18 + 0.09 + 0.135 + 0.18 + 0.18 + 0.10 = 1.00 (verified)
+# Overall WLC weights (6 factors, sums to 1.0). Distance-offshore was
+# REMOVED: the AOI already confines all scored pixels to the offshore
+# fishing ground, so re-penalising inshore pixels redundantly adds no
+# discriminative power. Its freed weight (0.09) was redistributed to the
+# three most influential tuna-location signals:
+#   +0.030 -> eac_axis_position (most critical: slack-zone positioning is
+#             the primary where-to-fish signal from the source account)
+#   +0.025 -> eac_convergence  (bait/tuna concentration at current crash)
+#   +0.025 -> upwelling_downwelling (upwelling drives bait concentration)
+#   +0.010 -> sst_bell_lenigas (temperature still relevant; "23-26C")
+# SST stays deliberately LOWER-weighted than in v1/v2 (source account
+# de-emphasizes exact temperature: "not too much of a thing").
+# Wind remains EXCLUDED -- not yet a WLC factor (Kane's scope note).
+# Arithmetic check:
+#   0.145 + 0.180 + 0.160 + 0.210 + 0.205 + 0.100 = 1.000 (verified)
 LAYER_WEIGHTS_LENIGAS = {
-    "sst_bell_lenigas": 0.135,          # was 0.15
-    "depth_suitability_lenigas": 0.18,  # was 0.20
-    "distance_offshore": 0.09,          # was 0.10
-    "upwelling_downwelling": 0.135,     # was 0.15
-    "eac_axis_position": 0.18,          # was 0.20
-    "eac_convergence": 0.18,            # was 0.20
-    "ssha_hotspot_lenigas": 0.10,       # NEW
+    "sst_bell_lenigas":          0.145,  # was 0.135 (+0.010)
+    "depth_suitability_lenigas": 0.180,  # unchanged
+    "upwelling_downwelling":     0.160,  # was 0.135 (+0.025)
+    "eac_axis_position":         0.210,  # was 0.180 (+0.030)
+    "eac_convergence":           0.205,  # was 0.180 (+0.025)
+    "ssha_hotspot_lenigas":      0.100,  # unchanged
 }
 
 # Final scalar multiplier bounds for apply_moon_phase_multiplier_lenigas
@@ -997,5 +989,340 @@ SSHA_HOTSPOT_SCORES_WINTER_LENIGAS = [55, 85, 100, 100, 75, 35, 5, 0]
 # nutrient-poor surface layer -- tightens downwelling tolerance (pulls
 # the unfavorable-side anchors down/left) relative to the default table.
 SSHA_HOTSPOT_SCORES_PEAK_LENIGAS = [20, 70, 100, 100, 65, 20, 0, 0]
+
+
+# --- Giant Trevally (GT) scoring model ------------------------------------
+# A fully SEPARATE bite-score model for Giant Trevally (Caranx ignobilis)
+# in SE QLD -- NOT a version of the YFT/Lenigas models. GT are an ambush
+# reef predator whose habitat is fundamentally different from YFT:
+#   - Depth range: 20-150m (reef crests, shelf-edge ledges, drop-offs)
+#     vs. YFT 500-3000m (deep offshore pelagic)
+#   - EAC position: WESTERN INSHORE edge where the EAC presses against reef
+#     structure (the "pressure edge") vs. YFT's EASTERN SLACK ZONE
+#   - Moon phase: new moon (dark) is BEST; full moon is WORST (opposite of
+#     the fisherman intuition for schooling/feeding pelagics)
+#   - Wind: northerly wind concentrates baitfish on reef edges
+#
+# AOI: same as AOI_LENIGAS = AOI_V2 (the reef systems and shelf edge in
+# SE QLD are within this domain; no widening needed).
+AOI_GT = AOI_V2
+
+# Per-date archive subfolder (output/history/<date>/gt/)
+GT_OUTPUT_SUBDIR = "gt"
+
+# Seasonal multiplier: GT are present year-round in SE QLD but peak during
+# the EAC's strongest southward warm-water incursion (Sep-Nov). The EAC
+# drives baitfish concentrations into reef pressure-edge zones where GT hunt.
+# Feb-Apr = coolest period, weakest EAC, lowest GT activity.
+SEASONAL_MULTIPLIER_GT = {
+    1: 0.9,   # January: warm, EAC moderately present
+    2: 0.6,   # February: post-season taper
+    3: 0.6,   # March: cooler water, less EAC
+    4: 0.6,   # April: autumn, EAC weakening
+    5: 0.7,   # May: winter starting
+    6: 0.8,   # June: winter, EAC still runs but weaker
+    7: 0.8,   # July: mid-winter
+    8: 0.9,   # August: pre-season, EAC building
+    9: 1.0,   # September: EAC peak season begins
+    10: 1.0,  # October: peak EAC season
+    11: 1.0,  # November: peak EAC season
+    12: 0.9,  # December: tapering from peak
+}
+
+# SST bell curve: GT prefer warm EAC surface water (24-28°C in SE QLD).
+# Peak at 26°C -- the upper end of EAC core temperature for this AOI.
+# sigma derived via FWHM: treating 24-28°C as the half-maximum window,
+# FWHM = 4°C, sigma = 4 / 2.3548 ≈ 1.7°C.
+SST_BELL_PEAK_C_GT = 26.0
+SST_BELL_SIGMA_C_GT = 1.7
+
+# Depth suitability: GT are a reef-associated species. Suitable depth covers
+# GT prime ambush depth: 15-30m reef crests and hard structure edges where
+# GT sit and wait for bait pushed past by the EAC pressure edge. Ramp up
+# from 5m (too shallow / surf zone), plateau 15-30m (prime), ramp off to
+# 60m. Values are positive (depth below sea level), land cells get NaN.
+DEPTH_GT_RAMP_MIN_M = 5.0      # too shallow: surf / inshore flats
+DEPTH_GT_IDEAL_MIN_M = 15.0    # prime GT reef habitat starts here
+DEPTH_GT_IDEAL_MAX_M = 30.0    # top of the prime depth band
+DEPTH_GT_RAMP_MAX_M = 60.0     # deeper than 60m: out of prime GT zone
+
+# Bathymetric structure / depth-gradient scoring: GT need hard edges where
+# the seafloor changes depth sharply (reef ledges, bommies, shelf steps).
+# Score = 100 * tanh(|gradient| / DEPTH_STRUCTURE_GT_SCALE_M_PER_KM) so
+# an edge of ~5m/km scores ~0.46 (moderate) and ~15m/km → ~0.91 (excellent).
+DEPTH_STRUCTURE_GT_SCALE_M_PER_KM = 5.0
+
+# Vorticity scale for upwelling: same physical mechanism and scale as
+# Lenigas (f/10 ≈ 7e-6 s^-1, see VORTICITY_SCALE_LENIGAS_S rationale above).
+VORTICITY_SCALE_GT_S = 7e-6
+
+# EAC pressure-edge scoring zones (GT sit on the WESTERN / INSHORE side of
+# the EAC axis, NOT the eastern slack zone like YFT). signed_dist_km from
+# overlay_lenigas.compute_signed_distance_from_eac_axis_km:
+#   d < 0 = west/inshore of axis (GT territory)
+#   d > 0 = east/offshore of axis (YFT territory, not GT)
+#
+# Scoring shape (see overlay_gt.py::score_eac_edge_gt):
+#   d > 0 (east of axis):            GT_EAC_OFFSHORE_SCORE  (wrong side)
+#   d = 0 (at axis):                 GT_EAC_AXIS_SCORE      (moderate)
+#   0 > d > -GT_EAC_INSHORE_OPTIMAL_KM:  linear ramp up to GT_EAC_OPTIMAL_SCORE
+#   -optimal > d > -GT_EAC_INSHORE_MAX_KM: linear decline to GT_EAC_FAR_INSHORE_SCORE
+#   d ≤ -max_km:                     GT_EAC_FAR_INSHORE_SCORE (EAC fading)
+GT_EAC_INSHORE_OPTIMAL_KM = 15.0   # optimal pressure-edge band west of axis
+GT_EAC_INSHORE_MAX_KM = 40.0       # EAC influence fades beyond 40km inshore
+GT_EAC_AXIS_SCORE = 60.0            # right at axis: moderate
+GT_EAC_OPTIMAL_SCORE = 100.0        # in the inshore pressure zone: best
+GT_EAC_FAR_INSHORE_SCORE = 35.0     # too far inshore: EAC influence fading
+GT_EAC_OFFSHORE_SCORE = 25.0        # east of axis: wrong side for GT
+
+# GT moon phase anchor table: GT are LOW-LIGHT AMBUSH predators.
+# New moon (dark) = best; full moon = worst (fish are cautious in bright light).
+# User spec: "first couple of days after the new moon, and the last 2 days
+# before the full moon are good times. The full moon itself is not ideal."
+#
+# Uses moon_phase.py's phase_age_days convention:
+#   0 = new moon, 7 = first quarter, 14 = full moon, 21 = last quarter
+#
+# Anchor format: (phase_age_days, score_0_to_100)
+# The score is mapped to a multiplier:
+#   multiplier = MOON_MULTIPLIER_MIN_GT + (score/100) * (MOON_MULTIPLIER_MAX_GT - MIN)
+MOON_PHASE_ANCHORS_GT = [
+    (0,  90),  # new moon: excellent (dark, ambush conditions)
+    (1,  100), # 1 day after new: BEST
+    (2,  95),  # 2 days after new: still excellent
+    (7,  55),  # first quarter: moderate
+    (12, 85),  # 2 days before full: user says "good"
+    (13, 75),  # day before full: good but fading
+    (14, 20),  # full moon: BAD (too bright, fish cautious)
+    (15, 35),  # day after full: starting to recover
+    (21, 55),  # last quarter: moderate
+    (26, 80),  # approaching new moon: building again
+    (28, 90),  # new moon (wraps to 0): excellent
+]
+MOON_MULTIPLIER_MIN_GT = 0.5   # full moon: strongly suppress score
+MOON_MULTIPLIER_MAX_GT = 1.3   # new moon / dark: boost score
+
+# GT WLC weights (must sum to 1.0).
+# EAC pressure edge is the primary driver (GT on western inshore edge).
+# Depth structure (hard edges, reef ledges) added as explicit factor.
+# Moon phase added as WLC factor (was previously a separate multiplier).
+# North wind lowest -- ASCAT lag ~5-6 weeks; redistributed if absent.
+# Arithmetic check: 0.20+0.18+0.17+0.15+0.12+0.09+0.05+0.04 = 1.00
+LAYER_WEIGHTS_GT = {
+    "eac_edge_gt":          0.20,
+    "upwelling_gt":         0.18,
+    "structure_gt":         0.17,
+    "depth_gt":             0.15,
+    "sst_gt":               0.12,
+    "moon_phase_gt":        0.09,
+    "current_gradient_gt":  0.05,
+    "north_wind_gt":        0.04,
+}
+
+
+# --- "Outerline Method" (Yellowfin Environmental Hotspot Score) -----------
+# A THIRD, fully separate Yellowfin scoring model -- referred to by the
+# user as "v3" / the "Outerline Method". Named for its core principle:
+# reward being ON THE OUTER LINE / BOUNDARY where multiple favourable
+# oceanographic features intersect (thermal fronts, current convergence,
+# EAC boundary, FSLE ridges, SLA gradients, upwelling/downwelling
+# transitions) -- NOT reward the single strongest/most-extreme value of
+# any one feature (warmest water, deepest water, strongest current,
+# strongest FSLE, highest SLA). Depth is a MODERATE-WEIGHT FILTER only
+# (see DEPTH_SUITABILITY_BREAKPOINTS_OUTERLINE): it must never overwhelm
+# a genuinely strong oceanographic hotspot, validated against the real
+# 11 Oct 2023 Point Lookout event (yellowfin busting up at ~250m depth --
+# see validate_outerline.py). This is a HABITAT SUITABILITY score, not a
+# probability of catching/encountering fish -- never described as such
+# anywhere in this codebase's UI/output text.
+#
+# Reuses the same AOI_V2-clipped data sources as v2/Lenigas/GT (verified
+# sufficient coverage), and writes to its own SEPARATE
+# output/history/<date>/outerline/ subfolder -- no other model's outputs
+# are ever touched by an Outerline run.
+AOI_OUTERLINE = AOI_V2
+OUTERLINE_OUTPUT_SUBDIR = "outerline"
+
+# --- Section 1/2: SST suitability + SST front -----------------------------
+# Piecewise-linear membership curve (deg C -> score out of 100), broad and
+# forgiving rather than a tight bell curve: 23-26degC is the preferred
+# range (matches the real fisherman-notes-derived SST_BELL_PEAK_C_LENIGAS
+# = 24.5degC anchor already validated for this exact species/region), but
+# suitability never truly collapses to zero across the wider EAC range --
+# this is deliberately a much gentler curve than SST_BELL_* (v1/Lenigas/GT)
+# since SST *suitability* here is only 8% of the total score; the sharper
+# SST *front* factor below carries more weight for the "boundary" signal.
+SST_SUITABILITY_BREAKPOINTS_C_OUTERLINE = [19.0, 21.0, 22.0, 23.0, 24.0, 25.0, 26.0, 27.0, 28.0, 30.0]
+SST_SUITABILITY_SCORES_OUTERLINE       = [0.0, 15.0, 40.0, 70.0, 92.0, 100.0, 100.0, 60.0, 25.0, 0.0]
+
+# --- Section 3: EAC axis / boundary scoring --------------------------------
+# Reuses overlay_lenigas.py::compute_signed_distance_from_eac_axis_km's
+# signed east(+)/west(-) km-from-axis field unmodified. Unlike Lenigas's
+# axis-position table (which plateaus over a WIDE 15-40km slack zone),
+# the Outerline model rewards a much narrower band centred on the EAC's
+# outer boundary/edge itself -- a Gaussian bump peaking at
+# EAC_BOUNDARY_OFFSET_KM_OUTERLINE km east of the traced core-jet axis,
+# per the spec's "reward the boundary, not the core, and not open water
+# far from any EAC influence" principle.
+EAC_BOUNDARY_OFFSET_KM_OUTERLINE = 12.0
+EAC_BOUNDARY_SIGMA_KM_OUTERLINE = 20.0
+
+# --- Section 4/5: current convergence + current interaction ---------------
+# Convergence: score = 0.5 - 0.5*tanh(divergence / scale), so NEGATIVE
+# divergence (net inflow / convergence, where drifting baitfish/plankton
+# concentrate) -> score -> 1.0, positive divergence (dispersal) -> 0.0.
+# Same tanh-scaling technique already used by
+# overlay_lenigas.py::score_upwelling_downwelling_lenigas, applied here to
+# horizontal divergence (du/dx + dv/dy) instead of vertical vorticity.
+CURRENT_CONVERGENCE_SCALE_S_OUTERLINE = 7e-6
+
+# Current interaction: normalized gradient magnitude of current SPEED
+# (reuses processing.py::velocity_edge_intensity unmodified) -- captures
+# shear zones/boundaries where fast core water meets slower surrounding
+# water, a genuinely different structural signal from convergence
+# (divergence sign) and from EAC boundary (position relative to the axis).
+# No extra tunable beyond the existing robust-percentile normalization.
+
+# --- Section 6: SLA / SSHA boundary ----------------------------------------
+# Rewards the GRADIENT of sea-surface-height-anomaly (eddy/current edges),
+# not the absolute SLA value (which would just re-reward the eddy core) --
+# reuses processing.py::spatial_gradient_magnitude + robust_minmax_normalize
+# unmodified, same treatment already given to SST/CHL/MLD gradients.
+
+# --- Section 7: upwelling/downwelling TRANSITION ---------------------------
+# Deliberately the OPPOSITE shape from Lenigas's upwelling score (which
+# rewards one vorticity SIGN outright): Outerline rewards the TRANSITION
+# ZONE / boundary between upwelling and downwelling (zeta near zero),
+# scoring 1.0 - |tanh(zeta / scale)| -- peaking at the zero-crossing and
+# decaying toward 0.0 deep inside either a strongly upwelling or strongly
+# downwelling patch. This follows the model's "reward boundaries, not
+# extremes" principle even where an existing, differently-shaped scoring
+# function already exists for the same underlying vorticity field.
+UPWELLING_DOWNWELLING_TRANSITION_SCALE_S_OUTERLINE = 7e-6
+
+# --- Section 8: bathymetry (moderate-weight FILTER only, never dominant) --
+# Ramps from 0 in the shallows up to a wide, flat "good" plateau covering
+# essentially the entire offshore shelf-break-to-abyssal range (200m to
+# 4000m+) -- deliberately NOT a narrow ideal band like v1/Lenigas/GT's
+# depth trapezoids, because real catch evidence (11 Oct 2023, ~250m, see
+# validate_outerline.py) shows yellowfin holding well short of the deep
+# water those models assume is "ideal". Only 5% of the total score, so
+# even a large depth mismatch cannot override a genuinely strong
+# oceanographic-structure hotspot elsewhere.
+DEPTH_SUITABILITY_BREAKPOINTS_M_OUTERLINE = [0.0, 50.0, 100.0, 200.0, 500.0, 1000.0, 2000.0, 4000.0, 6000.0]
+DEPTH_SUITABILITY_SCORES_OUTERLINE       = [0.0, 10.0, 35.0, 80.0, 100.0, 100.0, 95.0, 85.0, 70.0]
+
+# --- Section 9: bait concentration proxy -----------------------------------
+# Composite of (a) a band-pass chlorophyll suitability score (favours a
+# moderate, "green water on the edge of blue" concentration -- neither
+# bright-green bloom nor gin-clear open ocean) and (b) the mean of the
+# already-computed structural aggregation signals (SST front, current
+# convergence, FSLE front) -- baitfish concentrate where productive water
+# coincides with physical aggregating structure, not from chlorophyll
+# alone.
+BAIT_PROXY_CHL_RAMP_MIN_OUTERLINE = 0.05
+BAIT_PROXY_CHL_IDEAL_MIN_OUTERLINE = 0.12
+BAIT_PROXY_CHL_IDEAL_MAX_OUTERLINE = 0.35
+BAIT_PROXY_CHL_RAMP_MAX_OUTERLINE = 0.60
+BAIT_PROXY_CHL_WEIGHT_OUTERLINE = 0.4        # vs. 0.6 for the structural-overlap component
+
+# --- Section 10: seasonal suitability (SE QLD yellowfin migration) --------
+# A modest (2%) WLC weight, not a multiplier -- deliberately small so it
+# nudges but never overrides real-time oceanographic conditions on a given
+# day (a fish-favourable ocean structure in an "off" month still scores
+# well; the spec explicitly warns against season overriding real data).
+SEASON_SUITABILITY_OUTERLINE = {
+    1: 0.55, 2: 0.45, 3: 0.45, 4: 0.55, 5: 0.60, 6: 0.75,
+    7: 0.80, 8: 0.85, 9: 1.00, 10: 1.00, 11: 0.95, 12: 0.70,
+}
+
+# --- Section 11/12: wind & visibility (kept genuinely separate) -----------
+# Visibility component: pure sighting/spotting conditions -- best (1.0) in
+# a flat calm, decaying linearly with wind speed. Ocean component: a
+# neutral baseline (real, direct "wind drives ocean-scale prey aggregation
+# in this AOI on the timescale of a single 10m wind snapshot" mechanism is
+# NOT established/validated here, so this stays a flat 0.5 rather than
+# invent an unverified relationship) -- kept as a separate named
+# sub-score anyway so a future, validated ocean-wind mechanism can replace
+# just that half without touching the visibility half. Combined 50/50.
+WIND_VISIBILITY_CALM_MS_OUTERLINE = 2.0     # <= this speed -> visibility_score = 1.0
+WIND_VISIBILITY_MAX_MS_OUTERLINE = 15.0     # >= this speed -> visibility_score = 0.0
+WIND_VISIBILITY_OCEAN_BASELINE_OUTERLINE = 0.5
+WIND_VISIBILITY_SPLIT_OUTERLINE = 0.5       # weight of visibility_score within the combined value (rest = ocean_score)
+
+# --- Section 13: moon phase (LOW-weight modifier, not a WLC component) ----
+# Applied as a narrow-range final multiplier (illumination-fraction based,
+# same mechanism as overlay.py::apply_moon_phase_multiplier) AFTER the WLC
+# overlay/convergence multiplier -- deliberately a much narrower band than
+# v1's 0.8x-1.2x so it can only ever nudge, never dominate, the final
+# score, per the spec's explicit "low weighting" instruction for moon.
+MOON_MULTIPLIER_MIN_OUTERLINE = 0.95   # full moon / fully illuminated -> slight dampen
+MOON_MULTIPLIER_MAX_OUTERLINE = 1.05   # new moon / dark -> slight boost
+
+# --- Section 15: recommended initial component weights (must sum to 1.0) -
+# Configurable in Python ONLY -- never hardcoded inline anywhere else in
+# the Outerline pipeline. Percentages are the user's own recommended
+# starting point (verified to sum to exactly 100%).
+WEIGHTS_OUTERLINE = {
+    "sst_suitability":       0.08,
+    "sst_front":             0.12,
+    "eac_boundary":          0.10,
+    "current_convergence":   0.15,
+    "current_interaction":   0.10,
+    "fsle_front":            0.12,
+    "sla_boundary":          0.08,
+    "upwelling_downwelling": 0.07,
+    "bait_proxy":            0.10,
+    "bathymetry":            0.05,
+    "season":                0.02,
+    "wind_visibility":       0.01,
+}
+assert abs(sum(WEIGHTS_OUTERLINE.values()) - 1.0) < 1e-9, "WEIGHTS_OUTERLINE must sum to 1.0"
+
+# --- Section 16: non-linear feature-convergence multiplier ----------------
+# Counts, per pixel, how many of CONVERGENCE_COUNT_COMPONENTS_OUTERLINE
+# independently score >= FEATURE_PRESENCE_THRESHOLD_OUTERLINE (out of 100)
+# at that pixel, then applies a multiplier from this step table --
+# this is the mechanism that rewards genuine INTERSECTIONS of favourable
+# features rather than any single strong factor. Steps are
+# (min_feature_count, multiplier); the highest matching step wins.
+CONVERGENCE_COUNT_COMPONENTS_OUTERLINE = [
+    "sst_front", "eac_boundary", "current_convergence", "current_interaction",
+    "fsle_front", "sla_boundary", "upwelling_downwelling", "bait_proxy",
+]
+FEATURE_PRESENCE_THRESHOLD_OUTERLINE = 65.0
+CONVERGENCE_MULTIPLIER_STEPS_OUTERLINE = [
+    (0, 1.00),
+    (3, 1.05),
+    (5, 1.15),
+    (6, 1.25),
+]
+
+# --- Section 17: category grouping (informational only -- NOT a second
+# weighting pass; every atomic component above is weighted exactly once
+# in WEIGHTS_OUTERLINE. These groupings only drive the sidebar/explanation
+# breakdown so related factors aren't presented as if they were
+# independent evidence of separate phenomena.) ------------------------------
+WEIGHT_CATEGORIES_OUTERLINE = {
+    "Thermal structure": ["sst_suitability", "sst_front"],
+    "Dynamic structure": ["eac_boundary", "current_convergence", "current_interaction", "fsle_front", "sla_boundary"],
+    "Biological productivity": ["bait_proxy"],
+    "Habitat": ["bathymetry", "upwelling_downwelling"],
+    "Seasonal / weather": ["season", "wind_visibility"],
+}
+
+# Plain-English phrases used by overlay_outerline.py::explain_score_outerline()
+# for each component, keyed the same as WEIGHTS_OUTERLINE.
+EXPLANATION_PHRASES_OUTERLINE = {
+    "sst_suitability": "suitable sea surface temperature",
+    "sst_front": "a strong SST front",
+    "eac_boundary": "the outer boundary of the EAC",
+    "current_convergence": "current convergence",
+    "current_interaction": "a current shear/interaction zone",
+    "fsle_front": "an FSLE ocean-front boundary",
+    "sla_boundary": "a sea-level-anomaly (eddy edge) boundary",
+    "upwelling_downwelling": "an upwelling/downwelling transition zone",
+    "bait_proxy": "a likely bait concentration",
+}
 
 
